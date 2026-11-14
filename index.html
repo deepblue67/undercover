@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Undercover Famille</title>
+<meta name="description" content="Le jeu Undercover pour jouer en famille sur un seul téléphone : qui a un mot différent ?">
+<meta name="theme-color" content="#1b1640">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Undercover">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{font-family:ui-rounded,"SF Pro Rounded","Nunito","Segoe UI Rounded","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;background:#1b1640;background-image:radial-gradient(circle at 15% 0%,#3d2c94 0,transparent 55%),radial-gradient(circle at 100% 100%,#5b1f6e 0,transparent 50%);background-attachment:fixed;color:#fff;-webkit-font-smoothing:antialiased;overscroll-behavior-y:none}
+#app{max-width:520px;margin:0 auto;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top) + 14px) 18px calc(env(safe-area-inset-bottom) + 18px)}
+.screen{flex:1;display:flex;flex-direction:column;gap:14px;animation:in .25s ease}
+@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+h1{font-size:2rem;margin:.1em 0;line-height:1.1}
+h2{font-size:1.4rem;margin:.1em 0;line-height:1.2}
+h3{font-size:1.1rem;margin:1em 0 .3em}
+p{margin:.2em 0;line-height:1.4}
+.muted{color:#c3bdf0}.small{font-size:.92rem}
+.center{text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.grow{flex:1}
+.btn{appearance:none;border:0;border-radius:18px;padding:16px 18px;font:inherit;font-size:1.15rem;font-weight:800;color:#1b1640;background:#fff;box-shadow:0 5px 0 rgba(0,0,0,.28);cursor:pointer;width:100%;transition:transform .08s,box-shadow .08s;touch-action:manipulation;line-height:1.2}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.28)}
+.btn small{font-weight:700;opacity:.75;font-size:.85em}
+.btn.primary{background:#ffcc33}.btn.green{background:#3ddc97}.btn.red{background:#ff5d73;color:#fff}
+.btn.ghost{background:rgba(255,255,255,.11);color:#fff;box-shadow:none;font-weight:700}
+.btn.big{font-size:1.3rem;padding:20px}
+.btn:disabled{opacity:.35;pointer-events:none}
+.row{display:flex;gap:10px;align-items:center}.row>.btn{flex:1}
+.between{justify-content:space-between}
+.card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:16px}
+.av{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:var(--c);width:44px;height:44px;font-size:1.5rem;flex:none;box-shadow:inset 0 -4px 0 rgba(0,0,0,.15);line-height:1}
+button.av{border:0;cursor:pointer;padding:0}
+.av.l{width:96px;height:96px;font-size:3.1rem}.av.xl{width:128px;height:128px;font-size:4.2rem}.av.s{width:32px;height:32px;font-size:1.05rem}
+.av.out{filter:grayscale(1);opacity:.4}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:44px}
+.top h2{flex:1;text-align:center}
+.pill{background:rgba(255,255,255,.12);padding:7px 14px;border-radius:99px;font-weight:800;font-size:.95rem}
+.icon{background:rgba(255,255,255,.12);border:0;color:#fff;width:44px;height:44px;border-radius:14px;font-size:1.3rem;cursor:pointer;flex:none;font-family:inherit}
+input{width:100%;min-width:0;padding:13px 14px;border-radius:14px;border:2px solid transparent;background:rgba(255,255,255,.12);color:#fff;font:inherit;font-size:1.08rem;font-weight:700}
+input::placeholder{color:rgba(255,255,255,.45)}
+input:focus{outline:none;border-color:#ffcc33}
+.plist{display:flex;flex-direction:column;gap:10px}
+.prow{display:flex;gap:8px;align-items:center}
+.mini{width:40px;height:40px;border:0;border-radius:12px;background:rgba(255,255,255,.1);color:#fff;font-size:1rem;cursor:pointer;flex:none;font-family:inherit}
+.mini:disabled{opacity:.25}
+.seg{display:flex;gap:5px;background:rgba(0,0,0,.22);padding:5px;border-radius:14px}
+.seg button{flex:1;border:0;border-radius:10px;padding:10px 4px;background:transparent;color:#fff;font:inherit;font-weight:800;font-size:.95rem;cursor:pointer}
+.seg button.on{background:#ffcc33;color:#1b1640}
+.set{display:flex;flex-direction:column;gap:7px}
+.set label{font-weight:800}
+.set .note{font-size:.85rem;color:#c3bdf0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:0;border-radius:99px;padding:9px 13px;background:rgba(255,255,255,.1);color:#fff;font:inherit;font-weight:800;font-size:.95rem;cursor:pointer}
+.chip.on{background:#4cc9f0;color:#1b1640}
+.hero .logo{font-size:5rem;filter:drop-shadow(0 8px 20px rgba(0,0,0,.35));animation:float 3s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-8px) rotate(-4deg)}}
+.title{font-size:3rem;font-weight:900;letter-spacing:-.02em;background:linear-gradient(90deg,#ffcc33,#ff5d73,#b388ff);-webkit-background-clip:text;background-clip:text;color:transparent;margin:0}
+.subtitle{font-size:1.3rem;font-weight:900;letter-spacing:.35em;text-transform:uppercase;color:#4cc9f0;margin-bottom:10px}
+.hold{position:relative;min-height:280px;border-radius:26px;background:linear-gradient(145deg,#4b3bb5,#2a2163);border:3px dashed rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;text-align:center;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:none;cursor:pointer;padding:20px;transition:background .15s}
+.hold .hint{font-size:1.25rem;font-weight:800;color:#dcd7ff;pointer-events:none}
+.hold .hint .big{font-size:3.5rem;display:block;margin-bottom:8px;animation:press 1.4s ease-in-out infinite}
+@keyframes press{50%{transform:scale(.85)}}
+.hold .word{display:none;pointer-events:none}
+.hold.on{background:#fff;color:#1b1640;border-style:solid;border-color:#ffcc33}
+.hold.on .hint{display:none}.hold.on .word{display:block}
+.word .lbl{font-size:1rem;color:#6b64a8;font-weight:800;margin-bottom:6px}
+.word .w{font-size:2.7rem;font-weight:900;word-break:break-word;line-height:1.1}
+.word .sub{font-size:1rem;color:#6b64a8;font-weight:700;margin-top:10px}
+.queue{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+.queue .av{opacity:.6}.queue .av.done{opacity:.25}.queue .av.cur{opacity:1;outline:3px solid #ffcc33;outline-offset:3px}
+.timer{position:relative;width:90px;height:90px;margin:0 auto}
+.timer svg{transform:rotate(-90deg);display:block}
+.timer .ring{transition:stroke-dashoffset 1s linear}
+.timer .t{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:900}
+.timer.over .t{color:#ff5d73;animation:shake .4s 3}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.pcard{border:3px solid transparent;border-radius:20px;padding:16px 8px;background:rgba(255,255,255,.1);color:#fff;font:inherit;font-weight:800;font-size:1.1rem;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;word-break:break-word}
+.pcard.sel{border-color:#ffcc33;background:rgba(255,204,51,.2)}
+.pcard:active{transform:scale(.97)}
+.cd{position:fixed;inset:0;background:rgba(27,22,64,.94);display:flex;align-items:center;justify-content:center;z-index:50;font-size:9rem;font-weight:900;text-align:center}
+.cd span{animation:pop .7s ease both}
+.cd span.go{font-size:3.2rem;color:#ffcc33}
+@keyframes pop{from{transform:scale(2.2);opacity:0}to{transform:scale(1);opacity:1}}
+.badge{display:inline-block;padding:14px 26px;border-radius:20px;font-size:1.9rem;font-weight:900;letter-spacing:.04em;animation:pop .5s ease both}
+.b-civil{background:#3ddc97;color:#10302a}.b-under{background:#ff5d73;color:#fff}.b-white{background:#fff;color:#1b1640}
+.shake{animation:shake .45s infinite}
+@keyframes shake{0%,100%{transform:rotate(0)}25%{transform:rotate(-7deg)}75%{transform:rotate(7deg)}}
+.qmark{font-size:5.5rem;font-weight:900}
+.modal-bg{position:fixed;inset:0;background:rgba(10,8,30,.72);display:flex;align-items:flex-end;justify-content:center;z-index:40;animation:fade .2s}
+.modal{background:#2a2163;width:100%;max-width:520px;border-radius:26px 26px 0 0;padding:22px 18px calc(env(safe-area-inset-bottom) + 22px);display:flex;flex-direction:column;gap:12px;max-height:92vh;overflow:auto;animation:up .25s ease}
+@keyframes fade{from{opacity:0}}@keyframes up{from{transform:translateY(40px);opacity:0}}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 26px);transform:translateX(-50%);background:#fff;color:#1b1640;padding:12px 18px;border-radius:14px;font-weight:800;z-index:80;box-shadow:0 8px 30px rgba(0,0,0,.35);max-width:90vw;text-align:center;animation:up .2s}
+.sl{display:flex;flex-direction:column;gap:8px}
+.si{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.07);border-radius:14px;padding:8px 12px}
+.si .n{flex:1;font-weight:800;word-break:break-word}
+.si .p{font-weight:900;font-size:1.2rem;min-width:2ch;text-align:right}
+.si .role{font-size:1.3rem}
+.plus{color:#3ddc97;font-weight:900}.zero{color:rgba(255,255,255,.35);font-weight:800}
+.words{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.words div{background:rgba(255,255,255,.08);border-radius:16px;padding:12px;text-align:center}
+.words b{display:block;font-size:1.35rem;margin-top:4px;word-break:break-word}
+.words .u b{color:#ff8a9a}.words .c b{color:#7ef0bd}
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:10px;margin:14px 0 6px}
+.step{display:flex;flex-direction:column;align-items:center;gap:6px;width:31%;text-align:center}
+.step .nm{font-weight:900;word-break:break-word}
+.block{width:100%;border-radius:14px 14px 0 0;display:flex;flex-direction:column;align-items:center;padding-top:8px;font-size:1.6rem;font-weight:900;color:#1b1640}
+.block small{font-size:.9rem}
+.s1 .block{height:130px;background:#ffcc33}.s2 .block{height:95px;background:#d9d4ff}.s3 .block{height:70px;background:#ff9f43}
+.rules ol,.rules ul{padding-left:1.2em;margin:.3em 0}.rules li{margin:.3em 0;line-height:1.4}
+.tip{font-size:.9rem;color:#c3bdf0;text-align:center}
+.confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:70}
+a{color:#4cc9f0}
+.foot{text-align:center;font-size:.8rem;color:rgba(255,255,255,.4)}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<noscript><p style="padding:20px">Ce jeu a besoin de JavaScript pour fonctionner.</p></noscript>
+<script>
+'use strict';
+/* =========================================================
+   Undercover Famille — jeu d'ambiance pour un seul téléphone
+   ========================================================= */
+
+/* ---------- Mots (format : mot1/mot2/niveau ; niveau 1 facile → 3 difficile) ---------- */
+const THEMES = {
+  animaux:{label:'Animaux',icon:'🐾'}, nourriture:{label:'Nourriture',icon:'🍕'}, maison:{label:'Maison',icon:'🏠'},
+  ecole:{label:'École',icon:'🎒'}, sport:{label:'Sport',icon:'⚽'}, voyage:{label:'Voyages',icon:'✈️'},
+  nature:{label:'Nature',icon:'🌳'}, imaginaire:{label:'Imaginaire',icon:'🐉'}, metiers:{label:'Métiers',icon:'👷'},
+  loisirs:{label:'Jouets & loisirs',icon:'🎨'}, vetements:{label:'Vêtements',icon:'👕'}
+};
+const RAW = {
+  animaux:'chat/chien/1;lion/tigre/1;vache/mouton/1;poule/canard/1;lapin/hamster/1;girafe/zèbre/1;éléphant/hippopotame/1;papillon/coccinelle/1;serpent/lézard/1;pingouin/phoque/1;escargot/tortue/1;ours/loup/1;cheval/âne/2;abeille/mouche/2;grenouille/crapaud/2;dauphin/requin/2;souris/rat/2;aigle/perroquet/2;singe/paresseux/2;araignée/fourmi/2;chèvre/cochon/2;renard/blaireau/2;crocodile/alligator/3;lapin/lièvre/3;guêpe/frelon/3;chouette/hibou/3;cheval/poney/3;phoque/otarie/3;baleine/orque/3;mouette/pigeon/3;ver de terre/chenille/3',
+  nourriture:'pomme/poire/1;fraise/cerise/1;pizza/hamburger/1;frites/chips/1;gâteau/tarte/1;chocolat/bonbon/1;crêpe/gaufre/1;croissant/pain au chocolat/1;banane/orange/1;carotte/tomate/1;lait/jus d\'orange/1;ketchup/mayonnaise/1;pâtes/riz/2;miel/confiture/2;soupe/purée/2;sandwich/croque-monsieur/2;yaourt/fromage blanc/2;abricot/pêche/2;beurre/fromage/2;sucette/chewing-gum/2;cookie/madeleine/2;poulet/poisson/2;raisin/myrtille/2;glace/sorbet/3;citron/pamplemousse/3;pain/brioche/3;crêpe/pancake/3;noisette/cacahuète/3;nouilles/spaghettis/3;clémentine/mandarine/3;cornichon/olive/3',
+  maison:'lit/canapé/1;fourchette/cuillère/1;douche/baignoire/1;frigo/four/1;chaise/tabouret/1;télé/ordinateur/1;porte/fenêtre/1;assiette/bol/1;verre/tasse/1;oreiller/couverture/2;lampe/bougie/2;brosse à dents/peigne/2;savon/shampoing/2;balai/aspirateur/2;table/bureau/2;escalier/ascenseur/2;grenier/cave/2;clé/cadenas/2;réveil/horloge/2;casserole/poêle/3;rideau/volet/3;robinet/évier/3;armoire/commode/3;couette/drap/3;coussin/oreiller/3;garage/abri de jardin/3',
+  ecole:'crayon/stylo/1;gomme/taille-crayon/1;cahier/livre/1;cartable/trousse/1;ciseaux/colle/1;récré/cantine/1;règle/équerre/2;tableau/écran/2;dictée/poésie/2;maîtresse/directrice/2;calculatrice/ordinateur/2;devoirs/leçons/2;cour de récré/préau/2;feutre/surligneur/3;compas/rapporteur/3;classeur/pochette/3;bulletin/carnet de liaison/3;addition/multiplication/3;sortie scolaire/classe verte/3',
+  sport:'football/rugby/1;tennis/badminton/1;vélo/trottinette/1;ski/luge/1;basket/handball/1;ballon/raquette/1;natation/plongée/1;judo/karaté/2;danse/gymnastique/2;roller/skateboard/2;pétanque/bowling/2;golf/mini-golf/2;course à pied/randonnée/2;arbitre/entraîneur/2;médaille/coupe/2;ski/snowboard/3;tennis/ping-pong/3;roller/patin à glace/3;canoë/kayak/3;escalade/accrobranche/3;boxe/lutte/3',
+  voyage:'avion/train/1;voiture/bus/1;plage/piscine/1;tente/caravane/1;valise/sac à dos/1;mer/lac/1;bateau/sous-marin/1;camping/hôtel/2;montagne/colline/2;zoo/ferme/2;cinéma/théâtre/2;parc d\'attractions/fête foraine/2;île/désert/2;carte/boussole/2;passeport/billet/2;mer/océan/3;train/métro/3;bus/car/3;ville/village/3;avion/hélicoptère/3;rivière/fleuve/3;château/palais/3;phare/tour/3',
+  nature:'soleil/lune/1;pluie/neige/1;arbre/fleur/1;étoile/planète/1;nuage/arc-en-ciel/1;été/hiver/1;volcan/montagne/2;orage/tempête/2;forêt/jungle/2;rivière/cascade/2;feuille/branche/2;sable/galet/2;printemps/automne/2;hiver/automne/3;tempête/ouragan/3;étoile/comète/3;colline/dune/3;brouillard/nuage/3;grotte/tunnel/3;glacier/banquise/3',
+  imaginaire:'sorcière/fée/1;dragon/dinosaure/1;robot/extraterrestre/1;pirate/chevalier/1;roi/prince/1;fantôme/monstre/1;vampire/zombie/2;licorne/cheval ailé/2;magicien/sorcier/2;sirène/princesse/2;géant/ogre/2;château fort/donjon/2;baguette magique/potion/2;pirate/corsaire/3;fée/ange/3;roi/empereur/3;lutin/elfe/3;momie/squelette/3;superhéros/ninja/3;trésor/coffre/3',
+  metiers:'pompier/policier/1;docteur/infirmier/1;cuisinier/serveur/1;facteur/livreur/1;pilote/astronaute/1;boulanger/boucher/2;vétérinaire/dentiste/2;coiffeur/maquilleur/2;agriculteur/jardinier/2;magicien/clown/2;chanteur/danseur/2;maçon/menuisier/2;boulanger/pâtissier/3;docteur/pharmacien/3;pompier/secouriste/3;photographe/journaliste/3;plombier/électricien/3;juge/avocat/3',
+  loisirs:'poupée/peluche/1;toboggan/balançoire/1;guitare/piano/1;dessin/peinture/1;puzzle/jeu de société/1;console/tablette/1;trompette/flûte/2;livre/bande dessinée/2;cerf-volant/avion en papier/2;cartes/dés/2;bulles de savon/ballon de baudruche/2;déguisement/maquillage/2;film/dessin animé/2;violon/violoncelle/3;batterie/tambour/3;cache-cache/chat perché/3;marionnette/poupée/3;photo/vidéo/3;trampoline/château gonflable/3',
+  vetements:'bonnet/casquette/1;chaussettes/chaussons/1;baskets/bottes/1;écharpe/gants/1;jupe/robe/1;short/maillot de bain/1;pull/gilet/2;pyjama/peignoir/2;manteau/imperméable/2;lunettes/montre/2;ceinture/bretelles/2;collier/bracelet/2;pull/sweat/3;sandales/tongs/3;moufles/gants/3;chemise/tee-shirt/3;bague/boucle d\'oreille/3;chapeau/béret/3'
+};
+const WORDS = [];
+for (const t in RAW) RAW[t].split(';').forEach(s => { const [a,b,l] = s.split('/'); WORDS.push({a,b,l:+l,t}); });
+
+const EMOJIS = ['🦊','🐼','🐸','🦁','🐙','🦄','🐯','🐨','🐵','🐧','🐻','🐰','🐲','🦉','🐳','🦖'];
+const COLORS = ['#ff5d73','#4cc9f0','#3ddc97','#ffcc33','#b388ff','#ff9f43','#f72585','#2ec4b6'];
+const ROLE = {
+  civil:{lbl:'CIVIL',emo:'🙂',cls:'b-civil'},
+  under:{lbl:'UNDERCOVER',emo:'🕵️',cls:'b-under'},
+  white:{lbl:'MR WHITE',emo:'🎩',cls:'b-white'}
+};
+const LEVELS = {facile:[1],moyen:[1,2],difficile:[2,3],mix:[1,2,3]};
+const LEVEL_LBL = {facile:'Facile',moyen:'Moyen',difficile:'Difficile',mix:'Mélange'};
+const PTS = {civil:2, under:6, white:6, lastChance:3};
+
+/* ---------- Outils ---------- */
+const $ = s => document.querySelector(s);
+const app = $('#app');
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const rnd = n => Math.floor(Math.random() * n);
+const pick = a => a[rnd(a.length)];
+const uid = () => Math.random().toString(36).slice(2, 10);
+const store = {
+  get(k, d){ try { const v = localStorage.getItem('ucf_' + k); return v == null ? d : JSON.parse(v); } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem('ucf_' + k, JSON.stringify(v)); } catch(e){} },
+  del(k){ try { localStorage.removeItem('ucf_' + k); } catch(e){} }
+};
+function weightedPick(items, w){
+  const ws = items.map(w), tot = ws.reduce((a,b)=>a+b, 0);
+  let x = Math.random() * tot;
+  for (let i = 0; i < items.length; i++){ x -= ws[i]; if (x <= 0) return items[i]; }
+  return items[items.length - 1];
+}
+
+/* ---------- État ---------- */
+const DEFAULT_SETTINGS = {
+  level:'moyen', clueRounds:2, timer:0, rounds:5, mrWhite:false, lastChance:true, sound:true, family:true,
+  themes:Object.fromEntries(Object.keys(THEMES).map(k => [k, true]))
+};
+function defaultPlayers(){
+  return [1,2,3,4].map(i => ({id:uid(), name:'Joueur ' + i, emoji:EMOJIS[i-1], color:COLORS[i-1]}));
+}
+const loadedSettings = store.get('settings', {});
+const S = {
+  view:'home', back:'home', modal:null, ui:{},
+  players: store.get('players', null) || defaultPlayers(),
+  settings: Object.assign({}, DEFAULT_SETTINGS, loadedSettings, {themes:Object.assign({}, DEFAULT_SETTINGS.themes, loadedSettings.themes || {})}),
+  custom: store.get('custom', []),
+  history: store.get('history', []),
+  stats: store.get('stats', {}),
+  game: store.get('game', null)
+};
+if (S.game && S.game.r){
+  const r = S.game.r;
+  if (r.phase === 'reveal') r.phase = 'pass';
+  if (r.phase === 'suspense') r.phase = 'role';
+  if (r.voteStep === 'count') r.voteStep = 'pick';
+}
+const savePlayers = () => store.set('players', S.players);
+const saveSettings = () => store.set('settings', S.settings);
+const saveGame = () => S.game ? store.set('game', S.game) : store.del('game');
+const saveStats = () => store.set('stats', S.stats);
+const P = id => S.game.players.find(p => p.id === id);
+const av = (p, cls='') => `<span class="av ${cls}" style="--c:${p.color}">${p.emoji}</span>`;
+const nm = p => esc(p.name);
+
+/* ---------- Sons (synthétisés, aucun fichier) ---------- */
+const Snd = {
+  ctx:null,
+  init(){
+    if (!this.ctx){ try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){} }
+    if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+  },
+  tone(f, d=.12, type='sine', delay=0, vol=.15){
+    if (!S.settings.sound || !this.ctx) return;
+    try {
+      const t = this.ctx.currentTime + delay, o = this.ctx.createOscillator(), g = this.ctx.createGain();
+      o.type = type; o.frequency.setValueAtTime(f, t);
+      g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+      o.connect(g); g.connect(this.ctx.destination); o.start(t); o.stop(t + d + .05);
+    } catch(e){}
+  },
+  tap(){ this.tone(660, .05, 'triangle', 0, .06); },
+  tick(){ this.tone(880, .08, 'square', 0, .05); },
+  buzz(){ this.tone(150, .5, 'sawtooth', 0, .12); },
+  good(){ [523,659,784].forEach((f,i) => this.tone(f, .2, 'triangle', i*.1, .15)); },
+  bad(){ [392,330,262].forEach((f,i) => this.tone(f, .25, 'sawtooth', i*.14, .07)); },
+  fanfare(){ [523,659,784,1047,784,1047].forEach((f,i) => this.tone(f, .24, 'triangle', i*.12, .15)); },
+  drum(){ for (let i = 0; i < 14; i++) this.tone(90 + rnd(30), .08, 'square', i*.11, .03 + .05*i/14); },
+  count(){ this.tone(600, .15, 'sine', 0, .15); },
+  go(){ this.tone(1000, .4, 'sine', 0, .18); }
+};
+
+/* ---------- Écran toujours allumé pendant la partie ---------- */
+let wakeLock = null;
+async function wake(on){
+  try {
+    if (on && 'wakeLock' in navigator && !wakeLock){ wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release', () => wakeLock = null); }
+    if (!on && wakeLock){ await wakeLock.release(); wakeLock = null; }
+  } catch(e){}
+}
+
+/* ---------- Toast & confettis ---------- */
+let toastT;
+function toast(msg){
+  document.querySelectorAll('.toast').forEach(t => t.remove());
+  const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t);
+  clearTimeout(toastT); toastT = setTimeout(() => t.remove(), 2400);
+}
+function confetti(){
+  const c = document.createElement('canvas'); c.className = 'confetti'; document.body.appendChild(c);
+  const ctx = c.getContext('2d'), dpr = window.devicePixelRatio || 1, W = c.width = innerWidth*dpr, H = c.height = innerHeight*dpr;
+  const cols = ['#ffcc33','#ff5d73','#4cc9f0','#3ddc97','#b388ff','#ffffff'];
+  const ps = Array.from({length:160}, () => ({x:Math.random()*W, y:-Math.random()*H*.6, vx:(Math.random()-.5)*4*dpr, vy:(2+Math.random()*4)*dpr, r:(5+Math.random()*7)*dpr, a:Math.random()*6, va:(Math.random()-.5)*.3, c:pick(cols)}));
+  const t0 = performance.now();
+  (function f(t){
+    ctx.clearRect(0, 0, W, H);
+    ps.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += .04*dpr; p.a += p.va; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.a); ctx.fillStyle = p.c; ctx.fillRect(-p.r/2, -p.r/4, p.r, p.r/2); ctx.restore(); });
+    if (t - t0 < 4500) requestAnimationFrame(f); else c.remove();
+  })(t0);
+}
+
+/* =========================================================
+   Logique de jeu
+   ========================================================= */
+function rolesCount(n){
+  const under = n >= 7 ? 2 : 1;
+  const white = (S.settings.mrWhite && n >= 4) ? 1 : 0;
+  return {under, white, civil:n - under - white};
+}
+function choosePair(){
+  const lv = LEVELS[S.settings.level] || LEVELS.moyen;
+  let pool = WORDS.filter(w => S.settings.themes[w.t] && lv.includes(w.l));
+  if (S.settings.family) pool = pool.concat(S.custom.map(c => ({a:c.a, b:c.b, t:'famille', l:0})));
+  if (!pool.length) pool = WORDS.slice();
+  const key = w => w.a + '|' + w.b;
+  let fresh = pool.filter(w => !S.history.includes(key(w)));
+  if (!fresh.length){ const keys = new Set(pool.map(key)); S.history = S.history.filter(k => !keys.has(k)); fresh = pool; }
+  // les mots perso sortent plus souvent (environ 1 manche sur 3) pour ne pas être noyés dans la masse
+  const freshCustom = fresh.filter(w => w.t === 'famille');
+  const w = (freshCustom.length && Math.random() < .33) ? pick(freshCustom) : pick(fresh);
+  S.history.push(key(w)); if (S.history.length > 400) S.history = S.history.slice(-400);
+  store.set('history', S.history);
+  const swap = Math.random() < .5;
+  return {civil: swap ? w.b : w.a, under: swap ? w.a : w.b, t:w.t};
+}
+function startGame(){
+  const players = S.players.map(p => ({...p, name:p.name.trim()}));
+  S.game = {
+    id:uid(), round:0, total:S.settings.rounds, players,
+    scores:Object.fromEntries(players.map(p => [p.id, 0])),
+    underCount:Object.fromEntries(players.map(p => [p.id, 0])),
+    done:false, statsDone:false
+  };
+  startRound();
+  S.view = 'game'; S.modal = null;
+  render();
+}
+function startRound(){
+  const g = S.game; g.round++;
+  const seat = g.players.map(p => p.id), n = seat.length;
+  const rc = rolesCount(n), roles = {};
+  seat.forEach(id => roles[id] = 'civil');
+  let pool = seat.slice();
+  for (let i = 0; i < rc.under; i++){
+    const id = weightedPick(pool, x => 1 / (1 + 1.5 * (g.underCount[x] || 0)));
+    roles[id] = 'under'; pool = pool.filter(x => x !== id);
+  }
+  for (let i = 0; i < rc.white; i++){ const id = pick(pool); roles[id] = 'white'; pool = pool.filter(x => x !== id); }
+  const start = (g.round - 1) % n;
+  g.r = {
+    pair:choosePair(), roles, alive:seat.slice(),
+    distOrder:seat.slice(start).concat(seat.slice(0, start)), distIdx:0,
+    phase:'pass', firstVoteDone:false, clueRound:1, cluesNeeded:S.settings.clueRounds,
+    order:[], idx:0, candidates:null, voteStep:'debate', tieSel:[],
+    elim:[], last:null, guessType:null, bonus:{}, result:null
+  };
+  saveGame();
+}
+function wordOf(id){
+  const r = S.game.r, role = r.roles[id];
+  return role === 'white' ? null : (role === 'under' ? r.pair.under : r.pair.civil);
+}
+function startClues(){
+  const r = S.game.r;
+  const base = r.candidates ? r.alive.filter(id => r.candidates.includes(id)) : r.alive.slice();
+  let choices = base.filter(id => r.roles[id] !== 'white'); if (!choices.length) choices = base;
+  const first = pick(choices), i = base.indexOf(first);
+  r.order = base.slice(i).concat(base.slice(0, i));
+  r.idx = 0; r.clueRound = 1;
+  r.cluesNeeded = r.candidates ? 1 : (r.firstVoteDone ? 1 : S.settings.clueRounds);
+  r.phase = 'clues';
+}
+function goVote(){ const r = S.game.r; r.phase = 'vote'; r.voteStep = 'debate'; }
+function eliminate(id){
+  const g = S.game, r = g.r;
+  r.alive = r.alive.filter(x => x !== id); r.elim.push(id); r.last = id;
+  r.firstVoteDone = true; r.candidates = null; r.tieSel = [];
+  r.phase = 'suspense'; S.modal = null;
+  saveGame(); render(); Snd.drum();
+  setTimeout(() => {
+    if (S.game === g && g.r === r && r.phase === 'suspense'){
+      r.phase = 'role'; saveGame(); render();
+      r.roles[id] === 'civil' ? Snd.bad() : Snd.good();
+    }
+  }, 1800);
+}
+function checkWin(){
+  const r = S.game.r;
+  const civ = r.alive.filter(id => r.roles[id] === 'civil').length;
+  const inf = r.alive.filter(id => r.roles[id] !== 'civil').length;
+  if (inf === 0) return endRound('civils');
+  if (civ <= 1) return endRound('inf');
+  startClues(); saveGame(); render();
+}
+function endRound(winner){
+  const g = S.game, r = g.r, pts = {};
+  g.players.forEach(p => pts[p.id] = 0);
+  const won = {};
+  if (winner === 'civils') g.players.forEach(p => { if (r.roles[p.id] === 'civil'){ pts[p.id] += PTS.civil; won[p.id] = true; } });
+  if (winner === 'inf') r.alive.forEach(id => { if (r.roles[id] !== 'civil'){ pts[id] += PTS[r.roles[id]]; won[id] = true; } });
+  if (winner === 'white'){ pts[r.last] += PTS.white; won[r.last] = true; }
+  for (const id in r.bonus) pts[id] += r.bonus[id];
+  g.players.forEach(p => {
+    g.scores[p.id] += pts[p.id];
+    if (r.roles[p.id] === 'under') g.underCount[p.id]++;
+    const s = st(p.name);
+    s.rounds++; if (won[p.id]) s.roundWins++;
+    if (r.roles[p.id] === 'under'){ s.under++; if (won[p.id]) s.underWins++; }
+    if (r.bonus[p.id]) s.found++;
+  });
+  saveStats();
+  r.result = {winner, pts, won};
+  r.phase = 'end';
+  saveGame(); render();
+  winner === 'civils' ? Snd.good() : Snd.fanfare();
+}
+function st(name){
+  const k = name.trim().toLowerCase();
+  if (!S.stats[k]) S.stats[k] = {name:name.trim(), games:0, gameWins:0, rounds:0, roundWins:0, under:0, underWins:0, found:0};
+  S.stats[k].name = name.trim();
+  return S.stats[k];
+}
+function finishGame(){
+  const g = S.game;
+  if (!g.statsDone){
+    const max = Math.max(...Object.values(g.scores));
+    g.players.forEach(p => { const s = st(p.name); s.games++; if (g.scores[p.id] === max) s.gameWins++; });
+    g.statsDone = true; g.done = true; saveStats(); saveGame();
+  }
+  S.view = 'podium'; render();
+  Snd.fanfare(); confetti();
+}
+
+/* =========================================================
+   Actions (boutons data-a="...")
+   ========================================================= */
+const ACTIONS = {
+  go(d){ if (d.v === 'settings') S.back = S.view; S.view = d.v; S.modal = null; render(); },
+  resume(){ S.view = S.game.done ? 'podium' : 'game'; render(); },
+  launch(){
+    const names = S.players.map(p => p.name.trim());
+    if (names.some(n => !n)) return toast('Donne un prénom à chaque joueur ✏️');
+    const low = names.map(n => n.toLowerCase());
+    if (new Set(low).size !== low.length) return toast('Deux joueurs ont le même prénom');
+    if (S.game && !S.game.done){ S.modal = {type:'replace'}; return render(); }
+    startGame();
+  },
+  replaceYes(){ startGame(); },
+  emoji(d){
+    const p = S.players[+d.i], used = S.players.map(x => x.emoji);
+    let i = EMOJIS.indexOf(p.emoji);
+    for (let k = 0; k < EMOJIS.length; k++){ i = (i + 1) % EMOJIS.length; if (!used.includes(EMOJIS[i])) break; }
+    p.emoji = EMOJIS[i]; savePlayers(); render();
+  },
+  addP(){
+    if (S.players.length >= 8) return;
+    const ue = S.players.map(p => p.emoji), uc = S.players.map(p => p.color);
+    S.players.push({id:uid(), name:'', emoji:EMOJIS.find(e => !ue.includes(e)) || pick(EMOJIS), color:COLORS.find(c => !uc.includes(c)) || pick(COLORS)});
+    savePlayers(); S.ui.focusLast = true; render();
+  },
+  delP(d){ if (S.players.length <= 3) return; S.players.splice(+d.i, 1); savePlayers(); render(); },
+  moveUp(d){ const i = +d.i; if (i < 1) return; [S.players[i-1], S.players[i]] = [S.players[i], S.players[i-1]]; savePlayers(); render(); },
+  set(d){ S.settings[d.k] = JSON.parse(d.v); saveSettings(); render(); },
+  theme(d){
+    const th = S.settings.themes, on = Object.values(th).filter(Boolean).length;
+    if (th[d.k] && on <= 1) return toast('Garde au moins un thème');
+    th[d.k] = !th[d.k]; saveSettings(); render();
+  },
+  addWord(){
+    const a = ($('#wa').value || '').trim(), b = ($('#wb').value || '').trim();
+    if (!a || !b) return toast('Remplis les deux mots');
+    if (a.toLowerCase() === b.toLowerCase()) return toast('Les deux mots doivent être différents');
+    S.custom.push({a, b}); store.set('custom', S.custom); render();
+    setTimeout(() => { const el = $('#wa'); if (el) el.focus(); }, 0);
+    toast('Paire ajoutée ✓');
+  },
+  delWord(d){ S.custom.splice(+d.i, 1); store.set('custom', S.custom); render(); },
+  resetStats(){ S.modal = {type:'resetStats'}; render(); },
+  resetStatsYes(){ S.stats = {}; saveStats(); S.modal = null; render(); toast('Statistiques remises à zéro'); },
+
+  /* --- partie --- */
+  iam(){ S.game.r.phase = 'reveal'; S.ui.revealed = false; render(); },
+  seen(){
+    const r = S.game.r; r.distIdx++;
+    if (r.distIdx >= r.distOrder.length) startClues(); else r.phase = 'pass';
+    saveGame(); render();
+  },
+  clued(){
+    const r = S.game.r; r.idx++;
+    if (r.idx >= r.order.length){
+      if (r.clueRound < r.cluesNeeded){ r.clueRound++; r.idx = 0; } else goVote();
+    }
+    saveGame(); render();
+  },
+  skipvote(){ goVote(); saveGame(); render(); },
+  countdown(){
+    const g = S.game, r = g.r; r.voteStep = 'count'; render();
+    const seq = ['3','2','1','👉 Montrez du doigt !']; let i = 0;
+    const step = () => {
+      const el = document.getElementById('cd');
+      if (!el || S.game !== g || r.voteStep !== 'count') return;
+      if (i < seq.length){
+        el.innerHTML = `<span class="${i === 3 ? 'go' : ''}">${seq[i]}</span>`;
+        i === 3 ? Snd.go() : Snd.count(); i++;
+        setTimeout(step, i === 4 ? 1400 : 800);
+      } else { r.voteStep = 'pick'; saveGame(); render(); }
+    };
+    step();
+  },
+  pickElim(d){ S.modal = {type:'confirmElim', id:d.id}; render(); },
+  confirmElim(){ eliminate(S.modal.id); },
+  tie(){ const r = S.game.r; r.voteStep = 'tie'; r.tieSel = []; render(); },
+  tieToggle(d){ const r = S.game.r; r.tieSel = r.tieSel.includes(d.id) ? r.tieSel.filter(x => x !== d.id) : r.tieSel.concat(d.id); render(); },
+  tieGo(){ const r = S.game.r; if (r.tieSel.length < 2) return; r.candidates = r.tieSel.slice(); r.tieSel = []; startClues(); saveGame(); render(); },
+  tieCancel(){ S.game.r.voteStep = 'pick'; render(); },
+  drawLots(){ const r = S.game.r; Snd.drum(); S.modal = {type:'drawn', id:pick(r.candidates)}; render(); },
+  afterRole(){
+    const r = S.game.r, role = r.roles[r.last];
+    if (role === 'white'){ r.phase = 'guess'; r.guessType = 'white'; saveGame(); return render(); }
+    if (role === 'under' && S.settings.lastChance){ r.phase = 'guess'; r.guessType = 'under'; saveGame(); return render(); }
+    checkWin();
+  },
+  guess(d){
+    const r = S.game.r, yes = d.v === 'yes';
+    if (r.guessType === 'white'){ if (yes) return endRound('white'); Snd.bad(); return checkWin(); }
+    if (yes){ r.bonus[r.last] = (r.bonus[r.last] || 0) + PTS.lastChance; toast(`+${PTS.lastChance} points pour ${P(r.last).name} !`); } else Snd.bad();
+    checkWin();
+  },
+  nextRound(){ startRound(); render(); },
+  podium(){ finishGame(); },
+  rematch(){ S.game = null; startGame(); },
+  home(){ S.game = null; saveGame(); S.view = 'home'; render(); },
+
+  /* --- fenêtres --- */
+  menu(){ S.modal = {type:'menu'}; render(); },
+  modal(d){ S.modal = {type:d.v}; render(); },
+  closeModal(){ S.modal = null; render(); },
+  bgClose(d, el, e){ if (e.target === el){ S.modal = null; render(); } },
+  toggleSound(){ S.settings.sound = !S.settings.sound; saveSettings(); render(); },
+  quitYes(){ S.game = null; saveGame(); S.modal = null; S.view = 'home'; render(); },
+  peek(){ S.modal = {type:'peekWho'}; render(); },
+  peekWho(d){ S.modal = {type:'peekPass', id:d.id}; render(); },
+  peekGo(){ S.modal = {type:'peekCard', id:S.modal.id}; render(); }
+};
+
+/* =========================================================
+   Vues
+   ========================================================= */
+function seg(k, opts){
+  return `<div class="seg">${opts.map(([v,l]) => `<button class="${S.settings[k] === v ? 'on' : ''}" data-a="set" data-k="${k}" data-v="${esc(JSON.stringify(v))}">${l}</button>`).join('')}</div>`;
+}
+function settingsSummary(){
+  const s = S.settings, rc = rolesCount(S.players.length);
+  const roles = `${rc.civil} civils · ${rc.under} Undercover${rc.under > 1 ? 's' : ''}${rc.white ? ' · 1 Mr White' : ''}`;
+  return `<b>${roles}</b><br><span class="muted small">Mots ${LEVEL_LBL[s.level].toLowerCase()} · ${s.clueRounds} tour${s.clueRounds > 1 ? 's' : ''} d'indices · ${s.rounds} manches · ${s.timer ? 'minuteur ' + s.timer + ' s' : 'sans minuteur'}</span>`;
+}
+function holdCard(id){
+  const p = P(id), w = wordOf(id);
+  const inner = w === null
+    ? `<div class="lbl">🎩 Tu es</div><div class="w">Mr White</div><div class="sub">Tu n'as pas de mot.<br>Écoute bien les autres et bluffe !</div>`
+    : `<div class="lbl">${nm(p)}, ton mot est</div><div class="w">${esc(w)}</div><div class="sub">🤫 Ne le dis à personne !</div>`;
+  return `<div class="hold" data-hold="1"><div class="hint"><span class="big">👆</span>Maintiens ton doigt ici<br>pour voir ton mot</div><div class="word">${inner}</div></div>`;
+}
+function rulesHtml(){
+  return `<div class="rules">
+  <h3>🎯 Le but</h3>
+  <p>Tout le monde reçoit un mot secret… sauf <b>l'Undercover</b>, qui a un mot un peu différent (par exemple <i>chat</i> au lieu de <i>chien</i>). Personne ne sait s'il est l'intrus, même pas lui !</p>
+  <h3>🔄 Une manche</h3>
+  <ol>
+    <li>Chacun découvre son mot en secret en maintenant le doigt sur la carte.</li>
+    <li>À tour de rôle, chacun donne <b>un indice</b> sur son mot : un mot ou une petite phrase.</li>
+    <li>Après les tours d'indices, on discute, puis tout le monde <b>montre du doigt</b> son suspect en même temps.</li>
+    <li>Le joueur le plus désigné est éliminé et son rôle est révélé. S'il était innocent, on recommence un tour.</li>
+  </ol>
+  <h3>🏁 Qui gagne ?</h3>
+  <ul>
+    <li><b>Les civils</b> gagnent s'ils éliminent l'Undercover.</li>
+    <li><b>L'Undercover</b> gagne s'il tient jusqu'au bout (quand il ne reste plus qu'un civil face à lui).</li>
+  </ul>
+  <h3>⭐ Les points</h3>
+  <ul>
+    <li>Civils gagnants : <b>+${PTS.civil}</b> chacun</li>
+    <li>Undercover gagnant : <b>+${PTS.under}</b></li>
+    <li>Dernière chance : l'Undercover éliminé qui devine le mot des civils gagne <b>+${PTS.lastChance}</b></li>
+    <li>Mr White (en option) n'a pas de mot. S'il tient jusqu'au bout, ou s'il devine le mot des civils une fois éliminé, il gagne <b>+${PTS.white}</b></li>
+  </ul>
+  <h3>💡 Astuces</h3>
+  <ul>
+    <li>Indice trop précis : l'intrus va deviner votre mot.</li>
+    <li>Indice trop vague : tout le monde va te soupçonner !</li>
+    <li>Tu as un doute sur ton mot ? Fais comme si de rien n'était 😉</li>
+  </ul></div>`;
+}
+function topbar(){
+  const g = S.game;
+  return `<div class="top"><div class="pill">Manche ${g.round}/${g.total}</div><button class="icon" data-a="menu" aria-label="Menu">☰</button></div>`;
+}
+
+function vHome(){
+  const g = S.game, resume = g && !g.done;
+  return `<div class="screen">
+    <div class="center grow hero">
+      <div class="logo">🕵️</div>
+      <h1 class="title">Undercover</h1>
+      <div class="subtitle">Famille</div>
+      <p class="muted">Qui a un mot différent ?<br>Démasque l'intrus… ou bluffe !</p>
+    </div>
+    ${resume ? `<button class="btn green big" data-a="resume">▶ Reprendre la partie<br><small>manche ${g.round}/${g.total}</small></button>` : ''}
+    <button class="btn primary big" data-a="go" data-v="players">🎲 Nouvelle partie</button>
+    <div class="row"><button class="btn ghost" data-a="go" data-v="rules">📖 Règles</button><button class="btn ghost" data-a="go" data-v="words">✏️ Mes mots</button></div>
+    <div class="row"><button class="btn ghost" data-a="go" data-v="stats">📊 Stats</button><button class="btn ghost" data-a="go" data-v="settings">⚙️ Réglages</button></div>
+    <p class="tip">📲 Ajoute le jeu à l'écran d'accueil pour y jouer même sans internet.</p>
+    <p class="foot">Undercover Famille · v1.0 · <a href="https://cdesmottes.fr" target="_blank" rel="noopener">cdesmottes.fr</a></p>
+  </div>`;
+}
+function vPlayers(){
+  return `<div class="screen">
+    <div class="top"><button class="icon" data-a="go" data-v="home" aria-label="Retour">←</button><h2>Les joueurs</h2><span style="width:44px"></span></div>
+    <p class="muted small">Dans l'ordre où vous êtes assis. Touche l'animal pour le changer.</p>
+    <div class="plist">${S.players.map((p,i) => `<div class="prow">
+      <button class="av" style="--c:${p.color}" data-a="emoji" data-i="${i}" aria-label="Changer l'avatar">${p.emoji}</button>
+      <input data-field="pname" data-i="${i}" value="${esc(p.name)}" placeholder="Prénom" maxlength="14" autocomplete="off" enterkeyhint="done">
+      <button class="mini" data-a="moveUp" data-i="${i}" ${i === 0 ? 'disabled' : ''} aria-label="Monter">↑</button>
+      <button class="mini" data-a="delP" data-i="${i}" ${S.players.length <= 3 ? 'disabled' : ''} aria-label="Supprimer">✕</button>
+    </div>`).join('')}</div>
+    ${S.players.length < 8 ? `<button class="btn ghost" data-a="addP">＋ Ajouter un joueur</button>` : ''}
+    <div class="card">${settingsSummary()}
+      <div style="margin-top:10px"><button class="btn ghost" data-a="go" data-v="settings">⚙️ Modifier les réglages</button></div></div>
+    <div class="grow"></div>
+    <button class="btn primary big" data-a="launch">C'est parti ! 🚀</button>
+  </div>`;
+}
+function vSettings(){
+  const s = S.settings, n = S.players.length;
+  return `<div class="screen">
+    <div class="top"><button class="icon" data-a="go" data-v="${S.back === 'settings' ? 'home' : S.back}" aria-label="Retour">←</button><h2>Réglages</h2><span style="width:44px"></span></div>
+    <div class="set"><label>Niveau des mots</label>${seg('level', [['facile','Facile'],['moyen','Moyen'],['difficile','Difficile'],['mix','Mélange']])}
+      <div class="note">Facile : chat / chien. Difficile : crocodile / alligator.</div></div>
+    <div class="set"><label>Tours d'indices avant le 1er vote</label>${seg('clueRounds', [[1,'1'],[2,'2'],[3,'3']])}
+      <div class="note">À 4 joueurs, 2 tours laissent le temps de se faire une idée.</div></div>
+    <div class="set"><label>Minuteur pour chaque indice</label>${seg('timer', [[0,'Sans'],[20,'20 s'],[30,'30 s'],[45,'45 s']])}</div>
+    <div class="set"><label>Nombre de manches</label>${seg('rounds', [[3,'3'],[5,'5'],[7,'7'],[10,'10']])}</div>
+    <div class="set"><label>Dernière chance de l'Undercover</label>${seg('lastChance', [[true,'Oui'],[false,'Non']])}
+      <div class="note">Éliminé, il peut deviner le mot des civils pour gagner +${PTS.lastChance}.</div></div>
+    <div class="set"><label>Mr White 🎩</label>${seg('mrWhite', [[false,'Non'],[true,'Oui']])}
+      <div class="note">Un joueur sans mot qui doit bluffer. Conseillé à partir de 5 joueurs${n < 4 ? ' (impossible à 3)' : ''}.</div></div>
+    <div class="set"><label>Thèmes</label><div class="chips">
+      ${Object.entries(THEMES).map(([k,t]) => `<button class="chip ${s.themes[k] ? 'on' : ''}" data-a="theme" data-k="${k}">${t.icon} ${t.label}</button>`).join('')}
+    </div></div>
+    <div class="set"><label>Mes mots perso (${S.custom.length} paire${S.custom.length > 1 ? 's' : ''})</label>${seg('family', [[true,'Inclus'],[false,'Exclus']])}</div>
+    <div class="set"><label>Sons</label>${seg('sound', [[true,'Oui'],[false,'Non']])}</div>
+    <button class="btn primary" data-a="go" data-v="${S.back === 'settings' ? 'home' : S.back}">✓ C'est noté</button>
+  </div>`;
+}
+function vWords(){
+  return `<div class="screen">
+    <div class="top"><button class="icon" data-a="go" data-v="home" aria-label="Retour">←</button><h2>Mes mots</h2><span style="width:44px"></span></div>
+    <p class="muted small">Ajoute vos propres paires : prénoms des copains, nom du chat, lieux de vacances… Elles se mélangent aux mots du jeu.</p>
+    <div class="card" style="display:flex;flex-direction:column;gap:10px">
+      <div class="row"><input id="wa" placeholder="Mot 1" maxlength="30" autocomplete="off" enterkeyhint="next"><input id="wb" placeholder="Mot 2" maxlength="30" autocomplete="off" enterkeyhint="done"></div>
+      <button class="btn primary" data-a="addWord">＋ Ajouter la paire</button>
+    </div>
+    <div class="set"><label>Utiliser mes mots dans les parties</label>${seg('family', [[true,'Oui'],[false,'Non']])}</div>
+    <div class="sl">${S.custom.length ? S.custom.map((c,i) => `<div class="si"><span class="n">${esc(c.a)} <span class="muted">/</span> ${esc(c.b)}</span><button class="mini" data-a="delWord" data-i="${i}" aria-label="Supprimer">✕</button></div>`).join('') : '<p class="muted center">Aucune paire pour l\'instant.</p>'}</div>
+    <p class="tip">Le jeu contient déjà ${WORDS.length} paires réparties en ${Object.keys(THEMES).length} thèmes.</p>
+  </div>`;
+}
+function vRules(){
+  return `<div class="screen">
+    <div class="top"><button class="icon" data-a="go" data-v="home" aria-label="Retour">←</button><h2>Les règles</h2><span style="width:44px"></span></div>
+    <div class="card">${rulesHtml()}</div>
+    <button class="btn primary" data-a="go" data-v="home">J'ai compris !</button>
+  </div>`;
+}
+function vStats(){
+  const list = Object.values(S.stats).sort((a,b) => b.gameWins - a.gameWins || b.roundWins - a.roundWins);
+  return `<div class="screen">
+    <div class="top"><button class="icon" data-a="go" data-v="home" aria-label="Retour">←</button><h2>Statistiques</h2><span style="width:44px"></span></div>
+    ${list.length ? `<div class="sl">${list.map((s,i) => `<div class="card">
+      <div class="row between"><b style="font-size:1.15rem">${i === 0 ? '👑 ' : ''}${esc(s.name)}</b><span class="pill">${s.gameWins} victoire${s.gameWins > 1 ? 's' : ''}</span></div>
+      <p class="muted small" style="margin-top:6px">${s.games} partie${s.games > 1 ? 's' : ''} · ${s.roundWins}/${s.rounds} manches gagnées<br>
+      🕵️ Undercover ${s.under} fois (${s.underWins} gagnée${s.underWins > 1 ? 's' : ''}) · 🎯 ${s.found} mot${s.found > 1 ? 's' : ''} deviné${s.found > 1 ? 's' : ''}</p>
+    </div>`).join('')}</div>
+    <button class="btn ghost" data-a="resetStats">Remettre à zéro</button>`
+    : '<div class="center grow"><p class="muted">Pas encore de statistiques.<br>Jouez une manche pour commencer !</p></div>'}
+  </div>`;
+}
+
+/* --- écrans de partie --- */
+function vGame(){
+  const r = S.game.r;
+  switch (r.phase){
+    case 'pass': return vPass();
+    case 'reveal': return vReveal();
+    case 'clues': return vClues();
+    case 'vote': return vVote();
+    case 'suspense': return vSuspense();
+    case 'role': return vRole();
+    case 'guess': return vGuess();
+    case 'end': return vEnd();
+  }
+  return '';
+}
+function vPass(){
+  const r = S.game.r, p = P(r.distOrder[r.distIdx]);
+  return `<div class="screen">${topbar()}
+    <div class="center grow">
+      <p class="muted">Passe le téléphone à</p>
+      <div style="margin:14px 0">${av(p, 'xl')}</div>
+      <h1>${nm(p)}</h1>
+      <p class="muted small" style="margin-top:8px">Les autres, on ne regarde pas ! 🙈</p>
+    </div>
+    <button class="btn primary big" data-a="iam">C'est moi, ${nm(p)} !</button>
+    <p class="tip">Distribution des mots : ${r.distIdx + 1} / ${r.distOrder.length}</p>
+  </div>`;
+}
+function vReveal(){
+  const r = S.game.r, id = r.distOrder[r.distIdx], p = P(id);
+  return `<div class="screen">
+    <div class="center" style="gap:8px">${av(p)}<h2>${nm(p)}, à toi de voir !</h2></div>
+    ${holdCard(id)}
+    <p class="tip">Retiens bien ton mot, puis passe le téléphone au suivant.</p>
+    <div class="grow"></div>
+    <button id="seenBtn" class="btn primary big" data-a="seen" ${S.ui.revealed ? '' : 'disabled'}>J'ai retenu mon mot ✓</button>
+  </div>`;
+}
+function vClues(){
+  const r = S.game.r, p = P(r.order[r.idx]);
+  const head = r.candidates ? `⚖️ Départage : un indice chacun` : `Tour d'indices ${r.clueRound} / ${r.cluesNeeded}`;
+  return `<div class="screen">${topbar()}
+    <p class="center muted" style="font-weight:800">${head}</p>
+    <div class="center grow" style="gap:6px">
+      ${av(p, 'xl')}
+      <h1>${nm(p)}</h1>
+      <p class="muted">donne un indice sur son mot</p>
+      ${S.settings.timer ? `<div class="timer" id="timer" style="margin-top:10px"><svg width="90" height="90" viewBox="0 0 90 90"><circle cx="45" cy="45" r="40" stroke="rgba(255,255,255,.15)" stroke-width="8" fill="none"/><circle class="ring" cx="45" cy="45" r="40" stroke="#ffcc33" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="251.33" stroke-dashoffset="0"/></svg><div class="t">${S.settings.timer}</div></div>` : ''}
+    </div>
+    <div class="queue">${r.order.map((id,i) => av(P(id), 's ' + (i === r.idx ? 'cur' : i < r.idx ? 'done' : ''))).join('')}</div>
+    <button class="btn primary big" data-a="clued">Indice donné ✓</button>
+    <div class="row"><button class="btn ghost" data-a="peek">🤫 Revoir mon mot</button><button class="btn ghost" data-a="skipvote">🗳️ Voter</button></div>
+    <p class="tip">💡 Pas trop précis… pas trop vague !</p>
+  </div>`;
+}
+function vVote(){
+  const r = S.game.r;
+  const cands = r.candidates ? r.alive.filter(id => r.candidates.includes(id)) : r.alive;
+  if (r.voteStep === 'debate' || r.voteStep === 'count'){
+    return `<div class="screen">${topbar()}
+      <div class="center grow" style="gap:10px">
+        <div style="font-size:4rem">🗳️</div>
+        <h1>Place au vote !</h1>
+        <p class="muted">Discutez : qui semble avoir un mot différent ?</p>
+        <div class="queue" style="margin-top:10px">${cands.map(id => av(P(id))).join('')}</div>
+      </div>
+      <button class="btn primary big" data-a="countdown">3, 2, 1… montrez du doigt ! 👉</button>
+      <button class="btn ghost" data-a="peek">🤫 Revoir mon mot</button>
+      ${r.voteStep === 'count' ? '<div class="cd" id="cd"></div>' : ''}
+    </div>`;
+  }
+  if (r.voteStep === 'tie'){
+    return `<div class="screen">${topbar()}
+      <h2 class="center">⚖️ Qui est à égalité ?</h2>
+      <p class="muted center small">Sélectionne les joueurs qui ont reçu le plus de doigts.</p>
+      <div class="grid">${cands.map(id => { const p = P(id); return `<button class="pcard ${r.tieSel.includes(id) ? 'sel' : ''}" data-a="tieToggle" data-id="${id}">${av(p, 'l')}${nm(p)}</button>`; }).join('')}</div>
+      <div class="grow"></div>
+      <button class="btn primary" data-a="tieGo" ${r.tieSel.length < 2 ? 'disabled' : ''}>Départager : un indice de plus chacun</button>
+      <button class="btn ghost" data-a="tieCancel">Retour</button>
+    </div>`;
+  }
+  return `<div class="screen">${topbar()}
+    <h2 class="center">👉 Qui a été désigné ?</h2>
+    <p class="muted center small">Touche le joueur qui a reçu le plus de doigts.</p>
+    <div class="grid">${cands.map(id => { const p = P(id); return `<button class="pcard" data-a="pickElim" data-id="${id}">${av(p, 'l')}${nm(p)}</button>`; }).join('')}</div>
+    <div class="grow"></div>
+    <button class="btn ghost" data-a="tie">⚖️ Il y a égalité</button>
+    ${r.candidates ? `<button class="btn ghost" data-a="drawLots">🎲 Encore égalité : tirage au sort</button>` : ''}
+  </div>`;
+}
+function vSuspense(){
+  const p = P(S.game.r.last);
+  return `<div class="screen"><div class="center grow" style="gap:12px">
+    ${av(p, 'xl')}<h1>${nm(p)}</h1><p class="muted" style="font-size:1.2rem">était…</p>
+    <div class="qmark shake">❓</div>
+  </div></div>`;
+}
+function vRole(){
+  const r = S.game.r, p = P(r.last), role = r.roles[r.last], R = ROLE[role];
+  const msg = {
+    civil:'Oups, un innocent ! L\'intrus court toujours…',
+    under:'Démasqué ! Bien joué les détectives 🔍',
+    white:'Mr White est démasqué !'
+  }[role];
+  let btn = `<button class="btn primary big" data-a="afterRole">Continuer</button>`;
+  if (role === 'white') btn = `<button class="btn primary big" data-a="afterRole">🎩 Mr White tente sa chance</button>`;
+  else if (role === 'under' && S.settings.lastChance) btn = `<button class="btn primary big" data-a="afterRole">🎯 Dernière chance !</button>`;
+  return `<div class="screen">${topbar()}
+    <div class="center grow" style="gap:12px">
+      ${av(p, 'xl')}<h1>${nm(p)}</h1><p class="muted" style="font-size:1.2rem">était</p>
+      <div class="badge ${R.cls}">${R.emo} ${R.lbl}</div>
+      <p style="margin-top:10px;font-size:1.1rem">${msg}</p>
+    </div>
+    ${btn}
+  </div>`;
+}
+function vGuess(){
+  const r = S.game.r, p = P(r.last), white = r.guessType === 'white';
+  return `<div class="screen">${topbar()}
+    <div class="center grow" style="gap:12px">
+      <div style="font-size:3.5rem">${white ? '🎩' : '🎯'}</div>
+      <h1>${white ? 'Mr White, à toi !' : 'Dernière chance !'}</h1>
+      ${av(p, 'l')}
+      <p style="font-size:1.15rem"><b>${nm(p)}</b>, quel est le mot des civils ?<br>Dis-le à voix haute !</p>
+      <p class="muted">Les civils, est-ce que c'est le bon mot ?</p>
+      <p class="pill">${white ? 'S\'il trouve, Mr White gagne la manche !' : `+${PTS.lastChance} points s'il trouve`}</p>
+    </div>
+    <div class="row"><button class="btn green big" data-a="guess" data-v="yes">✅ Trouvé</button><button class="btn red big" data-a="guess" data-v="no">❌ Raté</button></div>
+  </div>`;
+}
+function vEnd(){
+  const g = S.game, r = g.r, res = r.result;
+  let title, sub;
+  if (res.winner === 'civils'){ title = '🎉 Les civils gagnent !'; sub = 'L\'intrus a été démasqué.'; }
+  else if (res.winner === 'white'){ title = '🎩 Mr White a trouvé !'; sub = 'Il a deviné le mot des civils.'; }
+  else {
+    const winners = r.alive.filter(id => r.roles[id] !== 'civil').map(id => r.roles[id]);
+    if (winners.every(x => x === 'under')) title = winners.length > 1 ? '🕵️ Les Undercovers gagnent !' : '🕵️ L\'Undercover gagne !';
+    else if (winners.every(x => x === 'white')) title = '🎩 Mr White gagne !';
+    else title = '😈 Les intrus gagnent !';
+    sub = winners.length > 1 ? 'Ils ont tenu jusqu\'au bout sans se faire prendre.' : 'Tenu jusqu\'au bout sans se faire prendre !';
+  }
+  const last = g.round >= g.total;
+  const th = THEMES[r.pair.t];
+  return `<div class="screen">${topbar()}
+    <div class="center" style="gap:4px;margin-top:6px"><h1>${title}</h1><p class="muted">${sub}</p></div>
+    <div class="words">
+      <div class="c"><span class="muted small">Mot des civils</span><b>${esc(r.pair.civil)}</b></div>
+      <div class="u"><span class="muted small">Mot de l'Undercover</span><b>${esc(r.pair.under)}</b></div>
+    </div>
+    <p class="tip">${th ? th.icon + ' ' + th.label : '✏️ Mes mots'}</p>
+    <div class="sl">${g.players.map(p => {
+      const pts = res.pts[p.id];
+      return `<div class="si">${av(p, 's' + (r.alive.includes(p.id) ? '' : ' out'))}<span class="n">${nm(p)}</span><span class="role" title="${ROLE[r.roles[p.id]].lbl}">${ROLE[r.roles[p.id]].emo}</span>${pts ? `<span class="plus">+${pts}</span>` : '<span class="zero">+0</span>'}<span class="p">${g.scores[p.id]}</span></div>`;
+    }).join('')}</div>
+    <div class="grow"></div>
+    ${last ? `<button class="btn primary big" data-a="podium">🏆 Voir le podium</button>`
+           : `<button class="btn primary big" data-a="nextRound">Manche suivante (${g.round + 1}/${g.total}) ▶</button>`}
+  </div>`;
+}
+function vPodium(){
+  const g = S.game;
+  const list = g.players.map(p => ({p, s:g.scores[p.id]})).sort((a,b) => b.s - a.s);
+  list.forEach(x => x.rank = 1 + list.filter(y => y.s > x.s).length);
+  const medal = rk => rk === 1 ? '🥇' : rk === 2 ? '🥈' : rk === 3 ? '🥉' : rk + 'e';
+  const stepH = (x, pos) => x ? `<div class="step s${pos}">${av(x.p, pos === 1 ? 'l' : '')}<div class="nm">${nm(x.p)}</div><div class="block">${medal(x.rank)}<small>${x.s} pts</small></div></div>` : '<div class="step"></div>';
+  const top = list[0], ties = list.filter(x => x.rank === 1);
+  return `<div class="screen">
+    <div class="center" style="gap:4px;margin-top:10px"><div style="font-size:3.5rem">🏆</div>
+      <h1>${ties.length > 1 ? 'Égalité au sommet !' : `Bravo ${nm(top.p)} !`}</h1>
+      <p class="muted">${g.total} manches jouées</p></div>
+    <div class="podium">${stepH(list[1], 2)}${stepH(list[0], 1)}${stepH(list[2], 3)}</div>
+    ${list.length > 3 ? `<div class="sl">${list.slice(3).map(x => `<div class="si"><span>${medal(x.rank)}</span>${av(x.p, 's')}<span class="n">${nm(x.p)}</span><span class="p">${x.s}</span></div>`).join('')}</div>` : ''}
+    <div class="grow"></div>
+    <button class="btn primary big" data-a="rematch">🔁 Revanche !</button>
+    <button class="btn ghost" data-a="home">🏠 Accueil</button>
+  </div>`;
+}
+
+/* --- fenêtres modales --- */
+function vModal(){
+  const m = S.modal; if (!m) return '';
+  let body = '';
+  const g = S.game, r = g && g.r;
+  switch (m.type){
+    case 'menu': {
+      const canPeek = r && ['clues','vote'].includes(r.phase);
+      body = `<h2>Menu</h2>
+        <button class="btn ghost" data-a="modal" data-v="scores">📊 Scores</button>
+        ${canPeek ? '<button class="btn ghost" data-a="peek">🤫 Revoir mon mot</button>' : ''}
+        <button class="btn ghost" data-a="modal" data-v="rules">📖 Règles</button>
+        <button class="btn ghost" data-a="toggleSound">${S.settings.sound ? '🔊 Son activé' : '🔇 Son coupé'}</button>
+        <button class="btn ghost" data-a="go" data-v="home">🏠 Accueil <small>(partie sauvegardée)</small></button>
+        <button class="btn ghost" data-a="modal" data-v="quit">🛑 Abandonner la partie</button>
+        <button class="btn primary" data-a="closeModal">Fermer</button>`;
+      break;
+    }
+    case 'scores': {
+      const list = g.players.slice().sort((a,b) => g.scores[b.id] - g.scores[a.id]);
+      body = `<h2>📊 Scores — manche ${g.round}/${g.total}</h2>
+        <div class="sl">${list.map(p => `<div class="si">${av(p, 's')}<span class="n">${nm(p)}</span><span class="p">${g.scores[p.id]}</span></div>`).join('')}</div>
+        <button class="btn primary" data-a="closeModal">Fermer</button>`;
+      break;
+    }
+    case 'rules': body = `${rulesHtml()}<button class="btn primary" data-a="closeModal">Fermer</button>`; break;
+    case 'quit': body = `<h2>Abandonner la partie ?</h2><p class="muted">Les scores de cette partie seront perdus.</p>
+        <div class="row"><button class="btn ghost" data-a="closeModal">Non</button><button class="btn red" data-a="quitYes">Oui, abandonner</button></div>`; break;
+    case 'replace': body = `<h2>Une partie est en cours</h2><p class="muted">En commencer une nouvelle effacera la partie en cours.</p>
+        <div class="row"><button class="btn ghost" data-a="closeModal">Annuler</button><button class="btn primary" data-a="replaceYes">Nouvelle partie</button></div>`; break;
+    case 'resetStats': body = `<h2>Remettre les stats à zéro ?</h2><p class="muted">Toutes les statistiques seront effacées.</p>
+        <div class="row"><button class="btn ghost" data-a="closeModal">Annuler</button><button class="btn red" data-a="resetStatsYes">Effacer</button></div>`; break;
+    case 'confirmElim': {
+      const p = P(m.id);
+      body = `<div class="center" style="gap:8px">${av(p, 'l')}<h2>Éliminer ${nm(p)} ?</h2></div>
+        <div class="row"><button class="btn ghost" data-a="closeModal">Annuler</button><button class="btn red" data-a="confirmElim">Éliminer</button></div>`;
+      break;
+    }
+    case 'drawn': {
+      const p = P(m.id);
+      body = `<div class="center" style="gap:8px"><div style="font-size:3rem">🎲</div><p class="muted">Le sort a désigné…</p>${av(p, 'l')}<h2>${nm(p)}</h2></div>
+        <button class="btn red" data-a="confirmElim">Éliminer ${nm(p)}</button>`;
+      break;
+    }
+    case 'peekWho': body = `<h2>🤫 Qui veut revoir son mot ?</h2>
+        <div class="grid">${r.alive.map(id => { const p = P(id); return `<button class="pcard" data-a="peekWho" data-id="${id}">${av(p, 'l')}${nm(p)}</button>`; }).join('')}</div>
+        <button class="btn ghost" data-a="closeModal">Annuler</button>`; break;
+    case 'peekPass': {
+      const p = P(m.id);
+      body = `<div class="center" style="gap:8px"><p class="muted">Passe le téléphone à</p>${av(p, 'l')}<h2>${nm(p)}</h2><p class="muted small">Les autres, on ne regarde pas ! 🙈</p></div>
+        <button class="btn primary" data-a="peekGo">C'est moi, ${nm(p)} !</button><button class="btn ghost" data-a="closeModal">Annuler</button>`;
+      break;
+    }
+    case 'peekCard': body = `${holdCard(m.id)}<button class="btn primary" data-a="closeModal">C'est bon, j'ai vu ✓</button>`; break;
+  }
+  return `<div class="modal-bg" data-a="bgClose"><div class="modal" role="dialog">${body}</div></div>`;
+}
+
+/* =========================================================
+   Rendu & minuteur
+   ========================================================= */
+let lastKey = '';
+function render(){
+  const views = {home:vHome, players:vPlayers, settings:vSettings, words:vWords, rules:vRules, stats:vStats, game:vGame, podium:vPodium};
+  if ((S.view === 'game' || S.view === 'podium') && !S.game) S.view = 'home';
+  app.innerHTML = (views[S.view] || vHome)() + vModal();
+  const key = S.view + (S.game && S.game.r ? S.game.r.phase + S.game.round : '');
+  if (key !== lastKey){ window.scrollTo(0, 0); lastKey = key; }
+  if (S.ui.focusLast){ const ins = app.querySelectorAll('input[data-field="pname"]'); if (ins.length) ins[ins.length-1].focus(); S.ui.focusLast = false; }
+  syncTimer();
+  wake(S.view === 'game');
+}
+let T = null;
+function timerKey(){
+  const g = S.game; if (!g || S.view !== 'game' || !S.settings.timer) return null;
+  const r = g.r; if (r.phase !== 'clues') return null;
+  return [g.id, g.round, r.order.join(','), r.clueRound, r.idx, r.candidates ? 't' : ''].join('|');
+}
+function syncTimer(){
+  const k = timerKey();
+  if (T && T.key !== k){ clearInterval(T.iv); T = null; }
+  if (k && !T){
+    const t = {key:k, left:S.settings.timer, tot:S.settings.timer};
+    t.iv = setInterval(() => {
+      t.left--;
+      if (T === t){ if (t.left > 0 && t.left <= 5) Snd.tick(); if (t.left === 0) Snd.buzz(); paintTimer(); }
+      if (t.left <= 0) clearInterval(t.iv);
+    }, 1000);
+    T = t;
+  }
+  paintTimer();
+}
+function paintTimer(){
+  const el = document.getElementById('timer'); if (!el || !T) return;
+  const left = Math.max(0, T.left), L = 2 * Math.PI * 40;
+  el.querySelector('.t').textContent = left > 0 ? left : '⏰';
+  el.querySelector('.ring').style.strokeDashoffset = L * (1 - left / T.tot);
+  el.classList.toggle('over', left <= 0);
+}
+
+/* =========================================================
+   Événements
+   ========================================================= */
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-a]'); if (!el || el.disabled) return;
+  const fn = ACTIONS[el.dataset.a]; if (!fn) return;
+  Snd.init(); if (el.dataset.a !== 'bgClose') Snd.tap();
+  fn(el.dataset, el, e);
+});
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (t.dataset.field === 'pname'){ S.players[+t.dataset.i].name = t.value; savePlayers(); }
+});
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  if (e.target.id === 'wa'){ e.preventDefault(); $('#wb').focus(); }
+  else if (e.target.id === 'wb'){ e.preventDefault(); ACTIONS.addWord(); }
+  else if (e.target.dataset && e.target.dataset.field === 'pname') e.target.blur();
+});
+/* carte « maintiens pour voir » */
+let holdEl = null;
+document.addEventListener('pointerdown', e => {
+  const h = e.target.closest('[data-hold]'); if (!h) return;
+  e.preventDefault(); Snd.init();
+  holdEl = h; h.classList.add('on');
+  try { h.setPointerCapture(e.pointerId); } catch(_){}
+  if (navigator.vibrate) try { navigator.vibrate(25); } catch(_){}
+  S.ui.revealed = true;
+  const b = document.getElementById('seenBtn'); if (b) b.disabled = false;
+});
+const releaseHold = () => { if (holdEl){ holdEl.classList.remove('on'); holdEl = null; } };
+document.addEventListener('pointerup', releaseHold);
+document.addEventListener('pointercancel', releaseHold);
+window.addEventListener('blur', releaseHold);
+document.addEventListener('contextmenu', e => { if (e.target.closest('[data-hold]')) e.preventDefault(); });
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) releaseHold(); else if (S.view === 'game'){ wakeLock = null; wake(true); }
+});
+
+/* hors ligne (GitHub Pages / https uniquement) */
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')){
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+
+render();
+</script>
+</body>
+</html>
