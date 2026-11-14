@@ -53,6 +53,10 @@ input:focus{outline:none;border-color:#ffcc33}
 .prow{display:flex;gap:8px;align-items:center}
 .mini{width:40px;height:40px;border:0;border-radius:12px;background:rgba(255,255,255,.1);color:#fff;font-size:1rem;cursor:pointer;flex:none;font-family:inherit}
 .mini:disabled{opacity:.25}
+.stepper{width:48px;height:48px;border:0;border-radius:14px;background:#ffcc33;color:#1b1640;font-size:1.6rem;font-weight:900;cursor:pointer;font-family:inherit;box-shadow:0 4px 0 rgba(0,0,0,.25);line-height:1}
+.stepper:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.25)}
+.stepper:disabled{opacity:.3;pointer-events:none}
+.cnt{font-size:2rem;font-weight:900;min-width:2ch;text-align:center}
 .seg{display:flex;gap:5px;background:rgba(0,0,0,.22);padding:5px;border-radius:14px}
 .seg button{flex:1;border:0;border-radius:10px;padding:10px 4px;background:transparent;color:#fff;font:inherit;font-weight:800;font-size:.95rem;cursor:pointer}
 .seg button.on{background:#ffcc33;color:#1b1640}
@@ -121,6 +125,35 @@ input:focus{outline:none;border-color:#ffcc33}
 .confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:70}
 a{color:#4cc9f0}
 .foot{text-align:center;font-size:.8rem;color:rgba(255,255,255,.4)}
+.list{display:flex;flex-direction:column;background:rgba(255,255,255,.08);border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,.12)}
+.li{display:flex;align-items:center;gap:14px;padding:14px 16px;background:transparent;border:0;border-bottom:1px solid rgba(255,255,255,.08);color:#fff;font:inherit;text-align:left;cursor:pointer;width:100%}
+.li:last-child{border-bottom:0}
+.li:active{background:rgba(255,255,255,.06)}
+.li .ic{font-size:1.6rem;width:36px;text-align:center;flex:none}
+.li .tx{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+.li .tx b{font-size:1.05rem}
+.li .tx small{color:#c3bdf0;font-size:.86rem}
+.li .chev{font-size:1.5rem;color:#c3bdf0;flex:none}
+.sec{font-size:.8rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:#c3bdf0;margin:10px 4px -4px}
+.chip.pl{display:inline-flex;align-items:center;gap:7px;padding:5px 13px 5px 5px;position:relative}
+.chip.pl .av{width:30px;height:30px;font-size:1.05rem}
+.chip.pl.on{background:#ffcc33;color:#1b1640}
+.chip.pl .num{position:absolute;top:-7px;right:-5px;background:#ff5d73;color:#fff;border-radius:99px;font-size:.75rem;min-width:21px;height:21px;display:flex;align-items:center;justify-content:center;padding:0 5px;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.chip.add{background:transparent;border:2px dashed rgba(255,255,255,.35)}
+textarea{width:100%;min-height:130px;border-radius:14px;border:2px solid transparent;background:rgba(0,0,0,.28);color:#fff;font:600 .82rem/1.35 ui-monospace,Menlo,Consolas,monospace;padding:12px;resize:vertical;word-break:break-all}
+textarea:focus{outline:none;border-color:#ffcc33}
+.hcard{display:block;width:100%;text-align:left;font:inherit;color:#fff;cursor:pointer}
+.hcard:active{transform:scale(.99)}
+.avs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.avs span.sc{display:inline-flex;align-items:center;gap:5px;background:rgba(0,0,0,.2);border-radius:99px;padding:3px 10px 3px 3px;font-weight:800;font-size:.9rem}
+.avs .av{width:26px;height:26px;font-size:.9rem}
+.rnd{background:rgba(255,255,255,.07);border-radius:14px;padding:10px 12px}
+.rnd .h{display:flex;justify-content:space-between;gap:8px;font-weight:800}
+.rnd .d{color:#c3bdf0;font-size:.88rem;margin-top:3px}
+.spin{display:inline-block;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.warn{background:rgba(255,204,51,.12);border:1px solid rgba(255,204,51,.35);border-radius:14px;padding:10px 12px;font-size:.88rem}
+.linkbtn{background:none;border:0;color:#c3bdf0;font:inherit;font-weight:700;text-decoration:underline;cursor:pointer;padding:6px}
 </style>
 </head>
 <body>
@@ -130,6 +163,7 @@ a{color:#4cc9f0}
 'use strict';
 /* =========================================================
    Undercover Famille — jeu d'ambiance pour un seul téléphone
+   https://cdesmottes.fr
    ========================================================= */
 
 /* ---------- Mots (format : mot1/mot2/niveau ; niveau 1 facile → 3 difficile) ---------- */
@@ -155,8 +189,9 @@ const RAW = {
 const WORDS = [];
 for (const t in RAW) RAW[t].split(';').forEach(s => { const [a,b,l] = s.split('/'); WORDS.push({a,b,l:+l,t}); });
 
-const EMOJIS = ['🦊','🐼','🐸','🦁','🐙','🦄','🐯','🐨','🐵','🐧','🐻','🐰','🐲','🦉','🐳','🦖'];
-const COLORS = ['#ff5d73','#4cc9f0','#3ddc97','#ffcc33','#b388ff','#ff9f43','#f72585','#2ec4b6'];
+const EMOJIS = ['🦊','🐼','🐸','🦁','🐙','🦄','🐯','🐨','🐵','🐧','🐻','🐰','🐲','🦉','🐳','🦖','🐶','🐱','🦋','🐢'];
+const COLORS = ['#ff5d73','#4cc9f0','#3ddc97','#ffcc33','#b388ff','#ff9f43','#f72585','#2ec4b6','#a3e635','#94a3ff'];
+const MIN_P = 3, MAX_P = 10;
 const ROLE = {
   civil:{lbl:'CIVIL',emo:'🙂',cls:'b-civil'},
   under:{lbl:'UNDERCOVER',emo:'🕵️',cls:'b-under'},
@@ -165,17 +200,19 @@ const ROLE = {
 const LEVELS = {facile:[1],moyen:[1,2],difficile:[2,3],mix:[1,2,3]};
 const LEVEL_LBL = {facile:'Facile',moyen:'Moyen',difficile:'Difficile',mix:'Mélange'};
 const PTS = {civil:2, under:6, white:6, lastChance:3};
+const APP_ID = 'undercover-famille', APP_VERSION = '2.0.1', GIST_FILE = 'undercover-famille.json';
 
 /* ---------- Outils ---------- */
 const $ = s => document.querySelector(s);
 const app = $('#app');
-const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const rnd = n => Math.floor(Math.random() * n);
 const pick = a => a[rnd(a.length)];
-const uid = () => Math.random().toString(36).slice(2, 10);
+const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+const safeColor = c => /^#[0-9a-f]{3,8}$/i.test(String(c)) ? c : '#94a3ff';
 const store = {
   get(k, d){ try { const v = localStorage.getItem('ucf_' + k); return v == null ? d : JSON.parse(v); } catch(e){ return d; } },
-  set(k, v){ try { localStorage.setItem('ucf_' + k, JSON.stringify(v)); } catch(e){} },
+  set(k, v){ try { localStorage.setItem('ucf_' + k, JSON.stringify(v)); } catch(e){ toast('⚠️ Mémoire du téléphone pleine : sauvegarde impossible'); } },
   del(k){ try { localStorage.removeItem('ucf_' + k); } catch(e){} }
 };
 function weightedPick(items, w){
@@ -184,38 +221,64 @@ function weightedPick(items, w){
   for (let i = 0; i < items.length; i++){ x -= ws[i]; if (x <= 0) return items[i]; }
   return items[items.length - 1];
 }
+const fmtDate = ts => {
+  const d = new Date(ts);
+  return d.toLocaleDateString('fr-FR', {weekday:'short', day:'numeric', month:'short', year:'numeric'}) + ' · ' + d.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+};
+const plural = (n, w, ws) => `${n} ${n > 1 ? (ws || w + 's') : w}`;
+const b64enc = s => { const b = new TextEncoder().encode(s); let bin = ''; for (let i = 0; i < b.length; i += 0x8000) bin += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(bin); };
+const b64dec = s => { const bin = atob(s); const b = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) b[i] = bin.charCodeAt(i); return new TextDecoder().decode(b); };
 
-/* ---------- État ---------- */
+/* ---------- État & migration depuis la v1 ---------- */
 const DEFAULT_SETTINGS = {
   level:'moyen', clueRounds:2, timer:0, rounds:5, mrWhite:false, lastChance:true, sound:true, family:true,
   themes:Object.fromEntries(Object.keys(THEMES).map(k => [k, true]))
 };
-function defaultPlayers(){
-  return [1,2,3,4].map(i => ({id:uid(), name:'Joueur ' + i, emoji:EMOJIS[i-1], color:COLORS[i-1]}));
+const mergeSettings = s => Object.assign({}, DEFAULT_SETTINGS, s || {}, {themes:Object.assign({}, DEFAULT_SETTINGS.themes, (s && s.themes) || {})});
+function cleanPlayer(p, i){
+  return {id:String(p.id || uid()).slice(0, 40), name:String(p.name || '').trim().slice(0, 16), emoji:String(p.emoji || EMOJIS[i % EMOJIS.length]).slice(0, 8), color:safeColor(p.color || COLORS[i % COLORS.length])};
 }
-const loadedSettings = store.get('settings', {});
+let roster = store.get('roster', null), selection = store.get('selection', null);
+if (!roster){
+  const old = store.get('players', null) || [1,2,3,4].map(i => ({id:uid(), name:'Joueur ' + i, emoji:EMOJIS[i-1], color:COLORS[i-1]}));
+  roster = old.filter(p => p && p.name && String(p.name).trim()).map(cleanPlayer);
+  selection = roster.map(p => p.id);
+  store.set('roster', roster); store.set('selection', selection); store.del('players');
+}
+let legacyStats = store.get('legacyStats', null);
+if (!legacyStats){ legacyStats = store.get('stats', {}); store.set('legacyStats', legacyStats); store.del('stats'); }
+
 const S = {
-  view:'home', back:'home', modal:null, ui:{},
-  players: store.get('players', null) || defaultPlayers(),
-  settings: Object.assign({}, DEFAULT_SETTINGS, loadedSettings, {themes:Object.assign({}, DEFAULT_SETTINGS.themes, loadedSettings.themes || {})}),
-  custom: store.get('custom', []),
-  history: store.get('history', []),
-  stats: store.get('stats', {}),
-  game: store.get('game', null)
+  view:'home', nav:[], modal:null, ui:{},
+  roster, selection:(selection || []).filter(id => roster.some(p => p.id === id)),
+  settings:mergeSettings(store.get('settings', {})),
+  custom:store.get('custom', []),
+  history:store.get('history', []),
+  games:store.get('games', []),
+  legacyStats,
+  gist:Object.assign({token:'', id:'', last:0}, store.get('gist', {})),
+  game:store.get('game', null)
 };
-if (S.game && S.game.r){
+if (S.game){
+  if (!S.game.log) S.game.log = [];
   const r = S.game.r;
-  if (r.phase === 'reveal') r.phase = 'pass';
-  if (r.phase === 'suspense') r.phase = 'role';
-  if (r.voteStep === 'count') r.voteStep = 'pick';
+  if (r){
+    if (r.phase === 'reveal') r.phase = 'pass';
+    if (r.phase === 'suspense') r.phase = 'role';
+    if (r.voteStep && r.voteStep !== 'debate') r.voteStep = 'pick';
+    r.candidates = null;
+  }
 }
-const savePlayers = () => store.set('players', S.players);
+const saveRoster = () => { store.set('roster', S.roster); store.set('selection', S.selection); };
 const saveSettings = () => store.set('settings', S.settings);
 const saveGame = () => S.game ? store.set('game', S.game) : store.del('game');
-const saveStats = () => store.set('stats', S.stats);
+const saveGames = () => store.set('games', S.games);
+const saveGist = () => store.set('gist', S.gist);
+const saveAll = () => { saveRoster(); saveSettings(); store.set('custom', S.custom); saveGames(); store.set('legacyStats', S.legacyStats); };
 const P = id => S.game.players.find(p => p.id === id);
-const av = (p, cls='') => `<span class="av ${cls}" style="--c:${p.color}">${p.emoji}</span>`;
+const av = (p, cls='') => `<span class="av ${cls}" style="--c:${safeColor(p.color)}">${esc(p.emoji)}</span>`;
 const nm = p => esc(p.name);
+const selPlayers = () => S.selection.map(id => S.roster.find(p => p.id === id)).filter(Boolean);
 
 /* ---------- Sons (synthétisés, aucun fichier) ---------- */
 const Snd = {
@@ -258,7 +321,7 @@ let toastT;
 function toast(msg){
   document.querySelectorAll('.toast').forEach(t => t.remove());
   const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t);
-  clearTimeout(toastT); toastT = setTimeout(() => t.remove(), 2400);
+  clearTimeout(toastT); toastT = setTimeout(() => t.remove(), 2600);
 }
 function confetti(){
   const c = document.createElement('canvas'); c.className = 'confetti'; document.body.appendChild(c);
@@ -271,6 +334,19 @@ function confetti(){
     ps.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += .04*dpr; p.a += p.va; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.a); ctx.fillStyle = p.c; ctx.fillRect(-p.r/2, -p.r/4, p.r, p.r/2); ctx.restore(); });
     if (t - t0 < 4500) requestAnimationFrame(f); else c.remove();
   })(t0);
+}
+
+/* =========================================================
+   Joueurs enregistrés
+   ========================================================= */
+function newRosterPlayer(name){
+  name = String(name || '').trim().slice(0, 16);
+  if (!name){ toast('Écris un prénom ✏️'); return null; }
+  if (S.roster.some(p => p.name.toLowerCase() === name.toLowerCase())){ toast(`${name} existe déjà`); return null; }
+  const ue = S.roster.map(p => p.emoji), uc = S.roster.map(p => p.color);
+  const p = {id:uid(), name, emoji:EMOJIS.find(e => !ue.includes(e)) || pick(EMOJIS), color:COLORS.find(c => !uc.includes(c)) || COLORS[S.roster.length % COLORS.length]};
+  S.roster.push(p); saveRoster();
+  return p;
 }
 
 /* =========================================================
@@ -298,19 +374,20 @@ function choosePair(){
   return {civil: swap ? w.b : w.a, under: swap ? w.a : w.b, t:w.t};
 }
 function startGame(){
-  const players = S.players.map(p => ({...p, name:p.name.trim()}));
+  const players = selPlayers().map(p => ({id:p.id, name:p.name.trim(), emoji:p.emoji, color:p.color}));
   S.game = {
-    id:uid(), round:0, total:S.settings.rounds, players,
+    id:uid(), started:Date.now(), round:0, total:S.settings.rounds, players,
     scores:Object.fromEntries(players.map(p => [p.id, 0])),
     underCount:Object.fromEntries(players.map(p => [p.id, 0])),
-    done:false, statsDone:false
+    log:[], done:false
   };
   startRound();
-  S.view = 'game'; S.modal = null;
+  S.view = 'game'; S.nav = []; S.modal = null;
   render();
 }
-function startRound(){
-  const g = S.game; g.round++;
+/* redo = true : on rejoue la même manche avec de nouveaux mots, sans toucher aux points */
+function startRound(redo){
+  const g = S.game; if (!redo) g.round++;
   const seat = g.players.map(p => p.id), n = seat.length;
   const rc = rolesCount(n), roles = {};
   seat.forEach(id => roles[id] = 'civil');
@@ -324,10 +401,10 @@ function startRound(){
   g.r = {
     pair:choosePair(), roles, alive:seat.slice(),
     distOrder:seat.slice(start).concat(seat.slice(0, start)), distIdx:0,
-    phase:'pass', firstVoteDone:false, clueRound:1, cluesNeeded:S.settings.clueRounds,
-    order:[], idx:0, candidates:null, voteStep:'debate', tieSel:[],
-    elim:[], last:null, guessType:null, bonus:{}, result:null
+    phase:'pass', firstVoteDone:false, tieRound:false, clueRound:1, cluesNeeded:S.settings.clueRounds,
+    order:[], idx:0, voteStep:'debate', elim:[], last:null, guessType:null, bonus:{}, result:null
   };
+  S.ui.revealed = false;
   saveGame();
 }
 function wordOf(id){
@@ -335,20 +412,19 @@ function wordOf(id){
   return role === 'white' ? null : (role === 'under' ? r.pair.under : r.pair.civil);
 }
 function startClues(){
-  const r = S.game.r;
-  const base = r.candidates ? r.alive.filter(id => r.candidates.includes(id)) : r.alive.slice();
+  const r = S.game.r, base = r.alive.slice();
   let choices = base.filter(id => r.roles[id] !== 'white'); if (!choices.length) choices = base;
   const first = pick(choices), i = base.indexOf(first);
   r.order = base.slice(i).concat(base.slice(0, i));
   r.idx = 0; r.clueRound = 1;
-  r.cluesNeeded = r.candidates ? 1 : (r.firstVoteDone ? 1 : S.settings.clueRounds);
+  r.cluesNeeded = (r.tieRound || r.firstVoteDone) ? 1 : S.settings.clueRounds;
   r.phase = 'clues';
 }
 function goVote(){ const r = S.game.r; r.phase = 'vote'; r.voteStep = 'debate'; }
 function eliminate(id){
   const g = S.game, r = g.r;
   r.alive = r.alive.filter(x => x !== id); r.elim.push(id); r.last = id;
-  r.firstVoteDone = true; r.candidates = null; r.tieSel = [];
+  r.firstVoteDone = true; r.tieRound = false;
   r.phase = 'suspense'; S.modal = null;
   saveGame(); render(); Snd.drum();
   setTimeout(() => {
@@ -367,9 +443,8 @@ function checkWin(){
   startClues(); saveGame(); render();
 }
 function endRound(winner){
-  const g = S.game, r = g.r, pts = {};
+  const g = S.game, r = g.r, pts = {}, won = {};
   g.players.forEach(p => pts[p.id] = 0);
-  const won = {};
   if (winner === 'civils') g.players.forEach(p => { if (r.roles[p.id] === 'civil'){ pts[p.id] += PTS.civil; won[p.id] = true; } });
   if (winner === 'inf') r.alive.forEach(id => { if (r.roles[id] !== 'civil'){ pts[id] += PTS[r.roles[id]]; won[id] = true; } });
   if (winner === 'white'){ pts[r.last] += PTS.white; won[r.last] = true; }
@@ -377,63 +452,216 @@ function endRound(winner){
   g.players.forEach(p => {
     g.scores[p.id] += pts[p.id];
     if (r.roles[p.id] === 'under') g.underCount[p.id]++;
-    const s = st(p.name);
-    s.rounds++; if (won[p.id]) s.roundWins++;
-    if (r.roles[p.id] === 'under'){ s.under++; if (won[p.id]) s.underWins++; }
-    if (r.bonus[p.id]) s.found++;
   });
-  saveStats();
+  g.log.push({n:g.round, civil:r.pair.civil, under:r.pair.under, t:r.pair.t, winner, roles:Object.assign({}, r.roles), pts, won, found:Object.keys(r.bonus), elim:r.elim.slice()});
   r.result = {winner, pts, won};
   r.phase = 'end';
   saveGame(); render();
   winner === 'civils' ? Snd.good() : Snd.fanfare();
 }
-function st(name){
-  const k = name.trim().toLowerCase();
-  if (!S.stats[k]) S.stats[k] = {name:name.trim(), games:0, gameWins:0, rounds:0, roundWins:0, under:0, underWins:0, found:0};
-  S.stats[k].name = name.trim();
-  return S.stats[k];
+function gameRecord(g){
+  return {
+    id:g.id, date:g.ended || Date.now(), started:g.started || null, total:g.total, played:g.log.length,
+    settings:{level:S.settings.level, mrWhite:S.settings.mrWhite, lastChance:S.settings.lastChance},
+    players:g.players.map(p => ({id:p.id, name:p.name, emoji:p.emoji, color:p.color, score:g.scores[p.id]})),
+    log:g.log
+  };
 }
 function finishGame(){
   const g = S.game;
-  if (!g.statsDone){
-    const max = Math.max(...Object.values(g.scores));
-    g.players.forEach(p => { const s = st(p.name); s.games++; if (g.scores[p.id] === max) s.gameWins++; });
-    g.statsDone = true; g.done = true; saveStats(); saveGame();
+  if (!g.done){
+    g.done = true; g.ended = Date.now();
+    if (g.log.length){ S.games = S.games.filter(x => x.id !== g.id); S.games.push(gameRecord(g)); saveGames(); }
+    saveGame();
   }
-  S.view = 'podium'; render();
+  S.view = 'podium'; S.modal = null; render();
   Snd.fanfare(); confetti();
+}
+
+/* ---------- Statistiques (recalculées depuis l'historique) ---------- */
+const STAT_FIELDS = ['games','gameWins','rounds','roundWins','under','underWins','found'];
+function computeStats(){
+  const out = {};
+  const get = name => {
+    const k = String(name).trim().toLowerCase();
+    if (!out[k]){ out[k] = {name:String(name).trim()}; STAT_FIELDS.forEach(f => out[k][f] = 0); }
+    return out[k];
+  };
+  for (const k in S.legacyStats){ const ls = S.legacyStats[k]; if (!ls || !ls.name) continue; const s = get(ls.name); STAT_FIELDS.forEach(f => s[f] += +ls[f] || 0); }
+  S.games.forEach(g => {
+    const max = Math.max(...g.players.map(p => p.score));
+    g.players.forEach(p => { const s = get(p.name); s.games++; if (p.score === max) s.gameWins++; });
+    g.log.forEach(r => g.players.forEach(p => {
+      if (!r.roles || !(p.id in r.roles)) return;
+      const s = get(p.name);
+      s.rounds++; if (r.won && r.won[p.id]) s.roundWins++;
+      if (r.roles[p.id] === 'under'){ s.under++; if (r.won && r.won[p.id]) s.underWins++; }
+      if (r.found && r.found.includes(p.id)) s.found++;
+    }));
+  });
+  return out;
+}
+
+/* =========================================================
+   Export / import / GitHub Gist
+   ========================================================= */
+function exportData(){
+  return {app:APP_ID, v:2, at:new Date().toISOString(), roster:S.roster, selection:S.selection, settings:S.settings, custom:S.custom, games:S.games, legacyStats:S.legacyStats};
+}
+const exportCode = () => 'UCF2:' + b64enc(JSON.stringify(exportData()));
+function parseData(txt){
+  let t = String(txt || '').trim();
+  if (!t) throw new Error('Rien à importer : colle un code ou choisis un fichier');
+  let json;
+  if (t[0] === '{') json = t;
+  else { try { json = b64dec(t.replace(/^UCF\d*:/, '').replace(/\s+/g, '')); } catch(e){ throw new Error('Code illisible : vérifie qu\'il est complet'); } }
+  let o; try { o = JSON.parse(json); } catch(e){ throw new Error('Code illisible : vérifie qu\'il est complet'); }
+  if (!o || o.app !== APP_ID) throw new Error('Ces données ne viennent pas d\'Undercover Famille');
+  const arr = x => Array.isArray(x) ? x : [];
+  return {
+    roster:arr(o.roster).filter(p => p && p.name && String(p.name).trim()).map(cleanPlayer),
+    selection:arr(o.selection).map(String),
+    settings:o.settings && typeof o.settings === 'object' ? o.settings : null,
+    custom:arr(o.custom).filter(c => c && c.a && c.b).map(c => ({a:String(c.a).slice(0, 30), b:String(c.b).slice(0, 30)})),
+    games:arr(o.games).filter(g => g && g.id && Array.isArray(g.players) && Array.isArray(g.log)).map(g => Object.assign({}, g, {id:String(g.id), players:g.players.map(cleanPlayer).map((p, i) => Object.assign(p, {score:+g.players[i].score || 0}))})),
+    legacyStats:o.legacyStats && typeof o.legacyStats === 'object' ? o.legacyStats : {}
+  };
+}
+function mergeData(d){
+  const added = {games:0, players:0, words:0};
+  const names = new Set(S.roster.map(p => p.name.toLowerCase()));
+  d.roster.forEach(p => {
+    const k = p.name.toLowerCase(); if (names.has(k)) return;
+    names.add(k); S.roster.push(Object.assign({}, p, {id:S.roster.some(x => x.id === p.id) ? uid() : p.id})); added.players++;
+  });
+  const wk = new Set(S.custom.map(c => (c.a + '|' + c.b).toLowerCase()));
+  d.custom.forEach(c => { const k = (c.a + '|' + c.b).toLowerCase(); if (!wk.has(k)){ wk.add(k); S.custom.push(c); added.words++; } });
+  const gids = new Set(S.games.map(g => g.id));
+  d.games.forEach(g => { if (!gids.has(g.id)){ gids.add(g.id); S.games.push(g); added.games++; } });
+  S.games.sort((a,b) => a.date - b.date);
+  if (!Object.keys(S.legacyStats).length && Object.keys(d.legacyStats).length) S.legacyStats = d.legacyStats;
+  saveAll();
+  return added;
+}
+function replaceData(d){
+  if (d.roster.length) S.roster = d.roster;
+  S.selection = d.selection.filter(id => S.roster.some(p => p.id === id));
+  if (d.settings) S.settings = mergeSettings(d.settings);
+  S.custom = d.custom; S.games = d.games.sort((a,b) => a.date - b.date); S.legacyStats = d.legacyStats;
+  saveAll();
+}
+async function copyText(t){
+  try { await navigator.clipboard.writeText(t); return true; }
+  catch(e){
+    const ta = document.createElement('textarea'); ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); let ok = false; try { ok = document.execCommand('copy'); } catch(_){}
+    ta.remove(); return ok;
+  }
+}
+function downloadFile(){
+  const blob = new Blob([JSON.stringify(exportData(), null, 2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `undercover-famille-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+async function shareData(){
+  try {
+    const name = `undercover-famille-${new Date().toISOString().slice(0, 10)}.json`;
+    const file = new File([JSON.stringify(exportData(), null, 2)], name, {type:'application/json'});
+    if (navigator.canShare && navigator.canShare({files:[file]})) await navigator.share({title:'Undercover Famille — mes données', files:[file]});
+    else if (navigator.share) await navigator.share({title:'Undercover Famille — mes données', text:exportCode()});
+    else { await copyText(exportCode()); toast('Code copié ✓'); }
+  } catch(e){ if (e && e.name !== 'AbortError') toast('Partage impossible : utilise « Copier le code »'); }
+}
+async function gistSync(){
+  const token = (S.gist.token || '').trim();
+  if (!token) return toast('Colle d\'abord ton jeton GitHub');
+  if (S.ui.syncing) return;
+  S.ui.syncing = true; render();
+  const H = {Authorization:'Bearer ' + token, Accept:'application/vnd.github+json'};
+  const api = 'https://api.github.com';
+  const fail = res => { const e = new Error('http'); e.status = res.status; return e; };
+  try {
+    let id = (S.gist.id || '').trim(), remote = null;
+    if (!id){
+      const res = await fetch(api + '/gists?per_page=100', {headers:H});
+      if (!res.ok) throw fail(res);
+      const found = (await res.json()).find(g => g.files && g.files[GIST_FILE]);
+      if (found) id = found.id;
+    }
+    if (id){
+      const res = await fetch(api + '/gists/' + encodeURIComponent(id), {headers:H});
+      if (res.status === 404) id = '';
+      else {
+        if (!res.ok) throw fail(res);
+        const f = (await res.json()).files[GIST_FILE];
+        if (f){ let txt = f.content; if (f.truncated && f.raw_url) txt = await (await fetch(f.raw_url)).text(); remote = parseData(txt); }
+      }
+    }
+    const added = remote ? mergeData(remote) : null;
+    const files = {[GIST_FILE]:{content:JSON.stringify(exportData(), null, 1)}};
+    const res = await fetch(api + '/gists' + (id ? '/' + encodeURIComponent(id) : ''), {
+      method:id ? 'PATCH' : 'POST', headers:Object.assign({'Content-Type':'application/json'}, H),
+      body:JSON.stringify(id ? {files} : {description:'Undercover Famille — sauvegarde', public:false, files})
+    });
+    if (!res.ok) throw fail(res);
+    S.gist.id = (await res.json()).id; S.gist.last = Date.now(); saveGist();
+    toast(added ? `Synchronisé ✓ ${added.games ? '· ' + plural(added.games, 'partie') + ' récupérée' + (added.games > 1 ? 's' : '') : ''}` : 'Sauvegarde créée sur GitHub ✓');
+  } catch(e){
+    const st = e && e.status;
+    toast(st === 401 ? 'Jeton invalide ou expiré' : st === 403 || st === 404 ? 'Accès refusé : le jeton doit avoir la permission « gist »' : st ? 'Erreur GitHub (' + st + ')' : (e && e.message && !/fetch|network/i.test(e.message) ? e.message : 'Impossible de joindre GitHub : vérifie la connexion'));
+  }
+  S.ui.syncing = false; render();
 }
 
 /* =========================================================
    Actions (boutons data-a="...")
    ========================================================= */
 const ACTIONS = {
-  go(d){ if (d.v === 'settings') S.back = S.view; S.view = d.v; S.modal = null; render(); },
-  resume(){ S.view = S.game.done ? 'podium' : 'game'; render(); },
+  go(d){ S.nav.push(S.view); S.view = d.v; S.modal = null; render(); },
+  back(){ S.view = S.nav.pop() || 'home'; S.modal = null; render(); },
+  home(){ if (S.game && S.game.done) S.game = null; saveGame(); S.nav = []; S.view = 'home'; S.modal = null; render(); },
+  resume(){ S.nav = []; S.view = S.game.done ? 'podium' : 'game'; render(); },
+
+  /* --- sélection des joueurs --- */
+  selToggle(d){
+    const i = S.selection.indexOf(d.id);
+    if (i >= 0) S.selection.splice(i, 1);
+    else { if (S.selection.length >= MAX_P) return toast(`${MAX_P} joueurs maximum`); S.selection.push(d.id); }
+    saveRoster(); render();
+  },
+  selUp(d){ const i = S.selection.indexOf(d.id); if (i < 1) return; [S.selection[i-1], S.selection[i]] = [S.selection[i], S.selection[i-1]]; saveRoster(); render(); },
+  selAll(){ S.selection = S.roster.slice(0, MAX_P).map(p => p.id); saveRoster(); render(); },
+  selNone(){ S.selection = []; saveRoster(); render(); },
+  npAdd(){
+    const el = $('#np'); const p = newRosterPlayer(el && el.value); if (!p) return;
+    if (S.view === 'players' && S.selection.length < MAX_P) S.selection.push(p.id);
+    saveRoster(); S.modal = null; render(); toast(`${p.name} ajouté ✓`);
+  },
   launch(){
-    const names = S.players.map(p => p.name.trim());
-    if (names.some(n => !n)) return toast('Donne un prénom à chaque joueur ✏️');
-    const low = names.map(n => n.toLowerCase());
-    if (new Set(low).size !== low.length) return toast('Deux joueurs ont le même prénom');
+    const n = S.selection.length;
+    if (n < MIN_P) return toast(`Choisis au moins ${MIN_P} joueurs`);
+    if (n > MAX_P) return toast(`${MAX_P} joueurs maximum`);
     if (S.game && !S.game.done){ S.modal = {type:'replace'}; return render(); }
     startGame();
   },
   replaceYes(){ startGame(); },
-  emoji(d){
-    const p = S.players[+d.i], used = S.players.map(x => x.emoji);
-    let i = EMOJIS.indexOf(p.emoji);
-    for (let k = 0; k < EMOJIS.length; k++){ i = (i + 1) % EMOJIS.length; if (!used.includes(EMOJIS[i])) break; }
-    p.emoji = EMOJIS[i]; savePlayers(); render();
+
+  /* --- joueurs enregistrés --- */
+  rAdd(){ const el = $('#rn'); const p = newRosterPlayer(el && el.value); if (!p) return; render(); setTimeout(() => { const e2 = $('#rn'); if (e2) e2.focus(); }, 0); },
+  rEmoji(d){
+    const p = S.roster.find(x => x.id === d.id); if (!p) return;
+    let i = EMOJIS.indexOf(p.emoji); i = (i + 1) % EMOJIS.length; p.emoji = EMOJIS[i]; saveRoster(); render();
   },
-  addP(){
-    if (S.players.length >= 8) return;
-    const ue = S.players.map(p => p.emoji), uc = S.players.map(p => p.color);
-    S.players.push({id:uid(), name:'', emoji:EMOJIS.find(e => !ue.includes(e)) || pick(EMOJIS), color:COLORS.find(c => !uc.includes(c)) || pick(COLORS)});
-    savePlayers(); S.ui.focusLast = true; render();
+  rColor(d){
+    const p = S.roster.find(x => x.id === d.id); if (!p) return;
+    let i = COLORS.indexOf(p.color); p.color = COLORS[(i + 1) % COLORS.length]; saveRoster(); render();
   },
-  delP(d){ if (S.players.length <= 3) return; S.players.splice(+d.i, 1); savePlayers(); render(); },
-  moveUp(d){ const i = +d.i; if (i < 1) return; [S.players[i-1], S.players[i]] = [S.players[i], S.players[i-1]]; savePlayers(); render(); },
+  rDel(d){ S.modal = {type:'rDel', id:d.id}; render(); },
+  rDelYes(){ const id = S.modal.id; S.roster = S.roster.filter(p => p.id !== id); S.selection = S.selection.filter(x => x !== id); saveRoster(); S.modal = null; render(); },
+
+  /* --- réglages & mots --- */
   set(d){ S.settings[d.k] = JSON.parse(d.v); saveSettings(); render(); },
   theme(d){
     const th = S.settings.themes, on = Object.values(th).filter(Boolean).length;
@@ -449,8 +677,28 @@ const ACTIONS = {
     toast('Paire ajoutée ✓');
   },
   delWord(d){ S.custom.splice(+d.i, 1); store.set('custom', S.custom); render(); },
-  resetStats(){ S.modal = {type:'resetStats'}; render(); },
-  resetStatsYes(){ S.stats = {}; saveStats(); S.modal = null; render(); toast('Statistiques remises à zéro'); },
+
+  /* --- historique --- */
+  openGame(d){ S.ui.gameId = d.id; S.nav.push(S.view); S.view = 'gameDetail'; render(); },
+  delGameYes(){ S.games = S.games.filter(g => g.id !== S.ui.gameId); saveGames(); S.modal = null; S.view = S.nav.pop() || 'history'; render(); toast('Partie supprimée'); },
+  resetStatsYes(){ S.games = []; S.legacyStats = {}; saveGames(); store.set('legacyStats', {}); S.modal = null; render(); toast('Historique et statistiques effacés'); },
+
+  /* --- export / import / gist --- */
+  async copyCode(){ toast(await copyText(exportCode()) ? 'Code copié ✓ Colle-le sur l\'autre appareil' : 'Copie impossible : sélectionne le code à la main'); },
+  downloadFile(){ downloadFile(); toast('Fichier téléchargé ✓'); },
+  shareData(){ shareData(); },
+  pickFile(){ const f = $('#impFile'); if (f) f.click(); },
+  impParse(){
+    try { S.ui.imp = parseData(S.ui.impTxt); S.modal = {type:'impChoice'}; render(); }
+    catch(e){ toast(e.message); }
+  },
+  impMerge(){
+    const a = mergeData(S.ui.imp); S.ui.imp = null; S.ui.impTxt = ''; S.modal = null; S.view = S.nav.pop() || 'settings'; render();
+    toast(`Fusion terminée ✓ +${plural(a.games, 'partie')}, +${plural(a.players, 'joueur')}, +${plural(a.words, 'paire')}`);
+  },
+  impReplace(){ replaceData(S.ui.imp); S.ui.imp = null; S.ui.impTxt = ''; S.modal = null; S.view = S.nav.pop() || 'settings'; render(); toast('Données remplacées ✓'); },
+  gistSync(){ gistSync(); },
+  gistForgetYes(){ S.gist = {token:'', id:'', last:0}; saveGist(); S.modal = null; render(); toast('Jeton supprimé de cet appareil'); },
 
   /* --- partie --- */
   iam(){ S.game.r.phase = 'reveal'; S.ui.revealed = false; render(); },
@@ -459,6 +707,7 @@ const ACTIONS = {
     if (r.distIdx >= r.distOrder.length) startClues(); else r.phase = 'pass';
     saveGame(); render();
   },
+  redoYes(){ startRound(true); S.modal = null; render(); toast('Nouvelle paire de mots ! On recommence la distribution 🔄'); },
   clued(){
     const r = S.game.r; r.idx++;
     if (r.idx >= r.order.length){
@@ -483,11 +732,7 @@ const ACTIONS = {
   },
   pickElim(d){ S.modal = {type:'confirmElim', id:d.id}; render(); },
   confirmElim(){ eliminate(S.modal.id); },
-  tie(){ const r = S.game.r; r.voteStep = 'tie'; r.tieSel = []; render(); },
-  tieToggle(d){ const r = S.game.r; r.tieSel = r.tieSel.includes(d.id) ? r.tieSel.filter(x => x !== d.id) : r.tieSel.concat(d.id); render(); },
-  tieGo(){ const r = S.game.r; if (r.tieSel.length < 2) return; r.candidates = r.tieSel.slice(); r.tieSel = []; startClues(); saveGame(); render(); },
-  tieCancel(){ S.game.r.voteStep = 'pick'; render(); },
-  drawLots(){ const r = S.game.r; Snd.drum(); S.modal = {type:'drawn', id:pick(r.candidates)}; render(); },
+  tie(){ const r = S.game.r; r.tieRound = true; startClues(); saveGame(); render(); toast('⚖️ Égalité : nouveau tour d\'indices !'); },
   afterRole(){
     const r = S.game.r, role = r.roles[r.last];
     if (role === 'white'){ r.phase = 'guess'; r.guessType = 'white'; saveGame(); return render(); }
@@ -502,8 +747,8 @@ const ACTIONS = {
   },
   nextRound(){ startRound(); render(); },
   podium(){ finishGame(); },
+  endNowYes(){ finishGame(); },
   rematch(){ S.game = null; startGame(); },
-  home(){ S.game = null; saveGame(); S.view = 'home'; render(); },
 
   /* --- fenêtres --- */
   menu(){ S.modal = {type:'menu'}; render(); },
@@ -511,7 +756,7 @@ const ACTIONS = {
   closeModal(){ S.modal = null; render(); },
   bgClose(d, el, e){ if (e.target === el){ S.modal = null; render(); } },
   toggleSound(){ S.settings.sound = !S.settings.sound; saveSettings(); render(); },
-  quitYes(){ S.game = null; saveGame(); S.modal = null; S.view = 'home'; render(); },
+  quitYes(){ S.game = null; saveGame(); S.modal = null; S.nav = []; S.view = 'home'; render(); },
   peek(){ S.modal = {type:'peekWho'}; render(); },
   peekWho(d){ S.modal = {type:'peekPass', id:d.id}; render(); },
   peekGo(){ S.modal = {type:'peekCard', id:S.modal.id}; render(); }
@@ -520,12 +765,16 @@ const ACTIONS = {
 /* =========================================================
    Vues
    ========================================================= */
+const backBtn = () => `<button class="icon" data-a="back" aria-label="Retour">←</button>`;
+const header = title => `<div class="top">${backBtn()}<h2>${title}</h2><span style="width:44px"></span></div>`;
+const li = (a, v, ic, title, sub) => `<button class="li" data-a="${a}"${v ? ` data-v="${v}"` : ''}><span class="ic">${ic}</span><span class="tx"><b>${title}</b><small>${sub}</small></span><span class="chev">›</span></button>`;
 function seg(k, opts){
   return `<div class="seg">${opts.map(([v,l]) => `<button class="${S.settings[k] === v ? 'on' : ''}" data-a="set" data-k="${k}" data-v="${esc(JSON.stringify(v))}">${l}</button>`).join('')}</div>`;
 }
 function settingsSummary(){
-  const s = S.settings, rc = rolesCount(S.players.length);
-  const roles = `${rc.civil} civils · ${rc.under} Undercover${rc.under > 1 ? 's' : ''}${rc.white ? ' · 1 Mr White' : ''}`;
+  const s = S.settings, n = S.selection.length;
+  const rc = rolesCount(Math.max(n, MIN_P));
+  const roles = n >= MIN_P ? `${rc.civil} civils · ${rc.under} Undercover${rc.under > 1 ? 's' : ''}${rc.white ? ' · 1 Mr White' : ''}` : `Choisis au moins ${MIN_P} joueurs`;
   return `<b>${roles}</b><br><span class="muted small">Mots ${LEVEL_LBL[s.level].toLowerCase()} · ${s.clueRounds} tour${s.clueRounds > 1 ? 's' : ''} d'indices · ${s.rounds} manches · ${s.timer ? 'minuteur ' + s.timer + ' s' : 'sans minuteur'}</span>`;
 }
 function holdCard(id){
@@ -541,10 +790,11 @@ function rulesHtml(){
   <p>Tout le monde reçoit un mot secret… sauf <b>l'Undercover</b>, qui a un mot un peu différent (par exemple <i>chat</i> au lieu de <i>chien</i>). Personne ne sait s'il est l'intrus, même pas lui !</p>
   <h3>🔄 Une manche</h3>
   <ol>
-    <li>Chacun découvre son mot en secret en maintenant le doigt sur la carte.</li>
+    <li>Chacun découvre son mot en secret en maintenant le doigt sur la carte. Un mot pas compris, ou une paire déjà jouée ? Touche « Changer de mots » : la manche recommence avec une nouvelle paire, sans changer les points.</li>
     <li>À tour de rôle, chacun donne <b>un indice</b> sur son mot : un mot ou une petite phrase.</li>
     <li>Après les tours d'indices, on discute, puis tout le monde <b>montre du doigt</b> son suspect en même temps.</li>
-    <li>Le joueur le plus désigné est éliminé et son rôle est révélé. S'il était innocent, on recommence un tour.</li>
+    <li>En cas d'<b>égalité</b>, on refait un tour d'indices et on revote.</li>
+    <li>Le joueur le plus désigné est éliminé et son rôle est révélé. S'il était innocent, on refait un tour d'indices.</li>
   </ol>
   <h3>🏁 Qui gagne ?</h3>
   <ul>
@@ -581,33 +831,53 @@ function vHome(){
     </div>
     ${resume ? `<button class="btn green big" data-a="resume">▶ Reprendre la partie<br><small>manche ${g.round}/${g.total}</small></button>` : ''}
     <button class="btn primary big" data-a="go" data-v="players">🎲 Nouvelle partie</button>
-    <div class="row"><button class="btn ghost" data-a="go" data-v="rules">📖 Règles</button><button class="btn ghost" data-a="go" data-v="words">✏️ Mes mots</button></div>
+    <div class="row"><button class="btn ghost" data-a="go" data-v="rules">📖 Règles</button><button class="btn ghost" data-a="go" data-v="history">🗂️ Historique</button></div>
     <div class="row"><button class="btn ghost" data-a="go" data-v="stats">📊 Stats</button><button class="btn ghost" data-a="go" data-v="settings">⚙️ Réglages</button></div>
     <p class="tip">📲 Ajoute le jeu à l'écran d'accueil pour y jouer même sans internet.</p>
-    <p class="foot">Undercover Famille · v1.0 · <a href="https://cdesmottes.fr" target="_blank" rel="noopener">cdesmottes.fr</a></p>
+    <p class="foot">Undercover Famille · v${APP_VERSION} · <a href="https://cdesmottes.fr" target="_blank" rel="noopener">cdesmottes.fr</a></p>
   </div>`;
 }
 function vPlayers(){
+  const sel = selPlayers(), n = sel.length;
   return `<div class="screen">
-    <div class="top"><button class="icon" data-a="go" data-v="home" aria-label="Retour">←</button><h2>Les joueurs</h2><span style="width:44px"></span></div>
-    <p class="muted small">Dans l'ordre où vous êtes assis. Touche l'animal pour le changer.</p>
-    <div class="plist">${S.players.map((p,i) => `<div class="prow">
-      <button class="av" style="--c:${p.color}" data-a="emoji" data-i="${i}" aria-label="Changer l'avatar">${p.emoji}</button>
-      <input data-field="pname" data-i="${i}" value="${esc(p.name)}" placeholder="Prénom" maxlength="14" autocomplete="off" enterkeyhint="done">
-      <button class="mini" data-a="moveUp" data-i="${i}" ${i === 0 ? 'disabled' : ''} aria-label="Monter">↑</button>
-      <button class="mini" data-a="delP" data-i="${i}" ${S.players.length <= 3 ? 'disabled' : ''} aria-label="Supprimer">✕</button>
-    </div>`).join('')}</div>
-    ${S.players.length < 8 ? `<button class="btn ghost" data-a="addP">＋ Ajouter un joueur</button>` : ''}
+    ${header('Qui joue ?')}
+    <div class="card">
+      <div class="row between" style="margin-bottom:12px"><b>Touche les joueurs de la partie</b><span class="pill">${plural(n, 'joueur')}</span></div>
+      <div class="chips">
+        ${S.roster.map(p => { const i = S.selection.indexOf(p.id); return `<button class="chip pl ${i >= 0 ? 'on' : ''}" data-a="selToggle" data-id="${esc(p.id)}">${av(p)}${nm(p)}${i >= 0 ? `<span class="num">${i + 1}</span>` : ''}</button>`; }).join('')}
+        <button class="chip add" data-a="modal" data-v="newPlayer">＋ Nouveau</button>
+      </div>
+      ${S.roster.length > 1 ? `<div class="row" style="margin-top:12px;gap:4px"><button class="linkbtn" data-a="selAll">Tout le monde</button><button class="linkbtn" data-a="selNone">Personne</button><span class="grow"></span><button class="linkbtn" data-a="go" data-v="roster">✏️ Gérer la liste</button></div>` : ''}
+    </div>
+    ${n ? `<div class="sec">Ordre autour de la table</div>
+    <div class="sl">${sel.map((p, i) => `<div class="si"><span class="pill" style="padding:4px 10px">${i + 1}</span>${av(p, 's')}<span class="n">${nm(p)}</span>
+      <button class="mini" data-a="selUp" data-id="${esc(p.id)}" ${i === 0 ? 'disabled' : ''} aria-label="Monter">↑</button>
+      <button class="mini" data-a="selToggle" data-id="${esc(p.id)}" aria-label="Retirer">✕</button></div>`).join('')}</div>` : ''}
     <div class="card">${settingsSummary()}
       <div style="margin-top:10px"><button class="btn ghost" data-a="go" data-v="settings">⚙️ Modifier les réglages</button></div></div>
     <div class="grow"></div>
-    <button class="btn primary big" data-a="launch">C'est parti ! 🚀</button>
+    <button class="btn primary big" data-a="launch" ${n < MIN_P ? 'disabled' : ''}>C'est parti ! 🚀</button>
+  </div>`;
+}
+function vRoster(){
+  return `<div class="screen">
+    ${header('Joueurs enregistrés')}
+    <p class="muted small">Ces joueurs sont proposés au début de chaque partie. Touche l'animal pour le changer, et le petit rond pour changer la couleur.</p>
+    <div class="plist">${S.roster.map(p => `<div class="prow">
+      <button class="av" style="--c:${safeColor(p.color)}" data-a="rEmoji" data-id="${esc(p.id)}" aria-label="Changer l'avatar">${esc(p.emoji)}</button>
+      <input data-field="rname" data-id="${esc(p.id)}" value="${esc(p.name)}" maxlength="16" autocomplete="off" enterkeyhint="done" aria-label="Prénom">
+      <button class="mini" data-a="rColor" data-id="${esc(p.id)}" aria-label="Changer la couleur" style="background:${safeColor(p.color)}"></button>
+      <button class="mini" data-a="rDel" data-id="${esc(p.id)}" aria-label="Supprimer">✕</button>
+    </div>`).join('') || '<p class="muted center">Aucun joueur pour l\'instant.</p>'}</div>
+    <div class="card row"><input id="rn" placeholder="Prénom du nouveau joueur" maxlength="16" autocomplete="off" enterkeyhint="done"><button class="btn primary" style="width:auto;flex:none" data-a="rAdd">＋</button></div>
+    <p class="tip">Supprimer un joueur ne touche pas à l'historique des parties.</p>
   </div>`;
 }
 function vSettings(){
-  const s = S.settings, n = S.players.length;
+  const s = S.settings;
   return `<div class="screen">
-    <div class="top"><button class="icon" data-a="go" data-v="${S.back === 'settings' ? 'home' : S.back}" aria-label="Retour">←</button><h2>Réglages</h2><span style="width:44px"></span></div>
+    ${header('Réglages')}
+    <div class="sec">🎮 Partie</div>
     <div class="set"><label>Niveau des mots</label>${seg('level', [['facile','Facile'],['moyen','Moyen'],['difficile','Difficile'],['mix','Mélange']])}
       <div class="note">Facile : chat / chien. Difficile : crocodile / alligator.</div></div>
     <div class="set"><label>Tours d'indices avant le 1er vote</label>${seg('clueRounds', [[1,'1'],[2,'2'],[3,'3']])}
@@ -617,19 +887,31 @@ function vSettings(){
     <div class="set"><label>Dernière chance de l'Undercover</label>${seg('lastChance', [[true,'Oui'],[false,'Non']])}
       <div class="note">Éliminé, il peut deviner le mot des civils pour gagner +${PTS.lastChance}.</div></div>
     <div class="set"><label>Mr White 🎩</label>${seg('mrWhite', [[false,'Non'],[true,'Oui']])}
-      <div class="note">Un joueur sans mot qui doit bluffer. Conseillé à partir de 5 joueurs${n < 4 ? ' (impossible à 3)' : ''}.</div></div>
+      <div class="note">Un joueur sans mot qui doit bluffer. À partir de 4 joueurs, conseillé à partir de 5.</div></div>
     <div class="set"><label>Thèmes</label><div class="chips">
       ${Object.entries(THEMES).map(([k,t]) => `<button class="chip ${s.themes[k] ? 'on' : ''}" data-a="theme" data-k="${k}">${t.icon} ${t.label}</button>`).join('')}
     </div></div>
-    <div class="set"><label>Mes mots perso (${S.custom.length} paire${S.custom.length > 1 ? 's' : ''})</label>${seg('family', [[true,'Inclus'],[false,'Exclus']])}</div>
     <div class="set"><label>Sons</label>${seg('sound', [[true,'Oui'],[false,'Non']])}</div>
-    <button class="btn primary" data-a="go" data-v="${S.back === 'settings' ? 'home' : S.back}">✓ C'est noté</button>
+
+    <div class="sec">👥 Joueurs & mots</div>
+    <div class="list">
+      ${li('go', 'roster', '👥', 'Joueurs enregistrés', plural(S.roster.length, 'joueur') + ' · à choisir au début de chaque partie')}
+      ${li('go', 'words', '✏️', 'Mes mots perso', plural(S.custom.length, 'paire') + (S.custom.length ? (s.family ? ' · utilisées en partie' : ' · non utilisées') : ' · ajoute vos propres mots'))}
+    </div>
+
+    <div class="sec">🔄 Synchronisation entre appareils</div>
+    <div class="list">
+      ${li('go', 'export', '📤', 'Exporter mes données', 'Code texte ou fichier à envoyer')}
+      ${li('go', 'import', '📥', 'Importer des données', 'Coller le code reçu d\'un autre appareil')}
+      ${li('go', 'gist', '☁️', 'Sync GitHub Gist', S.gist.last ? 'Dernière synchro : ' + fmtDate(S.gist.last) : 'Synchronisation cloud entre appareils')}
+    </div>
+    <button class="btn primary" data-a="back">✓ C'est noté</button>
   </div>`;
 }
 function vWords(){
   return `<div class="screen">
-    <div class="top"><button class="icon" data-a="go" data-v="home" aria-label="Retour">←</button><h2>Mes mots</h2><span style="width:44px"></span></div>
-    <p class="muted small">Ajoute vos propres paires : prénoms des copains, nom du chat, lieux de vacances… Elles se mélangent aux mots du jeu.</p>
+    ${header('Mes mots')}
+    <p class="muted small">Ajoute vos propres paires : prénoms des copains, nom du chat, lieux de vacances… Elles se mélangent aux mots du jeu et sortent plus souvent.</p>
     <div class="card" style="display:flex;flex-direction:column;gap:10px">
       <div class="row"><input id="wa" placeholder="Mot 1" maxlength="30" autocomplete="off" enterkeyhint="next"><input id="wb" placeholder="Mot 2" maxlength="30" autocomplete="off" enterkeyhint="done"></div>
       <button class="btn primary" data-a="addWord">＋ Ajouter la paire</button>
@@ -641,22 +923,105 @@ function vWords(){
 }
 function vRules(){
   return `<div class="screen">
-    <div class="top"><button class="icon" data-a="go" data-v="home" aria-label="Retour">←</button><h2>Les règles</h2><span style="width:44px"></span></div>
+    ${header('Les règles')}
     <div class="card">${rulesHtml()}</div>
-    <button class="btn primary" data-a="go" data-v="home">J'ai compris !</button>
+    <button class="btn primary" data-a="back">J'ai compris !</button>
   </div>`;
 }
 function vStats(){
-  const list = Object.values(S.stats).sort((a,b) => b.gameWins - a.gameWins || b.roundWins - a.roundWins);
+  const list = Object.values(computeStats()).sort((a,b) => b.gameWins - a.gameWins || b.roundWins - a.roundWins || a.name.localeCompare(b.name));
   return `<div class="screen">
-    <div class="top"><button class="icon" data-a="go" data-v="home" aria-label="Retour">←</button><h2>Statistiques</h2><span style="width:44px"></span></div>
+    ${header('Statistiques')}
     ${list.length ? `<div class="sl">${list.map((s,i) => `<div class="card">
-      <div class="row between"><b style="font-size:1.15rem">${i === 0 ? '👑 ' : ''}${esc(s.name)}</b><span class="pill">${s.gameWins} victoire${s.gameWins > 1 ? 's' : ''}</span></div>
-      <p class="muted small" style="margin-top:6px">${s.games} partie${s.games > 1 ? 's' : ''} · ${s.roundWins}/${s.rounds} manches gagnées<br>
-      🕵️ Undercover ${s.under} fois (${s.underWins} gagnée${s.underWins > 1 ? 's' : ''}) · 🎯 ${s.found} mot${s.found > 1 ? 's' : ''} deviné${s.found > 1 ? 's' : ''}</p>
+      <div class="row between"><b style="font-size:1.15rem">${i === 0 && s.gameWins ? '👑 ' : ''}${esc(s.name)}</b><span class="pill">${plural(s.gameWins, 'victoire')}</span></div>
+      <p class="muted small" style="margin-top:6px">${plural(s.games, 'partie')} · ${s.roundWins}/${s.rounds} manches gagnées<br>
+      🕵️ Undercover ${s.under} fois (${s.underWins} gagnée${s.underWins > 1 ? 's' : ''}) · 🎯 ${plural(s.found, 'mot')} deviné${s.found > 1 ? 's' : ''}</p>
     </div>`).join('')}</div>
-    <button class="btn ghost" data-a="resetStats">Remettre à zéro</button>`
-    : '<div class="center grow"><p class="muted">Pas encore de statistiques.<br>Jouez une manche pour commencer !</p></div>'}
+    <p class="tip">Calculées à partir de l'historique des parties terminées.</p>
+    <button class="btn ghost" data-a="modal" data-v="resetStats">Tout effacer</button>`
+    : '<div class="center grow"><p class="muted">Pas encore de statistiques.<br>Terminez une partie pour commencer !</p></div>'}
+  </div>`;
+}
+function rankList(players){
+  const list = players.slice().sort((a,b) => b.score - a.score);
+  list.forEach(x => x.rank = 1 + list.filter(y => y.score > x.score).length);
+  return list;
+}
+const medal = rk => rk === 1 ? '🥇' : rk === 2 ? '🥈' : rk === 3 ? '🥉' : rk + 'e';
+function vHistory(){
+  const list = S.games.slice().sort((a,b) => b.date - a.date);
+  return `<div class="screen">
+    ${header('Historique')}
+    ${list.length ? `<p class="muted small center">${plural(list.length, 'partie')} terminée${list.length > 1 ? 's' : ''}</p>
+    <div class="sl">${list.map(g => {
+      const rk = rankList(g.players.map(p => Object.assign({}, p))), win = rk.filter(x => x.rank === 1);
+      return `<button class="card hcard" data-a="openGame" data-id="${esc(g.id)}">
+        <div class="row between"><span class="muted small">${esc(fmtDate(g.date))}</span><span class="muted small">${plural(g.played, 'manche')} ›</span></div>
+        <div style="font-weight:900;font-size:1.1rem;margin-top:4px">🏆 ${win.map(x => nm(x)).join(' & ')} <span class="muted">· ${win[0].score} pts</span></div>
+        <div class="avs">${rk.map(p => `<span class="sc">${av(p)}${nm(p)} ${p.score}</span>`).join('')}</div>
+      </button>`;
+    }).join('')}</div>`
+    : '<div class="center grow"><div style="font-size:3rem">🗂️</div><p class="muted">Aucune partie terminée pour l\'instant.</p></div>'}
+  </div>`;
+}
+function vGameDetail(){
+  const g = S.games.find(x => x.id === S.ui.gameId);
+  if (!g) return vHistory();
+  const byId = Object.fromEntries(g.players.map(p => [p.id, p]));
+  const rk = rankList(g.players.map(p => Object.assign({}, p)));
+  const names = ids => ids.map(id => byId[id] ? nm(byId[id]) : '?').join(', ');
+  const wl = {civils:'🎉 Les civils gagnent', inf:'🕵️ Les intrus gagnent', white:'🎩 Mr White a trouvé'};
+  return `<div class="screen">
+    ${header('Détail de la partie')}
+    <p class="muted center small">${esc(fmtDate(g.date))} · ${plural(g.played, 'manche')}${g.played < g.total ? ' sur ' + g.total + ' prévues' : ''}</p>
+    <div class="sl">${rk.map(p => `<div class="si"><span>${medal(p.rank)}</span>${av(p, 's')}<span class="n">${nm(p)}</span><span class="p">${p.score}</span></div>`).join('')}</div>
+    <div class="sec">Les manches</div>
+    <div class="sl">${g.log.map(r => {
+      const roles = r.roles || {}, ids = Object.keys(roles);
+      const unders = ids.filter(id => roles[id] === 'under'), whites = ids.filter(id => roles[id] === 'white');
+      const th = THEMES[r.t];
+      return `<div class="rnd"><div class="h"><span>Manche ${esc(r.n)} · ${th ? th.icon : '✏️'} ${esc(r.civil)} / ${esc(r.under)}</span></div>
+        <div class="d">${wl[r.winner] || ''} · 🕵️ ${names(unders)}${whites.length ? ' · 🎩 ' + names(whites) : ''}${r.found && r.found.length ? ' · 🎯 ' + names(r.found) + ' a deviné' : ''}</div></div>`;
+    }).join('')}</div>
+    <button class="btn ghost" data-a="modal" data-v="delGame">🗑️ Supprimer cette partie</button>
+  </div>`;
+}
+function vExport(){
+  const code = exportCode();
+  return `<div class="screen">
+    ${header('Exporter mes données')}
+    <p class="muted small">Joueurs, réglages, mots perso, historique et statistiques : tout est dans ce code. Envoie-le sur l'autre appareil (SMS, mail…) puis utilise « Importer des données ».</p>
+    <div class="card"><b>${plural(S.games.length, 'partie')} · ${plural(S.roster.length, 'joueur')} · ${plural(S.custom.length, 'paire')} perso</b></div>
+    <textarea readonly aria-label="Code d'export" onclick="this.select()">${esc(code)}</textarea>
+    <button class="btn primary" data-a="copyCode">📋 Copier le code</button>
+    <div class="row"><button class="btn ghost" data-a="downloadFile">💾 Fichier</button><button class="btn ghost" data-a="shareData">📤 Partager</button></div>
+  </div>`;
+}
+function vImport(){
+  return `<div class="screen">
+    ${header('Importer des données')}
+    <p class="muted small">Colle le code reçu d'un autre appareil, ou choisis un fichier de sauvegarde (.json).</p>
+    <textarea data-field="impTxt" placeholder="Colle le code ici (il commence par UCF2:)" aria-label="Code à importer">${esc(S.ui.impTxt || '')}</textarea>
+    <button class="btn ghost" data-a="pickFile">📂 Choisir un fichier</button>
+    <input type="file" id="impFile" accept=".json,.txt,application/json,text/plain" hidden>
+    <div class="grow"></div>
+    <button class="btn primary big" data-a="impParse">📥 Importer</button>
+  </div>`;
+}
+function vGist(){
+  const g = S.gist;
+  return `<div class="screen">
+    ${header('Sync GitHub Gist')}
+    <p class="muted small">Tes données sont rangées dans un Gist secret sur ton compte GitHub. Sur chaque appareil, colle le même jeton puis touche « Synchroniser » : les parties et joueurs des deux côtés sont fusionnés.</p>
+    <div class="set"><label>Jeton GitHub (permission « gist »)</label>
+      <input type="password" data-field="gistToken" value="${esc(g.token)}" placeholder="ghp_…" autocomplete="off" spellcheck="false">
+      <div class="note"><a href="https://github.com/settings/tokens/new?scopes=gist&description=Undercover%20Famille" target="_blank" rel="noopener">Créer un jeton</a> en ne cochant que « gist ». Il reste sur cet appareil et n'est jamais exporté.</div></div>
+    <div class="set"><label>Identifiant du Gist <span class="muted">(facultatif)</span></label>
+      <input data-field="gistId" value="${esc(g.id)}" placeholder="trouvé automatiquement" autocomplete="off" spellcheck="false">
+      <div class="note">Laisse vide : le jeu retrouve tout seul son Gist, ou le crée à la première synchro.</div></div>
+    <button class="btn primary big" data-a="gistSync" ${S.ui.syncing ? 'disabled' : ''}>${S.ui.syncing ? '<span class="spin">🔄</span> Synchronisation…' : '🔄 Synchroniser maintenant'}</button>
+    <p class="tip">${g.last ? 'Dernière synchro : ' + esc(fmtDate(g.last)) : 'Jamais synchronisé sur cet appareil'}</p>
+    ${g.token ? '<button class="btn ghost" data-a="modal" data-v="gistForget">Oublier le jeton sur cet appareil</button>' : ''}
   </div>`;
 }
 
@@ -696,11 +1061,12 @@ function vReveal(){
     <p class="tip">Retiens bien ton mot, puis passe le téléphone au suivant.</p>
     <div class="grow"></div>
     <button id="seenBtn" class="btn primary big" data-a="seen" ${S.ui.revealed ? '' : 'disabled'}>J'ai retenu mon mot ✓</button>
+    <button class="btn ghost" data-a="modal" data-v="redo">🔄 Changer de mots<br><small>mot pas compris ou déjà joué</small></button>
   </div>`;
 }
 function vClues(){
   const r = S.game.r, p = P(r.order[r.idx]);
-  const head = r.candidates ? `⚖️ Départage : un indice chacun` : `Tour d'indices ${r.clueRound} / ${r.cluesNeeded}`;
+  const head = r.tieRound ? `⚖️ Égalité ! Encore un tour d'indices` : `Tour d'indices ${r.clueRound} / ${r.cluesNeeded}`;
   return `<div class="screen">${topbar()}
     <p class="center muted" style="font-weight:800">${head}</p>
     <div class="center grow" style="gap:6px">
@@ -716,13 +1082,12 @@ function vClues(){
   </div>`;
 }
 function vVote(){
-  const r = S.game.r;
-  const cands = r.candidates ? r.alive.filter(id => r.candidates.includes(id)) : r.alive;
+  const r = S.game.r, cands = r.alive;
   if (r.voteStep === 'debate' || r.voteStep === 'count'){
     return `<div class="screen">${topbar()}
       <div class="center grow" style="gap:10px">
         <div style="font-size:4rem">🗳️</div>
-        <h1>Place au vote !</h1>
+        <h1>${r.tieRound ? 'On revote !' : 'Place au vote !'}</h1>
         <p class="muted">Discutez : qui semble avoir un mot différent ?</p>
         <div class="queue" style="margin-top:10px">${cands.map(id => av(P(id))).join('')}</div>
       </div>
@@ -731,23 +1096,12 @@ function vVote(){
       ${r.voteStep === 'count' ? '<div class="cd" id="cd"></div>' : ''}
     </div>`;
   }
-  if (r.voteStep === 'tie'){
-    return `<div class="screen">${topbar()}
-      <h2 class="center">⚖️ Qui est à égalité ?</h2>
-      <p class="muted center small">Sélectionne les joueurs qui ont reçu le plus de doigts.</p>
-      <div class="grid">${cands.map(id => { const p = P(id); return `<button class="pcard ${r.tieSel.includes(id) ? 'sel' : ''}" data-a="tieToggle" data-id="${id}">${av(p, 'l')}${nm(p)}</button>`; }).join('')}</div>
-      <div class="grow"></div>
-      <button class="btn primary" data-a="tieGo" ${r.tieSel.length < 2 ? 'disabled' : ''}>Départager : un indice de plus chacun</button>
-      <button class="btn ghost" data-a="tieCancel">Retour</button>
-    </div>`;
-  }
   return `<div class="screen">${topbar()}
     <h2 class="center">👉 Qui a été désigné ?</h2>
     <p class="muted center small">Touche le joueur qui a reçu le plus de doigts.</p>
-    <div class="grid">${cands.map(id => { const p = P(id); return `<button class="pcard" data-a="pickElim" data-id="${id}">${av(p, 'l')}${nm(p)}</button>`; }).join('')}</div>
+    <div class="grid">${cands.map(id => { const p = P(id); return `<button class="pcard" data-a="pickElim" data-id="${esc(id)}">${av(p, 'l')}${nm(p)}</button>`; }).join('')}</div>
     <div class="grow"></div>
-    <button class="btn ghost" data-a="tie">⚖️ Il y a égalité</button>
-    ${r.candidates ? `<button class="btn ghost" data-a="drawLots">🎲 Encore égalité : tirage au sort</button>` : ''}
+    <button class="btn ghost" data-a="tie">⚖️ Égalité : on refait un tour d'indices</button>
   </div>`;
 }
 function vSuspense(){
@@ -822,17 +1176,15 @@ function vEnd(){
 }
 function vPodium(){
   const g = S.game;
-  const list = g.players.map(p => ({p, s:g.scores[p.id]})).sort((a,b) => b.s - a.s);
-  list.forEach(x => x.rank = 1 + list.filter(y => y.s > x.s).length);
-  const medal = rk => rk === 1 ? '🥇' : rk === 2 ? '🥈' : rk === 3 ? '🥉' : rk + 'e';
-  const stepH = (x, pos) => x ? `<div class="step s${pos}">${av(x.p, pos === 1 ? 'l' : '')}<div class="nm">${nm(x.p)}</div><div class="block">${medal(x.rank)}<small>${x.s} pts</small></div></div>` : '<div class="step"></div>';
-  const top = list[0], ties = list.filter(x => x.rank === 1);
+  const list = rankList(g.players.map(p => Object.assign({}, p, {score:g.scores[p.id]})));
+  const stepH = (x, pos) => x ? `<div class="step s${pos}">${av(x, pos === 1 ? 'l' : '')}<div class="nm">${nm(x)}</div><div class="block">${medal(x.rank)}<small>${x.score} pts</small></div></div>` : '<div class="step"></div>';
+  const ties = list.filter(x => x.rank === 1);
   return `<div class="screen">
     <div class="center" style="gap:4px;margin-top:10px"><div style="font-size:3.5rem">🏆</div>
-      <h1>${ties.length > 1 ? 'Égalité au sommet !' : `Bravo ${nm(top.p)} !`}</h1>
-      <p class="muted">${g.total} manches jouées</p></div>
+      <h1>${ties.length > 1 ? 'Égalité au sommet !' : `Bravo ${nm(list[0])} !`}</h1>
+      <p class="muted">${plural(g.log.length, 'manche')} jouée${g.log.length > 1 ? 's' : ''} · partie enregistrée dans l'historique</p></div>
     <div class="podium">${stepH(list[1], 2)}${stepH(list[0], 1)}${stepH(list[2], 3)}</div>
-    ${list.length > 3 ? `<div class="sl">${list.slice(3).map(x => `<div class="si"><span>${medal(x.rank)}</span>${av(x.p, 's')}<span class="n">${nm(x.p)}</span><span class="p">${x.s}</span></div>`).join('')}</div>` : ''}
+    ${list.length > 3 ? `<div class="sl">${list.slice(3).map(x => `<div class="si"><span>${medal(x.rank)}</span>${av(x, 's')}<span class="n">${nm(x)}</span><span class="p">${x.score}</span></div>`).join('')}</div>` : ''}
     <div class="grow"></div>
     <button class="btn primary big" data-a="rematch">🔁 Revanche !</button>
     <button class="btn ghost" data-a="home">🏠 Accueil</button>
@@ -840,6 +1192,8 @@ function vPodium(){
 }
 
 /* --- fenêtres modales --- */
+const yesNo = (title, text, yesA, yesLbl, cls='red') => `<h2>${title}</h2>${text ? `<p class="muted">${text}</p>` : ''}
+  <div class="row"><button class="btn ghost" data-a="closeModal">Annuler</button><button class="btn ${cls}" data-a="${yesA}">${yesLbl}</button></div>`;
 function vModal(){
   const m = S.modal; if (!m) return '';
   let body = '';
@@ -847,12 +1201,15 @@ function vModal(){
   switch (m.type){
     case 'menu': {
       const canPeek = r && ['clues','vote'].includes(r.phase);
+      const canRedo = r && !r.firstVoteDone && ['pass','reveal','clues','vote'].includes(r.phase);
       body = `<h2>Menu</h2>
         <button class="btn ghost" data-a="modal" data-v="scores">📊 Scores</button>
         ${canPeek ? '<button class="btn ghost" data-a="peek">🤫 Revoir mon mot</button>' : ''}
+        ${canRedo ? '<button class="btn ghost" data-a="modal" data-v="redo">🔄 Changer de mots <small>(nouvelle paire)</small></button>' : ''}
         <button class="btn ghost" data-a="modal" data-v="rules">📖 Règles</button>
         <button class="btn ghost" data-a="toggleSound">${S.settings.sound ? '🔊 Son activé' : '🔇 Son coupé'}</button>
-        <button class="btn ghost" data-a="go" data-v="home">🏠 Accueil <small>(partie sauvegardée)</small></button>
+        ${g.log.length ? '<button class="btn ghost" data-a="modal" data-v="endNow">🏁 Terminer la partie maintenant</button>' : ''}
+        <button class="btn ghost" data-a="home">🏠 Accueil <small>(partie sauvegardée)</small></button>
         <button class="btn ghost" data-a="modal" data-v="quit">🛑 Abandonner la partie</button>
         <button class="btn primary" data-a="closeModal">Fermer</button>`;
       break;
@@ -865,26 +1222,37 @@ function vModal(){
       break;
     }
     case 'rules': body = `${rulesHtml()}<button class="btn primary" data-a="closeModal">Fermer</button>`; break;
-    case 'quit': body = `<h2>Abandonner la partie ?</h2><p class="muted">Les scores de cette partie seront perdus.</p>
-        <div class="row"><button class="btn ghost" data-a="closeModal">Non</button><button class="btn red" data-a="quitYes">Oui, abandonner</button></div>`; break;
-    case 'replace': body = `<h2>Une partie est en cours</h2><p class="muted">En commencer une nouvelle effacera la partie en cours.</p>
-        <div class="row"><button class="btn ghost" data-a="closeModal">Annuler</button><button class="btn primary" data-a="replaceYes">Nouvelle partie</button></div>`; break;
-    case 'resetStats': body = `<h2>Remettre les stats à zéro ?</h2><p class="muted">Toutes les statistiques seront effacées.</p>
-        <div class="row"><button class="btn ghost" data-a="closeModal">Annuler</button><button class="btn red" data-a="resetStatsYes">Effacer</button></div>`; break;
+    case 'redo': body = `<div class="center" style="gap:6px"><div style="font-size:3rem">🔄</div></div>` + yesNo('Changer de mots ?', 'Un mot pas compris, ou une paire déjà jouée ? La manche recommence avec une nouvelle paire de mots. Les rôles sont retirés au sort et <b>les points ne changent pas</b>.', 'redoYes', '🔄 Changer', 'primary'); break;
+    case 'endNow': body = yesNo('Terminer la partie maintenant ?', `Le classement est arrêté après ${plural(g.log.length, 'manche')} et la partie est enregistrée dans l'historique.${r && r.phase !== 'end' ? ' La manche en cours ne compte pas.' : ''}`, 'endNowYes', '🏁 Terminer', 'primary'); break;
+    case 'quit': body = yesNo('Abandonner la partie ?', 'Les scores de cette partie seront perdus et elle n\'ira pas dans l\'historique.', 'quitYes', 'Oui, abandonner'); break;
+    case 'replace': body = yesNo('Une partie est en cours', 'En commencer une nouvelle effacera la partie en cours.', 'replaceYes', 'Nouvelle partie', 'primary'); break;
+    case 'resetStats': body = yesNo('Tout effacer ?', 'L\'historique des parties et toutes les statistiques seront supprimés de cet appareil.', 'resetStatsYes', 'Effacer'); break;
+    case 'delGame': body = yesNo('Supprimer cette partie ?', 'Elle disparaîtra de l\'historique et des statistiques.', 'delGameYes', 'Supprimer'); break;
+    case 'gistForget': body = yesNo('Oublier le jeton ?', 'Le jeton GitHub sera effacé de cet appareil. Tes données restent sur GitHub.', 'gistForgetYes', 'Oublier'); break;
+    case 'rDel': { const p = S.roster.find(x => x.id === m.id); body = yesNo(`Supprimer ${p ? nm(p) : 'ce joueur'} ?`, 'Il ne sera plus proposé au début des parties. L\'historique est conservé.', 'rDelYes', 'Supprimer'); break; }
+    case 'newPlayer': body = `<h2>＋ Nouveau joueur</h2>
+        <input id="np" placeholder="Prénom" maxlength="16" autocomplete="off" enterkeyhint="done">
+        <p class="muted small">Il sera enregistré pour les prochaines parties.</p>
+        <div class="row"><button class="btn ghost" data-a="closeModal">Annuler</button><button class="btn primary" data-a="npAdd">Ajouter</button></div>`; break;
+    case 'impChoice': {
+      const d = S.ui.imp;
+      body = `<h2>📥 Données trouvées</h2>
+        <div class="card"><b>${plural(d.games.length, 'partie')} · ${plural(d.roster.length, 'joueur')} · ${plural(d.custom.length, 'paire')} perso</b></div>
+        <button class="btn primary" data-a="impMerge">🔀 Fusionner avec mes données</button>
+        <p class="muted small">Ajoute les parties, joueurs et mots qui manquent. Rien n'est effacé.</p>
+        <button class="btn red" data-a="impReplace">♻️ Tout remplacer</button>
+        <p class="muted small">Les données de cet appareil sont remplacées par celles importées (la partie en cours est conservée).</p>
+        <button class="btn ghost" data-a="closeModal">Annuler</button>`;
+      break;
+    }
     case 'confirmElim': {
       const p = P(m.id);
       body = `<div class="center" style="gap:8px">${av(p, 'l')}<h2>Éliminer ${nm(p)} ?</h2></div>
         <div class="row"><button class="btn ghost" data-a="closeModal">Annuler</button><button class="btn red" data-a="confirmElim">Éliminer</button></div>`;
       break;
     }
-    case 'drawn': {
-      const p = P(m.id);
-      body = `<div class="center" style="gap:8px"><div style="font-size:3rem">🎲</div><p class="muted">Le sort a désigné…</p>${av(p, 'l')}<h2>${nm(p)}</h2></div>
-        <button class="btn red" data-a="confirmElim">Éliminer ${nm(p)}</button>`;
-      break;
-    }
     case 'peekWho': body = `<h2>🤫 Qui veut revoir son mot ?</h2>
-        <div class="grid">${r.alive.map(id => { const p = P(id); return `<button class="pcard" data-a="peekWho" data-id="${id}">${av(p, 'l')}${nm(p)}</button>`; }).join('')}</div>
+        <div class="grid">${r.alive.map(id => { const p = P(id); return `<button class="pcard" data-a="peekWho" data-id="${esc(id)}">${av(p, 'l')}${nm(p)}</button>`; }).join('')}</div>
         <button class="btn ghost" data-a="closeModal">Annuler</button>`; break;
     case 'peekPass': {
       const p = P(m.id);
@@ -902,12 +1270,13 @@ function vModal(){
    ========================================================= */
 let lastKey = '';
 function render(){
-  const views = {home:vHome, players:vPlayers, settings:vSettings, words:vWords, rules:vRules, stats:vStats, game:vGame, podium:vPodium};
+  const views = {home:vHome, players:vPlayers, roster:vRoster, settings:vSettings, words:vWords, rules:vRules, stats:vStats,
+    history:vHistory, gameDetail:vGameDetail, export:vExport, import:vImport, gist:vGist, game:vGame, podium:vPodium};
   if ((S.view === 'game' || S.view === 'podium') && !S.game) S.view = 'home';
   app.innerHTML = (views[S.view] || vHome)() + vModal();
   const key = S.view + (S.game && S.game.r ? S.game.r.phase + S.game.round : '');
   if (key !== lastKey){ window.scrollTo(0, 0); lastKey = key; }
-  if (S.ui.focusLast){ const ins = app.querySelectorAll('input[data-field="pname"]'); if (ins.length) ins[ins.length-1].focus(); S.ui.focusLast = false; }
+  if (S.modal && S.modal.type === 'newPlayer'){ const el = $('#np'); if (el) el.focus(); }
   syncTimer();
   wake(S.view === 'game');
 }
@@ -915,7 +1284,7 @@ let T = null;
 function timerKey(){
   const g = S.game; if (!g || S.view !== 'game' || !S.settings.timer) return null;
   const r = g.r; if (r.phase !== 'clues') return null;
-  return [g.id, g.round, r.order.join(','), r.clueRound, r.idx, r.candidates ? 't' : ''].join('|');
+  return [g.id, g.round, r.order.join(','), r.clueRound, r.idx, r.tieRound ? 't' : ''].join('|');
 }
 function syncTimer(){
   const k = timerKey();
@@ -949,14 +1318,32 @@ document.addEventListener('click', e => {
   fn(el.dataset, el, e);
 });
 document.addEventListener('input', e => {
+  const t = e.target, f = t.dataset && t.dataset.field;
+  if (f === 'impTxt') S.ui.impTxt = t.value;
+  else if (f === 'gistToken'){ S.gist.token = t.value.trim(); saveGist(); }
+  else if (f === 'gistId'){ S.gist.id = t.value.trim(); saveGist(); }
+});
+document.addEventListener('change', e => {
   const t = e.target;
-  if (t.dataset.field === 'pname'){ S.players[+t.dataset.i].name = t.value; savePlayers(); }
+  if (t.id === 'impFile' && t.files && t.files[0]){
+    t.files[0].text().then(txt => { S.ui.impTxt = txt; render(); toast('Fichier chargé ✓ Touche « Importer »'); }).catch(() => toast('Fichier illisible'));
+  }
+  if (t.dataset && t.dataset.field === 'rname'){
+    const p = S.roster.find(x => x.id === t.dataset.id); if (!p) return;
+    const v = t.value.trim().slice(0, 16);
+    if (!v){ toast('Le prénom ne peut pas être vide'); return render(); }
+    if (S.roster.some(x => x.id !== p.id && x.name.toLowerCase() === v.toLowerCase())){ toast(`${v} existe déjà`); return render(); }
+    p.name = v; saveRoster();
+  }
 });
 document.addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
-  if (e.target.id === 'wa'){ e.preventDefault(); $('#wb').focus(); }
-  else if (e.target.id === 'wb'){ e.preventDefault(); ACTIONS.addWord(); }
-  else if (e.target.dataset && e.target.dataset.field === 'pname') e.target.blur();
+  const id = e.target.id;
+  if (id === 'wa'){ e.preventDefault(); $('#wb').focus(); }
+  else if (id === 'wb'){ e.preventDefault(); ACTIONS.addWord(); }
+  else if (id === 'np'){ e.preventDefault(); ACTIONS.npAdd(); }
+  else if (id === 'rn'){ e.preventDefault(); ACTIONS.rAdd(); }
+  else if (e.target.dataset && e.target.dataset.field === 'rname') e.target.blur();
 });
 /* carte « maintiens pour voir » */
 let holdEl = null;
