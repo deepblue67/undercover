@@ -1,6 +1,6 @@
 # 🕵️ Undercover Famille
 
-Le jeu d'ambiance **Undercover**, pensé pour jouer **en famille sur un seul téléphone**.
+Le jeu d'ambiance **Undercover**, pensé pour jouer **en famille sur un seul téléphone**… ou **avec un téléphone par joueur**.
 Tout le monde reçoit un mot secret… sauf l'intrus, qui a un mot légèrement différent. À vous de le démasquer !
 
 ▶️ **Jouer en ligne** : `https://<votre-compte>.github.io/undercover-famille/`
@@ -10,6 +10,7 @@ Tout le monde reçoit un mot secret… sauf l'intrus, qui a un mot légèrement 
 ## ✨ Fonctionnalités
 
 - 📱 **Un seul téléphone** qui passe de main en main : le mot ne s'affiche que tant qu'on garde le doigt dessus
+- 📱📱 **Ou un téléphone par joueur** (réglage « Téléphones ») : salle avec un code de 4 lettres et un QR code, mot sur chaque écran, **votes secrets** puis dépouillement (Supabase Realtime, gratuit)
 - 👨‍👩‍👧‍👦 De **3 à 10 joueurs**, choisis dans une **liste de joueurs enregistrés** (prénom, avatar, couleur) au lancement de chaque partie
 - 📚 **246 paires de mots** adaptées aux enfants, réparties en 11 thèmes et 3 niveaux
 - ✏️ **Mots perso** : ajoutez vos propres paires (prénoms, lieux de vacances, blagues de famille)
@@ -24,7 +25,7 @@ Tout le monde reçoit un mot secret… sauf l'intrus, qui a un mot légèrement 
 - 🔄 **Synchronisation entre appareils** : export / import par code texte ou fichier, ou synchro automatique via un **GitHub Gist** secret
 - 💾 La partie est sauvegardée : on peut fermer l'appli et reprendre plus tard
 - ✈️ **Fonctionne hors ligne** et s'installe sur l'écran d'accueil (PWA)
-- 🔒 Aucun compte, aucun serveur : tout reste dans le téléphone (sauf si vous activez la synchro Gist, vers votre propre compte GitHub)
+- 🔒 Aucun compte : tout reste dans le téléphone (sauf synchro Gist vers votre propre compte GitHub, et en mode « un téléphone par joueur » où les messages de la partie transitent par Supabase sans y être enregistrés)
 
 ## 🎲 Règles
 
@@ -43,6 +44,32 @@ Tout le monde reçoit un mot secret… sauf l'intrus, qui a un mot légèrement 
 | Mr White gagnant (survit ou devine le mot des civils) | +6 |
 
 Répartition des rôles : 1 Undercover jusqu'à 6 joueurs, 2 à partir de 7. Mr White est conseillé à partir de 5 joueurs.
+
+## 📱📱 Un téléphone par joueur
+
+Dans **Réglages → Téléphones**, choisissez **Un par joueur**. Puis **Nouvelle partie** ouvre une salle :
+
+1. Le téléphone de l'hôte affiche un **code de 4 lettres** et un **QR code**. L'hôte indique s'il joue aussi (son prénom) ou si son téléphone sert seulement d'écran de jeu.
+2. Les autres ouvrent le jeu, touchent **📲 Rejoindre une partie** et tapent le code, ou scannent le QR code / ouvrent le lien d'invitation. Ils choisissent leur prénom dans la liste des joueurs de l'hôte ou en tapent un nouveau.
+3. Chacun voit **son mot sur son écran**. Les indices se donnent toujours à voix haute : le téléphone du joueur dont c'est le tour affiche « À toi ! ».
+4. **Vote secret** sur chaque téléphone (on peut changer d'avis tant que tout le monde n'a pas voté), puis dépouillement : qui a voté pour qui. Égalité → nouveau tour d'indices.
+5. Dernière chance / Mr White : le joueur éliminé dit le mot à voix haute, les autres valident sur leur téléphone.
+
+Le téléphone de l'hôte garde la partie : il doit rester allumé avec le jeu ouvert (l'écran reste allumé automatiquement). Si un joueur ferme le jeu par erreur, il le rouvre et retrouve la partie tout seul. Si un téléphone est déconnecté, l'hôte peut passer son tour d'indice ou clôturer le vote. La partie est enregistrée dans l'historique de l'hôte et de chaque joueur.
+
+### Configurer Supabase (une seule fois, gratuit)
+
+1. Créez un compte sur [supabase.com](https://supabase.com) puis un nouveau projet.
+2. **Project Settings → API Keys** : copiez l'adresse du projet (`https://xxxx.supabase.co`) et la clé **Publishable** (`sb_publishable_…`). Aucune table à créer : le jeu n'utilise que les canaux *Broadcast* et *Presence* de Realtime.
+3. Deux possibilités :
+   - **Recommandé** : renseignez `SUPABASE_URL` et `SUPABASE_KEY` en haut du script de `index.html`. Tous les téléphones sont alors connectés d'office.
+   - Ou collez-les dans **Réglages → Connexion en ligne** sur le téléphone de l'hôte. Les invités n'ont rien à saisir : le lien d'invitation et le QR code transmettent la connexion.
+
+> La clé « Publishable » est faite pour être visible dans une appli web. Ne mettez jamais la clé « secret ». Si la connexion échoue, vérifiez dans **Realtime → Settings** que les canaux publics sont autorisés. Un projet gratuit inutilisé pendant longtemps peut être mis en pause : il suffit de le réactiver depuis le tableau de bord.
+
+### Tester sur un ordinateur, sans serveur
+
+Ouvrez plusieurs onglets du même navigateur avec `?local=1&p=nom` (un nom différent par onglet, par exemple `index.html?local=1&p=hote`, `?local=1&p=alice`…). Les onglets communiquent entre eux et chacun a ses propres données.
 
 ## 🚀 Mise en ligne sur GitHub Pages
 

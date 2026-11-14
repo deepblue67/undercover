@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Undercover Famille</title>
-<meta name="description" content="Le jeu Undercover pour jouer en famille sur un seul téléphone : qui a un mot différent ?">
+<meta name="description" content="Le jeu Undercover pour jouer en famille, sur un seul téléphone ou un téléphone par joueur : qui a un mot différent ?">
 <meta name="theme-color" content="#1b1640">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -154,6 +154,21 @@ textarea:focus{outline:none;border-color:#ffcc33}
 @keyframes sp{to{transform:rotate(360deg)}}
 .warn{background:rgba(255,204,51,.12);border:1px solid rgba(255,204,51,.35);border-radius:14px;padding:10px 12px;font-size:.88rem}
 .linkbtn{background:none;border:0;color:#c3bdf0;font:inherit;font-weight:700;text-decoration:underline;cursor:pointer;padding:6px}
+/* mode un téléphone par joueur */
+.code{display:flex;gap:8px;justify-content:center}
+.code span{background:#fff;color:#1b1640;font-size:2.3rem;font-weight:900;width:54px;height:66px;border-radius:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 5px 0 rgba(0,0,0,.28)}
+.qr:empty{display:none}
+.qr svg{width:168px;height:168px;background:#fff;border-radius:14px;padding:6px;display:block}
+input.codein{text-align:center;font-size:2.3rem;letter-spacing:.45em;text-transform:uppercase;font-weight:900;padding:14px 14px 14px calc(14px + .45em)}
+.avw{position:relative;display:inline-flex}
+.avw .ck{position:absolute;right:-5px;bottom:-5px;background:#3ddc97;color:#10302a;border-radius:99px;width:20px;height:20px;font-size:.72rem;font-weight:900;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 5px rgba(0,0,0,.3)}
+.avw .off{position:absolute;left:-7px;top:-7px;font-size:.8rem}
+.q2 .av{opacity:1}.q2 .av.dim{opacity:.4}
+.dot{width:10px;height:10px;border-radius:50%;background:#3ddc97;flex:none;box-shadow:0 0 0 3px rgba(61,220,151,.2)}
+.dot.off{background:#ff5d73;box-shadow:0 0 0 3px rgba(255,93,115,.2)}
+.pill.net{font-size:.85rem;letter-spacing:.08em;border:0;color:#fff;font-family:inherit;cursor:pointer}
+.vt{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.wait{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
 </style>
 </head>
 <body>
@@ -200,7 +215,19 @@ const ROLE = {
 const LEVELS = {facile:[1],moyen:[1,2],difficile:[2,3],mix:[1,2,3]};
 const LEVEL_LBL = {facile:'Facile',moyen:'Moyen',difficile:'Difficile',mix:'Mélange'};
 const PTS = {civil:2, under:6, white:6, lastChance:3};
-const APP_ID = 'undercover-famille', APP_VERSION = '2.0.1', GIST_FILE = 'undercover-famille.json';
+const APP_ID = 'undercover-famille', APP_VERSION = '2.1.0', GIST_FILE = 'undercover-famille.json';
+
+/* ---------- Mode « un téléphone par joueur » : connexion Supabase Realtime ----------
+   Renseignez ici l'adresse du projet et sa clé publique (« Publishable key », sb_publishable_…)
+   pour que tous les téléphones soient connectés d'office. Sinon : Réglages → Connexion en ligne.
+   Aucune table n'est nécessaire : le jeu utilise seulement les canaux Broadcast et Presence. */
+const SUPABASE_URL = 'https://svgczsupkpilwzxyidzm.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_0iWkc1kErLseDBA8fTPGZQ_m5-JXhJU';
+const SB_CDN = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+const QR_CDN = 'https://cdn.jsdelivr.net/npm/qrcode-generator@2.0.4/dist/qrcode.mjs';
+const QS = new URLSearchParams(location.search);
+const DEV_LOCAL = QS.get('local') === '1';   // test sur un seul ordinateur (plusieurs onglets), sans serveur
+const PROFILE = (QS.get('p') || '').replace(/[^a-z0-9]/gi, '').slice(0, 12);   // profil séparé par onglet pour les tests
 
 /* ---------- Outils ---------- */
 const $ = s => document.querySelector(s);
@@ -211,9 +238,10 @@ const pick = a => a[rnd(a.length)];
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
 const safeColor = c => /^#[0-9a-f]{3,8}$/i.test(String(c)) ? c : '#94a3ff';
 const store = {
-  get(k, d){ try { const v = localStorage.getItem('ucf_' + k); return v == null ? d : JSON.parse(v); } catch(e){ return d; } },
-  set(k, v){ try { localStorage.setItem('ucf_' + k, JSON.stringify(v)); } catch(e){ toast('⚠️ Mémoire du téléphone pleine : sauvegarde impossible'); } },
-  del(k){ try { localStorage.removeItem('ucf_' + k); } catch(e){} }
+  pfx:'ucf_' + (PROFILE ? PROFILE + '_' : ''),
+  get(k, d){ try { const v = localStorage.getItem(this.pfx + k); return v == null ? d : JSON.parse(v); } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem(this.pfx + k, JSON.stringify(v)); } catch(e){ toast('⚠️ Mémoire du téléphone pleine : sauvegarde impossible'); } },
+  del(k){ try { localStorage.removeItem(this.pfx + k); } catch(e){} }
 };
 function weightedPick(items, w){
   const ws = items.map(w), tot = ws.reduce((a,b)=>a+b, 0);
@@ -231,7 +259,7 @@ const b64dec = s => { const bin = atob(s); const b = new Uint8Array(bin.length);
 
 /* ---------- État & migration depuis la v1 ---------- */
 const DEFAULT_SETTINGS = {
-  level:'moyen', clueRounds:2, timer:0, rounds:5, mrWhite:false, lastChance:true, sound:true, family:true,
+  mode:'single', level:'moyen', clueRounds:2, timer:0, rounds:5, mrWhite:false, lastChance:true, sound:true, family:true,
   themes:Object.fromEntries(Object.keys(THEMES).map(k => [k, true]))
 };
 const mergeSettings = s => Object.assign({}, DEFAULT_SETTINGS, s || {}, {themes:Object.assign({}, DEFAULT_SETTINGS.themes, (s && s.themes) || {})});
@@ -257,8 +285,13 @@ const S = {
   games:store.get('games', []),
   legacyStats,
   gist:Object.assign({token:'', id:'', last:0}, store.get('gist', {})),
-  game:store.get('game', null)
+  game:store.get('game', null),
+  sb:Object.assign({url:'', key:''}, store.get('sb', {})),   // connexion Supabase saisie sur cet appareil
+  net:store.get('room', null),     // salle ouverte par ce téléphone (hôte) : {code, hostMe, players, at}
+  guest:null,                      // salle rejointe par ce téléphone (invité)
+  priv:null                        // mot secret reçu de l'hôte (invité)
 };
+let savedGuest = store.get('netGuest', null);
 if (S.game){
   if (!S.game.log) S.game.log = [];
   const r = S.game.r;
@@ -271,11 +304,14 @@ if (S.game){
 }
 const saveRoster = () => { store.set('roster', S.roster); store.set('selection', S.selection); };
 const saveSettings = () => store.set('settings', S.settings);
-const saveGame = () => S.game ? store.set('game', S.game) : store.del('game');
+const saveGame = () => { if (S.game && S.game.guest) return; S.game ? store.set('game', S.game) : store.del('game'); };
 const saveGames = () => store.set('games', S.games);
 const saveGist = () => store.set('gist', S.gist);
 const saveAll = () => { saveRoster(); saveSettings(); store.set('custom', S.custom); saveGames(); store.set('legacyStats', S.legacyStats); };
 const P = id => S.game.players.find(p => p.id === id);
+const PP = id => P(id) || {id, name:'?', emoji:'❔', color:'#94a3ff'};
+/* réglage de la partie en cours : chez un invité, ce sont ceux de l'hôte */
+const gset = k => (S.game && S.game.guest && S.game.cfg && k in S.game.cfg) ? S.game.cfg[k] : S.settings[k];
 const av = (p, cls='') => `<span class="av ${cls}" style="--c:${safeColor(p.color)}">${esc(p.emoji)}</span>`;
 const nm = p => esc(p.name);
 const selPlayers = () => S.selection.map(id => S.roster.find(p => p.id === id)).filter(Boolean);
@@ -373,14 +409,18 @@ function choosePair(){
   const swap = Math.random() < .5;
   return {civil: swap ? w.b : w.a, under: swap ? w.a : w.b, t:w.t};
 }
-function startGame(){
-  const players = selPlayers().map(p => ({id:p.id, name:p.name.trim(), emoji:p.emoji, color:p.color}));
+/* multi = true : un téléphone par joueur (ce téléphone est l'hôte de la salle) */
+function startGame(list, multi){
+  const players = (list || selPlayers()).map(p => ({id:p.id, name:p.name.trim(), emoji:p.emoji, color:p.color}));
   S.game = {
     id:uid(), started:Date.now(), round:0, total:S.settings.rounds, players,
     scores:Object.fromEntries(players.map(p => [p.id, 0])),
     underCount:Object.fromEntries(players.map(p => [p.id, 0])),
     log:[], done:false
   };
+  if (multi){
+    Object.assign(S.game, {multi:true, code:S.net.code, hostMe:S.net.hostMe || null, cfg:{timer:S.settings.timer, lastChance:S.settings.lastChance}});
+  }
   startRound();
   S.view = 'game'; S.nav = []; S.modal = null;
   render();
@@ -401,8 +441,9 @@ function startRound(redo){
   g.r = {
     pair:choosePair(), roles, alive:seat.slice(),
     distOrder:seat.slice(start).concat(seat.slice(0, start)), distIdx:0,
-    phase:'pass', firstVoteDone:false, tieRound:false, clueRound:1, cluesNeeded:S.settings.clueRounds,
-    order:[], idx:0, voteStep:'debate', elim:[], last:null, guessType:null, bonus:{}, result:null
+    phase:g.multi ? 'words' : 'pass', firstVoteDone:false, tieRound:false, clueRound:1, cluesNeeded:S.settings.clueRounds,
+    order:[], idx:0, voteStep:'debate', elim:[], last:null, guessType:null, bonus:{}, result:null,
+    nonce:uid(), ready:{}, votes:{}, voteId:null, lastVotes:null, tieIds:null
   };
   S.ui.revealed = false;
   saveGame();
@@ -420,11 +461,11 @@ function startClues(){
   r.cluesNeeded = (r.tieRound || r.firstVoteDone) ? 1 : S.settings.clueRounds;
   r.phase = 'clues';
 }
-function goVote(){ const r = S.game.r; r.phase = 'vote'; r.voteStep = 'debate'; }
+function goVote(){ const r = S.game.r; r.phase = 'vote'; r.voteStep = 'debate'; r.votes = {}; r.voteId = uid(); }
 function eliminate(id){
   const g = S.game, r = g.r;
   r.alive = r.alive.filter(x => x !== id); r.elim.push(id); r.last = id;
-  r.firstVoteDone = true; r.tieRound = false;
+  r.firstVoteDone = true; r.tieRound = false; r.tieIds = null;
   r.phase = 'suspense'; S.modal = null;
   saveGame(); render(); Snd.drum();
   setTimeout(() => {
@@ -616,13 +657,517 @@ async function gistSync(){
 }
 
 /* =========================================================
+   Un téléphone par joueur (Supabase Realtime : Broadcast + Presence)
+   ---------------------------------------------------------
+   Le téléphone qui ouvre la salle est l'« hôte » : il garde la partie et
+   applique les règles. Les autres envoient leurs actions (mot vu, indice
+   donné, vote…) et reçoivent l'état public de la partie. Chacun reçoit son
+   mot dans un message qui lui est adressé ; les votes restent cachés
+   jusqu'au dépouillement. Rien n'est enregistré sur le serveur.
+   ========================================================= */
+const CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ';
+const newCode = () => Array.from({length:4}, () => CODE_CHARS[rnd(CODE_CHARS.length)]).join('');
+const cleanCode = s => String(s || '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4);
+const recent = t => t && Date.now() - t < 6 * 3600e3;
+function sbConfig(){
+  if (DEV_LOCAL) return {local:true};
+  const url = String(SUPABASE_URL || S.sb.url || '').trim().replace(/\/(rest|auth|realtime)\/v1.*$/, '').replace(/\/+$/, ''), key = String(SUPABASE_KEY || S.sb.key || '').trim();
+  return /^https:\/\/[^\s/]+/.test(url) && key ? {url, key} : null;
+}
+function joinLink(code){
+  const u = new URL(location.href.split('#')[0]); u.search = '';
+  u.searchParams.set('salle', code);
+  if (DEV_LOCAL) u.searchParams.set('local', '1');
+  else if (!SUPABASE_URL && S.sb.url && S.sb.key) u.searchParams.set('sb', b64enc(S.sb.url.trim() + '|' + S.sb.key.trim()));
+  return u.toString();
+}
+
+/* --- transport Supabase --- */
+let sbMod = null, sbClient = null, sbClientKey = '';
+async function sbTransport(cfg, code, h){
+  if (!sbMod) sbMod = await import(SB_CDN);
+  const k = cfg.url + '|' + cfg.key;
+  if (!sbClient || sbClientKey !== k){
+    sbClient = sbMod.createClient(cfg.url, cfg.key, {auth:{persistSession:false, autoRefreshToken:false, detectSessionInUrl:false}});
+    sbClientKey = k;
+  }
+  const ch = sbClient.channel('ucf-' + code, {config:{broadcast:{self:false, ack:true}, presence:{key:Net.cid}}});
+  let meta = null, on = false;
+  ch.on('broadcast', {event:'m'}, e => h.msg(e.payload))
+    .on('presence', {event:'sync'}, () => {
+      const st = ch.presenceState(), o = {};
+      for (const key in st) o[key] = (st[key] && st[key][0]) || {};
+      h.presence(o);
+    })
+    .subscribe(st => {
+      if (st === 'SUBSCRIBED'){ on = true; if (meta) ch.track(meta).catch(() => {}); h.status('on'); }
+      else if (st === 'CHANNEL_ERROR' || st === 'TIMED_OUT'){ on = false; h.status('down'); }
+      else if (st === 'CLOSED'){ on = false; h.status('off'); }
+    });
+  return {
+    send:m => ch.send({type:'broadcast', event:'m', payload:m}),
+    track:m => { meta = m; if (on) ch.track(m).catch(() => {}); },
+    close:() => { on = false; try { sbClient.removeChannel(ch); } catch(e){} }
+  };
+}
+/* --- transport local (tests : plusieurs onglets du même navigateur, ?local=1&p=nom) --- */
+function localTransport(code, h){
+  const bc = new BroadcastChannel('ucf-' + code), peers = {};
+  let meta = {};
+  const emit = () => { const o = {[Net.cid]:meta}; for (const k in peers) if (Date.now() - peers[k].at < 7000) o[k] = peers[k].meta; h.presence(o); };
+  const hb = first => bc.postMessage({_hb:Net.cid, meta, first});
+  bc.onmessage = e => {
+    const d = e.data;
+    if (d && d._hb){ peers[d._hb] = {meta:d.meta, at:Date.now()}; if (d.first) hb(false); emit(); return; }
+    if (d && d._bye){ delete peers[d._bye]; emit(); return; }
+    h.msg(d);
+  };
+  const iv = setInterval(() => { hb(false); emit(); }, 2000);
+  setTimeout(() => { hb(true); h.status('on'); }, 30);
+  return {
+    send:m => bc.postMessage(JSON.parse(JSON.stringify(m))),
+    track:m => { meta = m; hb(false); emit(); },
+    close:() => { clearInterval(iv); try { bc.postMessage({_bye:Net.cid}); bc.close(); } catch(e){} }
+  };
+}
+
+/* --- connexion --- */
+const Net = {
+  role:null, code:'', tr:null, status:'off', online:{}, onKey:'', tok:0, lastState:'', lastPriv:'', waitT:null,
+  cid:store.get('cid', null) || (() => { const c = uid(); store.set('cid', c); return c; })(),
+  async open(role, code){
+    this.close();
+    const cfg = sbConfig(); if (!cfg) throw new Error('nocfg');
+    const tok = ++this.tok;
+    Object.assign(this, {role, code, status:'connecting', online:{}, onKey:'', lastState:'', lastPriv:''});
+    const guard = fn => (...a) => { if (tok !== this.tok) return; netRender = true; try { fn(...a); } catch(e){ console.error(e); } finally { netRender = false; } };
+    const h = {
+      msg:guard(m => { if (m && m.t) role === 'host' ? hostMsg(m) : guestMsg(m); }),
+      presence:guard(o => {
+        this.online = o;
+        const k = Object.values(o).map(m => (m && m.pid || '') + (m && m.host ? '*' : '')).sort().join(',');
+        if (k !== this.onKey){ this.onKey = k; render(); }
+      }),
+      status:guard(st => {
+        const was = this.status; this.status = st;
+        if (st === 'on'){ this.track(); role === 'host' ? hostUp() : guestUp(); }
+        if (was !== st) render();
+      })
+    };
+    try { this.tr = cfg.local ? localTransport(code, h) : await sbTransport(cfg, code, h); }
+    catch(e){ if (tok === this.tok){ this.status = 'down'; this.role = null; } throw e; }
+  },
+  track(){
+    if (!this.tr) return;
+    const pid = this.role === 'host' ? (S.net && S.net.hostMe) : (S.guest && S.guest.joined ? S.guest.me : null);
+    this.tr.track({pid:pid || null, host:this.role === 'host'});
+  },
+  send(m){
+    if (!this.tr || this.status !== 'on') return false;
+    try { const p = this.tr.send(m); if (p && p.catch) p.catch(() => {}); return true; } catch(e){ return false; }
+  },
+  close(){
+    this.tok++; clearTimeout(this.waitT);
+    if (this.tr){ try { this.tr.close(); } catch(e){} }
+    Object.assign(this, {tr:null, role:null, code:'', status:'off', online:{}, onKey:''});
+  },
+  seen(){ return Object.keys(this.online).length > 1; },
+  isOnline(pid){ return Object.values(this.online).some(m => m && m.pid === pid); },
+  hostOnline(){ return Object.values(this.online).some(m => m && m.host); }
+};
+let netRender = false;
+function netErr(e){
+  toast(e && e.message === 'nocfg' ? '⚙️ Connexion en ligne non configurée (Réglages)' : '📵 Connexion impossible : vérifie internet');
+}
+const ME = () => Net.role === 'host' || (S.game && S.game.multi && !S.game.guest) ? (S.net && S.net.hostMe) || null : (S.guest && S.guest.joined ? S.guest.me : null);
+const amHost = () => S.game && S.game.multi ? !S.game.guest : Net.role === 'host';
+/* mot de ce téléphone : chaîne, null (Mr White) ou undefined (pas encore reçu / ne joue pas) */
+function myWord(){
+  const g = S.game, me = ME();
+  if (!g || !g.r || !me || !g.players.some(p => p.id === me)) return undefined;
+  if (!g.guest) return wordOf(me);
+  return S.priv && S.priv.n === g.r.nonce ? (S.priv.white ? null : S.priv.w) : undefined;
+}
+
+/* ---------- côté hôte ---------- */
+const roomCode = () => (S.net && S.net.code) || (S.guest && S.guest.code) || '';
+const saveRoom = () => { if (S.net){ S.net.at = Date.now(); store.set('room', S.net); } else store.del('room'); };
+const hostName = () => { const p = S.net && S.net.players.find(x => x.id === S.net.hostMe); return p ? p.name : 'l\'hôte'; };
+function netToast(msg){ toast(msg); Net.send({t:'toast', msg}); }
+function pushLobby(){
+  if (Net.role !== 'host' || !S.net) return;
+  const ids = new Set(S.net.players.map(p => p.id)), names = new Set(S.net.players.map(p => p.name.toLowerCase()));
+  Net.send({t:'lobby', code:S.net.code, host:hostName(), players:S.net.players,
+    roster:S.roster.filter(p => !ids.has(p.id) && !names.has(p.name.toLowerCase())).map(({id, name, emoji, color}) => ({id, name, emoji, color})),
+    started:!!(S.game && S.game.multi && !S.game.done)});
+}
+function publicGame(g){
+  const c = JSON.parse(JSON.stringify(g)), r = g.r;
+  delete c.underCount;
+  if (r && c.r){
+    if (r.phase !== 'end' && !g.done){ c.r.pair = null; c.r.roles = {}; r.elim.forEach(id => c.r.roles[id] = r.roles[id]); }
+    c.r.votes = Object.fromEntries(Object.keys(r.votes || {}).map(k => [k, 1]));   // qui a voté, pas pour qui
+  }
+  if (g.done) c.record = gameRecord(g);
+  return c;
+}
+function sendPriv(id){
+  const g = S.game; if (!g || !g.multi || !g.r || !g.players.some(p => p.id === id)) return;
+  const w = wordOf(id);
+  Net.send({t:'priv', to:id, n:g.r.nonce, w, white:w === null});
+}
+function pushState(force){
+  const g = S.game;
+  if (Net.role !== 'host' || !g || !g.multi || g.guest || Net.status !== 'on') return;
+  const pub = publicGame(g), js = JSON.stringify(pub);
+  if (force || js !== Net.lastState){ Net.lastState = js; Net.send({t:'state', g:pub}); }
+  const pk = g.id + '|' + (g.r ? g.r.nonce : '');
+  if (force || pk !== Net.lastPriv){ Net.lastPriv = pk; g.players.forEach(p => sendPriv(p.id)); }
+}
+function hostUp(){ pushLobby(); pushState(true); }
+function hostMsg(m){
+  if (m.t === 'hello'){
+    if (m.me && m.prof && S.net && !S.net.players.some(p => p.id === m.me) && !S.net.players.some(p => p.name.toLowerCase() === String(m.prof.name || '').toLowerCase())){
+      S.net.players.push(cleanPlayer(Object.assign({}, m.prof, {id:m.me}), S.net.players.length)); saveRoom();
+    }
+    pushLobby();
+    if (S.game && S.game.multi){ Net.lastState = ''; pushState(); if (m.me) sendPriv(m.me); }
+    render();
+  }
+  else if (m.t === 'join') hostJoin(m);
+  else if (m.t === 'act' && typeof m.a === 'string') hostAct(m.from, m.a, m.d || {}, false);
+  else if (m.t === 'leave' && S.net){
+    const p = S.net.players.find(x => x.id === m.from); if (!p) return;
+    S.net.players = S.net.players.filter(x => x.id !== m.from); saveRoom(); pushLobby();
+    toast(`🚪 ${p.name} a quitté la salle`); render();
+  }
+}
+function hostJoin(m){
+  if (!S.net) return;
+  const prof = m.prof || {}, name = String(prof.name || '').trim().slice(0, 16);
+  const err = msg => Net.send({t:'joinErr', cid:m.cid, msg});
+  if (!name) return err('Écris ton prénom ✏️');
+  let p = S.net.players.find(x => x.name.toLowerCase() === name.toLowerCase());
+  if (p){
+    if (p.id === S.net.hostMe) return err(`${name} joue déjà sur le téléphone de l'hôte`);
+    if (Net.isOnline(p.id)) return err(`${name} est déjà dans la salle`);
+  } else {
+    if (S.net.players.length >= MAX_P) return err(`La salle est complète (${MAX_P} joueurs)`);
+    const base = (prof.rid && S.roster.find(x => x.id === prof.rid)) || S.roster.find(x => x.name.toLowerCase() === name.toLowerCase());
+    let id = base ? base.id : uid();
+    if (S.net.players.some(x => x.id === id)) id = uid();
+    p = cleanPlayer({id, name:base ? base.name : name, emoji:base ? base.emoji : prof.emoji, color:base ? base.color : prof.color}, S.net.players.length);
+    S.net.players.push(p); saveRoom();
+    toast(`👋 ${p.name} a rejoint la salle`); Snd.good();
+  }
+  Net.send({t:'joined', cid:m.cid, me:p.id, prof:p});
+  pushLobby();
+  if (S.game && S.game.multi){ pushState(true); sendPriv(p.id); }
+  render();
+}
+/* toutes les actions de partie passent par ici, qu'elles viennent de l'hôte ou d'un invité */
+function hostAct(from, a, d, isHost){
+  const g = S.game;
+  if (!g || !g.multi || g.guest || g.done || !g.r) return;
+  const r = g.r, inGame = !!from && g.players.some(p => p.id === from), who = from && P(from);
+  switch (a){
+    case 'seen':
+      if (r.phase !== 'words' || !inGame || d.n !== r.nonce) return;
+      r.ready[from] = true;
+      if (g.players.every(p => r.ready[p.id])) startClues();
+      break;
+    case 'forceStart':
+      if (!isHost || r.phase !== 'words') return;
+      startClues(); break;
+    case 'redo':
+      if (!(inGame || isHost) || r.firstVoteDone || !['words','clues','vote'].includes(r.phase) || d.n !== r.nonce) return;
+      startRound(true);
+      netToast(`🔄 ${who ? who.name + ' a demandé' : 'Nouvelle paire :'} de nouveaux mots`);
+      break;
+    case 'clued':
+      if (r.phase !== 'clues' || d.i !== r.idx || d.c !== r.clueRound || (from !== r.order[r.idx] && !isHost)) return;
+      r.idx++;
+      if (r.idx >= r.order.length){ if (r.clueRound < r.cluesNeeded){ r.clueRound++; r.idx = 0; } else goVote(); }
+      break;
+    case 'skipvote':
+      if (!isHost || r.phase !== 'clues') return;
+      goVote(); break;
+    case 'vote':
+      if (r.phase !== 'vote' || d.v !== r.voteId || !r.alive.includes(from) || !r.alive.includes(d.id) || d.id === from) return;
+      r.votes[from] = d.id;
+      if (r.alive.every(id => r.votes[id])) return resolveVote();
+      break;
+    case 'closeVote':
+      if (!isHost || r.phase !== 'vote' || !Object.keys(r.votes).length) return;
+      return resolveVote();
+    case 'afterRole':
+      if (r.phase !== 'role' || d.l !== r.last) return;
+      return ACTIONS.afterRole();
+    case 'guess':
+      if (r.phase !== 'guess' || d.l !== r.last || (from && from === r.last)) return;
+      return ACTIONS.guess({v:d.v === 'yes' ? 'yes' : 'no'});
+    case 'next':
+      if (r.phase !== 'end' || d.r !== g.round || g.round >= g.total) return;
+      return ACTIONS.nextRound();
+    case 'podium':
+      if (r.phase !== 'end' || d.r !== g.round) return;
+      return finishGame();
+    default: return;
+  }
+  saveGame(); render();
+}
+/* action de partie depuis l'écran de ce téléphone */
+function netAct(a, d){
+  d = d || {};
+  if (S.game && S.game.multi && !S.game.guest) return hostAct(ME(), a, d, true);
+  if (Net.role !== 'guest' || !S.guest) return;
+  if (!Net.send({t:'act', from:S.guest.me, a, d})) toast('📵 Connexion perdue… patiente un instant');
+}
+function resolveVote(){
+  const g = S.game, r = g.r, tally = {};
+  for (const v in r.votes){ const t = r.votes[v]; if (r.alive.includes(t)) tally[t] = (tally[t] || 0) + 1; }
+  const max = Math.max(0, ...Object.values(tally)), tops = Object.keys(tally).filter(id => tally[id] === max);
+  r.lastVotes = Object.assign({}, r.votes);
+  if (tops.length === 1) return eliminate(tops[0]);
+  r.tieIds = tops; r.tieRound = true; startClues(); saveGame(); render();
+  netToast('⚖️ Égalité ! Nouveau tour d\'indices');
+}
+function setHostMe(id){
+  const R = S.net; if (!R) return;
+  if (id && R.players.some(p => p.id === id && p.id !== R.hostMe)) return toast('Ce joueur est déjà dans la salle sur un autre téléphone');
+  R.players = R.players.filter(p => p.id !== R.hostMe);
+  R.hostMe = null;
+  const p = id && S.roster.find(x => x.id === id);
+  if (p){
+    if (R.players.length >= MAX_P) return toast(`${MAX_P} joueurs maximum`);
+    R.players.unshift(cleanPlayer(p, 0)); R.hostMe = p.id;
+  }
+  store.set('hostMe', R.hostMe);
+  saveRoom(); Net.track(); pushLobby(); render();
+}
+async function hostConnect(){
+  if (!S.net) return;
+  if (Net.role === 'host' && Net.code === S.net.code && Net.status !== 'off') return;
+  try { await Net.open('host', S.net.code); } catch(e){ netErr(e); }
+  render();
+}
+function closeRoom(){
+  Net.send({t:'closed'});
+  const tr = Net.tr; Net.tr = null; Net.close();
+  if (tr) setTimeout(() => { try { tr.close(); } catch(e){} }, 400);
+  S.net = null; saveRoom(); S.ui.qr = null;
+  if (S.game && S.game.multi){ S.game = null; saveGame(); }
+}
+
+/* ---------- côté invité ---------- */
+function saveGuest(){
+  const G = S.guest; if (!G) return;
+  savedGuest = {code:G.code, me:G.me, prof:G.prof, joined:G.joined, at:Date.now()};
+  store.set('netGuest', savedGuest);
+}
+async function guestConnect(data){
+  if (Net.role === 'host') return toast('Ferme d\'abord la salle ouverte sur ce téléphone');
+  S.guest = Object.assign({code:'', me:null, prof:null, joined:false}, data, {lobby:null, err:'', watching:false});
+  S.priv = null; saveGuest();
+  if (S.view !== 'join'){ S.nav = []; S.view = 'join'; }
+  render();
+  try { await Net.open('guest', S.guest.code); }
+  catch(e){ netErr(e); S.guest = null; render(); }
+}
+function guestUp(){
+  const G = S.guest; if (!G) return;
+  Net.send({t:'hello', cid:Net.cid, me:G.joined ? G.me : null, prof:G.joined ? G.prof : null});
+  clearTimeout(Net.waitT);
+  if (!G.lobby) Net.waitT = setTimeout(() => { if (S.guest && !S.guest.lobby){ S.guest.err = 'nobody'; render(); } }, 8000);
+}
+function guestLeave(closed){
+  const G = S.guest;
+  if (G && !closed && G.joined) Net.send({t:'leave', from:G.me});
+  const tr = Net.tr; Net.tr = null; Net.close();
+  if (tr) setTimeout(() => { try { tr.close(); } catch(e){} }, 300);
+  S.guest = null; S.priv = null; savedGuest = null; store.del('netGuest');
+  if (S.game && S.game.guest) S.game = store.get('game', null);
+  S.nav = []; S.view = 'home'; S.modal = null; render();
+}
+function guestMsg(m){
+  const G = S.guest; if (!G) return;
+  switch (m.t){
+    case 'lobby':
+      clearTimeout(Net.waitT); G.lobby = m; G.err = '';
+      if (G.joined && !m.started && !m.players.some(p => p.id === G.me)){
+        G.joined = false; G.me = null; saveGuest(); Net.track(); toast('Tu ne fais plus partie de la salle');
+        if (S.game && S.game.guest){ S.game = store.get('game', null); S.view = 'join'; }
+      }
+      render(); break;
+    case 'joined':
+      if (m.cid !== Net.cid) return;
+      Object.assign(G, {me:m.me, prof:m.prof, joined:true}); saveGuest(); store.set('me', m.prof); Net.track();
+      Snd.good(); render(); break;
+    case 'joinErr':
+      if (m.cid === Net.cid) toast(m.msg);
+      break;
+    case 'state': guestState(m.g); break;
+    case 'priv':
+      if (m.to === G.me){ S.priv = {n:m.n, w:m.w, white:!!m.white}; render(); }
+      break;
+    case 'toast': toast(m.msg); break;
+    case 'closed': guestLeave(true); toast('🚪 L\'hôte a fermé la salle'); break;
+  }
+}
+function guestState(g){
+  const G = S.guest; if (!G || !G.joined || !g || !g.players) return;
+  clearTimeout(Net.waitT);
+  if (!g.players.some(p => p.id === G.me)){
+    G.watching = true;
+    if (S.game && S.game.guest){ S.game = store.get('game', null); S.view = 'join'; }
+    return render();
+  }
+  G.watching = false;
+  const prev = S.game && S.game.guest && S.game.id === g.id ? S.game : null, pr = prev && prev.r, r = g.r;
+  g.guest = true; S.game = g;
+  if (g.done){
+    if (!(prev && prev.done)){
+      Snd.fanfare(); confetti();
+      if (g.record && !S.games.some(x => x.id === g.id)){ S.games.push(g.record); saveGames(); }
+    }
+    S.modal = null; S.view = 'podium';
+  } else {
+    if (['join','podium','home','game'].includes(S.view)) S.view = 'game';
+    if (r && (!pr || pr.phase !== r.phase || (prev && prev.round !== g.round))){
+      if (S.modal && S.modal.type !== 'menu' && S.modal.type !== 'scores' && S.modal.type !== 'rules') S.modal = null;
+      if (r.phase === 'suspense') Snd.drum();
+      else if (r.phase === 'role') r.roles[r.last] === 'civil' ? Snd.bad() : Snd.good();
+      else if (r.phase === 'end') (r.result && r.result.winner === 'civils') ? Snd.good() : Snd.fanfare();
+    }
+    if (r && (!pr || r.nonce !== pr.nonce)){ S.ui.revealed = false; if (S.modal && S.modal.type === 'myCard') S.modal = null; }
+  }
+  render();
+}
+
+/* ---------- QR code (chargé à la demande) ---------- */
+let qrMod = null, qrBusy = false;
+async function makeQR(code){
+  if (qrBusy) return; qrBusy = true;
+  try {
+    if (!qrMod) qrMod = (await import(QR_CDN)).default;
+    const q = qrMod(0, 'M'); q.addData(joinLink(code)); q.make();
+    S.ui.qr = {code, svg:q.createSvgTag({cellSize:4, margin:2, scalable:true})};
+  } catch(e){ S.ui.qr = {code, svg:''}; }
+  qrBusy = false;
+  const el = document.getElementById('qr'); if (el && S.ui.qr.code === code) el.innerHTML = S.ui.qr.svg;
+}
+
+/* =========================================================
    Actions (boutons data-a="...")
    ========================================================= */
 const ACTIONS = {
   go(d){ S.nav.push(S.view); S.view = d.v; S.modal = null; render(); },
   back(){ S.view = S.nav.pop() || 'home'; S.modal = null; render(); },
-  home(){ if (S.game && S.game.done) S.game = null; saveGame(); S.nav = []; S.view = 'home'; S.modal = null; render(); },
-  resume(){ S.nav = []; S.view = S.game.done ? 'podium' : 'game'; render(); },
+  home(){
+    if (S.game && S.game.done){ if (S.game.multi && !S.game.guest) closeRoom(); S.game = null; }
+    saveGame(); S.nav = []; S.view = 'home'; S.modal = null; render();
+  },
+  resume(){
+    S.nav = []; S.view = S.game.done ? 'podium' : 'game'; render();
+    if (S.game.multi && !S.game.guest){
+      if (!S.net) S.net = {code:S.game.code, hostMe:S.game.hostMe || null, players:S.game.players.slice()};
+      saveRoom(); hostConnect();
+    }
+  },
+  newGame(){ if (S.settings.mode === 'multi') return ACTIONS.openRoom(); ACTIONS.go({v:'players'}); },
+
+  /* --- un téléphone par joueur : salle (hôte) --- */
+  openRoom(){
+    if (Net.role === 'guest') return toast('Quitte d\'abord la salle que tu as rejointe');
+    if (!sbConfig()){ S.nav.push(S.view); S.view = 'online'; S.modal = null; render(); return toast('⚙️ Configure d\'abord la connexion en ligne'); }
+    if (!S.net){
+      const last = store.get('hostMe', null), p = last && S.roster.find(x => x.id === last);
+      S.net = {code:newCode(), hostMe:p ? p.id : null, players:p ? [cleanPlayer(p, 0)] : []};
+      saveRoom();
+    }
+    if (S.view !== 'lobby'){ S.nav.push(S.view); S.view = 'lobby'; }
+    S.modal = null; render(); hostConnect();
+  },
+  hostMe(d){ setHostMe(d.id || null); },
+  kick(d){
+    const p = S.net.players.find(x => x.id === d.id); if (!p) return;
+    S.net.players = S.net.players.filter(x => x.id !== d.id); saveRoom(); pushLobby(); render();
+    toast(`${p.name} retiré de la salle`);
+  },
+  async shareRoom(){
+    const code = roomCode(); if (!code) return;
+    const url = joinLink(code), text = `Rejoins ma partie d'Undercover Famille ! Code de la salle : ${code}`;
+    try {
+      if (navigator.share) await navigator.share({title:'Undercover Famille', text, url});
+      else { await copyText(url); toast('Lien copié ✓'); }
+    } catch(e){ if (e && e.name !== 'AbortError'){ await copyText(url); toast('Lien copié ✓'); } }
+  },
+  async copyRoom(){ const code = roomCode(); if (code) toast(await copyText(joinLink(code)) ? 'Lien d\'invitation copié ✓' : 'Copie impossible'); },
+  mStart(){
+    const n = S.net.players.length;
+    if (n < MIN_P) return toast(`Il faut au moins ${MIN_P} joueurs dans la salle`);
+    if (Net.status !== 'on') return toast('Connexion en cours… patiente un instant');
+    if (S.game && !S.game.done){ S.modal = {type:'replace', yes:'mStartYes'}; return render(); }
+    ACTIONS.mStartYes();
+  },
+  mStartYes(){ startGame(S.net.players, true); },
+  mRematch(){
+    if (!S.net || S.net.players.length < MIN_P) return toast(`Il faut au moins ${MIN_P} joueurs dans la salle`);
+    S.game = null; startGame(S.net.players, true);
+  },
+  closeRoomYes(){ closeRoom(); S.modal = null; S.nav = []; S.view = 'home'; render(); toast('Salle fermée'); },
+
+  /* --- un téléphone par joueur : rejoindre (invité) --- */
+  joinGo(){
+    const code = cleanCode(S.ui.joinCode);
+    if (code.length !== 4) return toast('Le code de la salle fait 4 lettres');
+    guestConnect({code});
+  },
+  rejoin(){ if (savedGuest) guestConnect(savedGuest); },
+  joinRetry(){ if (S.guest) guestConnect({code:S.guest.code, me:S.guest.me, prof:S.guest.prof, joined:S.guest.joined}); },
+  joinAs(d){
+    const G = S.guest, p = G && G.lobby && G.lobby.roster.find(x => x.id === d.id); if (!p) return;
+    if (Net.send({t:'join', cid:Net.cid, prof:{rid:p.id, name:p.name, emoji:p.emoji, color:p.color}})) toast('⏳ Un instant…');
+  },
+  joinName(){
+    const name = String(S.ui.joinName || '').trim().slice(0, 16);
+    if (!name) return toast('Écris ton prénom ✏️');
+    const last = store.get('me', null), same = last && last.name && last.name.toLowerCase() === name.toLowerCase();
+    if (Net.send({t:'join', cid:Net.cid, prof:{name, emoji:same ? last.emoji : pick(EMOJIS), color:same ? last.color : pick(COLORS)}})) toast('⏳ Un instant…');
+  },
+  mLeaveYes(){ guestLeave(false); },
+
+  /* --- un téléphone par joueur : partie --- */
+  mSeen(){ netAct('seen', {n:S.game.r.nonce}); },
+  mForce(){ netAct('forceStart'); },
+  mRedoYes(){ S.modal = null; netAct('redo', {n:S.game.r.nonce}); render(); },
+  mClued(){ const r = S.game.r; netAct('clued', {i:r.idx, c:r.clueRound}); },
+  mSkipVote(){ netAct('skipvote'); },
+  mVote(d){
+    const r = S.game.r; S.ui.myVote = {v:r.voteId, id:d.id};
+    netAct('vote', {v:r.voteId, id:d.id}); render();
+  },
+  mCloseVoteYes(){ S.modal = null; netAct('closeVote'); render(); },
+  mAfterRole(){ netAct('afterRole', {l:S.game.r.last}); },
+  mGuess(d){ netAct('guess', {l:S.game.r.last, v:d.v}); },
+  mNext(){ netAct('next', {r:S.game.round}); },
+  mPodium(){ netAct('podium', {r:S.game.round}); },
+
+  /* --- connexion Supabase --- */
+  async sbTest(){
+    const cfg = sbConfig(); if (!cfg) return toast('Remplis l\'adresse du projet et la clé');
+    if (cfg.local) return toast('Mode test local : pas de serveur à tester');
+    S.ui.sbTesting = true; render();
+    let tr = null;
+    const ok = await new Promise(res => {
+      const to = setTimeout(() => res(false), 10000);
+      sbTransport(cfg, 'TEST' + rnd(1e6), {msg(){}, presence(){}, status(st){ if (st === 'on' || st === 'down'){ clearTimeout(to); res(st === 'on'); } }})
+        .then(t => tr = t).catch(() => { clearTimeout(to); res(false); });
+    });
+    setTimeout(() => { try { tr && tr.close(); } catch(e){} }, 500);
+    S.ui.sbTesting = false; render();
+    toast(ok ? '✅ Connexion réussie !' : '❌ Connexion impossible : vérifie l\'adresse, la clé et internet');
+  },
 
   /* --- sélection des joueurs --- */
   selToggle(d){
@@ -637,7 +1182,9 @@ const ACTIONS = {
   npAdd(){
     const el = $('#np'); const p = newRosterPlayer(el && el.value); if (!p) return;
     if (S.view === 'players' && S.selection.length < MAX_P) S.selection.push(p.id);
-    saveRoster(); S.modal = null; render(); toast(`${p.name} ajouté ✓`);
+    saveRoster(); S.modal = null;
+    if (S.view === 'lobby') setHostMe(p.id);
+    render(); toast(`${p.name} ajouté ✓`);
   },
   launch(){
     const n = S.selection.length;
@@ -742,7 +1289,7 @@ const ACTIONS = {
   guess(d){
     const r = S.game.r, yes = d.v === 'yes';
     if (r.guessType === 'white'){ if (yes) return endRound('white'); Snd.bad(); return checkWin(); }
-    if (yes){ r.bonus[r.last] = (r.bonus[r.last] || 0) + PTS.lastChance; toast(`+${PTS.lastChance} points pour ${P(r.last).name} !`); } else Snd.bad();
+    if (yes){ r.bonus[r.last] = (r.bonus[r.last] || 0) + PTS.lastChance; (S.game.multi ? netToast : toast)(`🎯 +${PTS.lastChance} points pour ${P(r.last).name} !`); } else Snd.bad();
     checkWin();
   },
   nextRound(){ startRound(); render(); },
@@ -756,7 +1303,7 @@ const ACTIONS = {
   closeModal(){ S.modal = null; render(); },
   bgClose(d, el, e){ if (e.target === el){ S.modal = null; render(); } },
   toggleSound(){ S.settings.sound = !S.settings.sound; saveSettings(); render(); },
-  quitYes(){ S.game = null; saveGame(); S.modal = null; S.nav = []; S.view = 'home'; render(); },
+  quitYes(){ if (S.game && S.game.multi && !S.game.guest) closeRoom(); S.game = null; saveGame(); S.modal = null; S.nav = []; S.view = 'home'; render(); },
   peek(){ S.modal = {type:'peekWho'}; render(); },
   peekWho(d){ S.modal = {type:'peekPass', id:d.id}; render(); },
   peekGo(){ S.modal = {type:'peekCard', id:S.modal.id}; render(); }
@@ -771,14 +1318,14 @@ const li = (a, v, ic, title, sub) => `<button class="li" data-a="${a}"${v ? ` da
 function seg(k, opts){
   return `<div class="seg">${opts.map(([v,l]) => `<button class="${S.settings[k] === v ? 'on' : ''}" data-a="set" data-k="${k}" data-v="${esc(JSON.stringify(v))}">${l}</button>`).join('')}</div>`;
 }
-function settingsSummary(){
-  const s = S.settings, n = S.selection.length;
+function settingsSummary(n){
+  const s = S.settings; if (n == null) n = S.selection.length;
   const rc = rolesCount(Math.max(n, MIN_P));
   const roles = n >= MIN_P ? `${rc.civil} civils · ${rc.under} Undercover${rc.under > 1 ? 's' : ''}${rc.white ? ' · 1 Mr White' : ''}` : `Choisis au moins ${MIN_P} joueurs`;
   return `<b>${roles}</b><br><span class="muted small">Mots ${LEVEL_LBL[s.level].toLowerCase()} · ${s.clueRounds} tour${s.clueRounds > 1 ? 's' : ''} d'indices · ${s.rounds} manches · ${s.timer ? 'minuteur ' + s.timer + ' s' : 'sans minuteur'}</span>`;
 }
-function holdCard(id){
-  const p = P(id), w = wordOf(id);
+function holdCard(id, w){
+  const p = P(id); if (w === undefined) w = wordOf(id);
   const inner = w === null
     ? `<div class="lbl">🎩 Tu es</div><div class="w">Mr White</div><div class="sub">Tu n'as pas de mot.<br>Écoute bien les autres et bluffe !</div>`
     : `<div class="lbl">${nm(p)}, ton mot est</div><div class="w">${esc(w)}</div><div class="sub">🤫 Ne le dis à personne !</div>`;
@@ -813,11 +1360,44 @@ function rulesHtml(){
     <li>Indice trop précis : l'intrus va deviner votre mot.</li>
     <li>Indice trop vague : tout le monde va te soupçonner !</li>
     <li>Tu as un doute sur ton mot ? Fais comme si de rien n'était 😉</li>
+  </ul>
+  <h3>📱 Un téléphone par joueur</h3>
+  <p>Dans les réglages, choisis « Un par joueur ». Un téléphone ouvre une <b>salle</b> et affiche un code de 4 lettres. Les autres touchent « Rejoindre une partie » et tapent ce code (ou scannent le QR code).</p>
+  <ul>
+    <li>Chacun voit son mot sur son propre écran.</li>
+    <li>Les indices se donnent toujours à voix haute : le téléphone de celui dont c'est le tour affiche « À toi ! ».</li>
+    <li>Le vote est <b>secret</b> : chacun choisit son suspect sur son téléphone, puis tout est révélé en même temps. En cas d'égalité, nouveau tour d'indices.</li>
+    <li>Le téléphone qui a ouvert la salle doit rester allumé jusqu'à la fin.</li>
   </ul></div>`;
 }
 function topbar(){
   const g = S.game;
-  return `<div class="top"><div class="pill">Manche ${g.round}/${g.total}</div><button class="icon" data-a="menu" aria-label="Menu">☰</button></div>`;
+  const net = g.multi ? `<button class="pill net" data-a="modal" data-v="room" aria-label="Salle">${Net.status === 'on' ? '🟢' : '🟠'} ${esc(g.code || Net.code)}</button>` : '';
+  return `<div class="top"><div class="pill">Manche ${g.round}/${g.total}</div>${net}<button class="icon" data-a="menu" aria-label="Menu">☰</button></div>${g.multi ? netWarn() : ''}`;
+}
+function netWarn(){
+  if (Net.status === 'connecting') return `<div class="warn"><span class="spin">🔄</span> Connexion à la salle…</div>`;
+  if (Net.status !== 'on') return `<div class="warn">📵 Connexion perdue. Reconnexion en cours… vérifie internet.</div>`;
+  if (Net.role === 'guest' && Net.seen() && !Net.hostOnline()) return `<div class="warn">📵 Le téléphone de l'hôte ne répond plus. Il doit rester allumé avec le jeu ouvert.</div>`;
+  return '';
+}
+/* avatar avec ✓ (prêt / a voté) et 📵 (hors ligne) */
+function avNet(p, ok, cls){
+  const off = Net.seen() && p.id !== ME() && !Net.isOnline(p.id);
+  return `<span class="avw">${av(p, (cls || '') + (ok ? '' : ' dim'))}${ok ? '<span class="ck">✓</span>' : ''}${off ? '<span class="off" title="Hors ligne">📵</span>' : ''}</span>`;
+}
+function timerHtml(){
+  const t = gset('timer');
+  return t ? `<div class="timer" id="timer" style="margin-top:10px"><svg width="90" height="90" viewBox="0 0 90 90"><circle cx="45" cy="45" r="40" stroke="rgba(255,255,255,.15)" stroke-width="8" fill="none"/><circle class="ring" cx="45" cy="45" r="40" stroke="#ffcc33" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="251.33" stroke-dashoffset="0"/></svg><div class="t">${t}</div></div>` : '';
+}
+function roomCard(code){
+  return `<div class="card center" style="gap:10px">
+    <span class="muted small">Code de la salle</span>
+    <div class="code">${code.split('').map(c => `<span>${c}</span>`).join('')}</div>
+    <div id="qr" class="qr">${S.ui.qr && S.ui.qr.code === code ? S.ui.qr.svg : ''}</div>
+    <div class="row" style="width:100%"><button class="btn ghost" data-a="shareRoom">📤 Inviter</button><button class="btn ghost" data-a="copyRoom">📋 Copier le lien</button></div>
+    <span class="small muted">${Net.status === 'on' ? '🟢 Salle ouverte' : Net.status === 'connecting' ? '<span class="spin">🔄</span> Ouverture de la salle…' : '📵 Hors ligne : vérifie internet'}${DEV_LOCAL ? ' · mode test local' : ''}</span>
+  </div>`;
 }
 
 function vHome(){
@@ -829,8 +1409,11 @@ function vHome(){
       <div class="subtitle">Famille</div>
       <p class="muted">Qui a un mot différent ?<br>Démasque l'intrus… ou bluffe !</p>
     </div>
-    ${resume ? `<button class="btn green big" data-a="resume">▶ Reprendre la partie<br><small>manche ${g.round}/${g.total}</small></button>` : ''}
-    <button class="btn primary big" data-a="go" data-v="players">🎲 Nouvelle partie</button>
+    ${resume ? `<button class="btn green big" data-a="resume">▶ Reprendre la partie<br><small>manche ${g.round}/${g.total}${g.multi ? ' · salle ' + esc(g.code) : ''}</small></button>` : ''}
+    ${!resume && S.net ? `<button class="btn green big" data-a="openRoom">▶ Retour à la salle ${esc(S.net.code)}<br><small>${plural(S.net.players.length, 'joueur')}</small></button>` : ''}
+    ${savedGuest && savedGuest.joined && !S.net ? `<button class="btn green big" data-a="rejoin">↩️ Revenir dans la salle ${esc(savedGuest.code)}<br><small>${savedGuest.prof ? esc(savedGuest.prof.name) : ''}</small></button>` : ''}
+    <button class="btn primary big" data-a="newGame">🎲 Nouvelle partie<br><small>${S.settings.mode === 'multi' ? '📱📱 un téléphone par joueur' : '📱 un téléphone pour tous'}</small></button>
+    <button class="btn ghost" data-a="go" data-v="join">📲 Rejoindre une partie <small>(code de salle)</small></button>
     <div class="row"><button class="btn ghost" data-a="go" data-v="rules">📖 Règles</button><button class="btn ghost" data-a="go" data-v="history">🗂️ Historique</button></div>
     <div class="row"><button class="btn ghost" data-a="go" data-v="stats">📊 Stats</button><button class="btn ghost" data-a="go" data-v="settings">⚙️ Réglages</button></div>
     <p class="tip">📲 Ajoute le jeu à l'écran d'accueil pour y jouer même sans internet.</p>
@@ -878,6 +1461,11 @@ function vSettings(){
   return `<div class="screen">
     ${header('Réglages')}
     <div class="sec">🎮 Partie</div>
+    <div class="set"><label>Téléphones</label>${seg('mode', [['single','📱 Un pour tous'],['multi','📱📱 Un par joueur']])}
+      <div class="note">${s.mode === 'multi'
+        ? 'Chaque joueur rejoint la salle avec son téléphone grâce à un code. Mots sur chaque écran, votes secrets. Il faut internet.'
+        : 'Le téléphone passe de main en main. Fonctionne sans internet.'}</div></div>
+    ${s.mode === 'multi' ? `<div class="list">${li('go', 'online', '🌐', 'Connexion en ligne', sbConfig() ? (DEV_LOCAL ? 'Mode test local' : SUPABASE_URL ? 'Intégrée au jeu ✓' : 'Configurée sur cet appareil ✓') : '⚠️ À configurer (Supabase, gratuit)')}</div>` : ''}
     <div class="set"><label>Niveau des mots</label>${seg('level', [['facile','Facile'],['moyen','Moyen'],['difficile','Difficile'],['mix','Mélange']])}
       <div class="note">Facile : chat / chien. Difficile : crocodile / alligator.</div></div>
     <div class="set"><label>Tours d'indices avant le 1er vote</label>${seg('clueRounds', [[1,'1'],[2,'2'],[3,'3']])}
@@ -1028,6 +1616,15 @@ function vGist(){
 /* --- écrans de partie --- */
 function vGame(){
   const r = S.game.r;
+  if (S.game.multi) switch (r.phase){
+    case 'words': return vMWords();
+    case 'clues': return vMClues();
+    case 'vote': return vMVote();
+    case 'suspense': return vSuspense();
+    case 'role': return vRole();
+    case 'guess': return vMGuess();
+    case 'end': return vEnd();
+  }
   switch (r.phase){
     case 'pass': return vPass();
     case 'reveal': return vReveal();
@@ -1073,7 +1670,7 @@ function vClues(){
       ${av(p, 'xl')}
       <h1>${nm(p)}</h1>
       <p class="muted">donne un indice sur son mot</p>
-      ${S.settings.timer ? `<div class="timer" id="timer" style="margin-top:10px"><svg width="90" height="90" viewBox="0 0 90 90"><circle cx="45" cy="45" r="40" stroke="rgba(255,255,255,.15)" stroke-width="8" fill="none"/><circle class="ring" cx="45" cy="45" r="40" stroke="#ffcc33" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="251.33" stroke-dashoffset="0"/></svg><div class="t">${S.settings.timer}</div></div>` : ''}
+      ${timerHtml()}
     </div>
     <div class="queue">${r.order.map((id,i) => av(P(id), 's ' + (i === r.idx ? 'cur' : i < r.idx ? 'done' : ''))).join('')}</div>
     <button class="btn primary big" data-a="clued">Indice donné ✓</button>
@@ -1118,17 +1715,28 @@ function vRole(){
     under:'Démasqué ! Bien joué les détectives 🔍',
     white:'Mr White est démasqué !'
   }[role];
-  let btn = `<button class="btn primary big" data-a="afterRole">Continuer</button>`;
-  if (role === 'white') btn = `<button class="btn primary big" data-a="afterRole">🎩 Mr White tente sa chance</button>`;
-  else if (role === 'under' && S.settings.lastChance) btn = `<button class="btn primary big" data-a="afterRole">🎯 Dernière chance !</button>`;
+  const a = S.game.multi ? 'mAfterRole' : 'afterRole';
+  let btn = `<button class="btn primary big" data-a="${a}">Continuer</button>`;
+  if (role === 'white') btn = `<button class="btn primary big" data-a="${a}">🎩 Mr White tente sa chance</button>`;
+  else if (role === 'under' && gset('lastChance')) btn = `<button class="btn primary big" data-a="${a}">🎯 Dernière chance !</button>`;
   return `<div class="screen">${topbar()}
     <div class="center grow" style="gap:12px">
       ${av(p, 'xl')}<h1>${nm(p)}</h1><p class="muted" style="font-size:1.2rem">était</p>
       <div class="badge ${R.cls}">${R.emo} ${R.lbl}</div>
       <p style="margin-top:10px;font-size:1.1rem">${msg}</p>
     </div>
+    ${S.game.multi ? votesHtml(r) : ''}
     ${btn}
   </div>`;
+}
+/* dépouillement : qui a voté pour qui */
+function votesHtml(r){
+  const lv = r.lastVotes || {}, by = {};
+  for (const v in lv) (by[lv[v]] = by[lv[v]] || []).push(v);
+  const ids = Object.keys(by).sort((a, b) => by[b].length - by[a].length);
+  if (!ids.length) return '';
+  return `<div class="card"><div class="sec" style="margin:0 0 8px">🗳️ Les votes</div><div class="sl">${ids.map(id =>
+    `<div class="si">${av(PP(id), 's')}<span class="n">${nm(PP(id))}</span><span class="vt">${by[id].map(v => av(PP(v), 's')).join('')}</span><span class="p">${by[id].length}</span></div>`).join('')}</div></div>`;
 }
 function vGuess(){
   const r = S.game.r, p = P(r.last), white = r.guessType === 'white';
@@ -1170,8 +1778,8 @@ function vEnd(){
       return `<div class="si">${av(p, 's' + (r.alive.includes(p.id) ? '' : ' out'))}<span class="n">${nm(p)}</span><span class="role" title="${ROLE[r.roles[p.id]].lbl}">${ROLE[r.roles[p.id]].emo}</span>${pts ? `<span class="plus">+${pts}</span>` : '<span class="zero">+0</span>'}<span class="p">${g.scores[p.id]}</span></div>`;
     }).join('')}</div>
     <div class="grow"></div>
-    ${last ? `<button class="btn primary big" data-a="podium">🏆 Voir le podium</button>`
-           : `<button class="btn primary big" data-a="nextRound">Manche suivante (${g.round + 1}/${g.total}) ▶</button>`}
+    ${last ? `<button class="btn primary big" data-a="${g.multi ? 'mPodium' : 'podium'}">🏆 Voir le podium</button>`
+           : `<button class="btn primary big" data-a="${g.multi ? 'mNext' : 'nextRound'}">Manche suivante (${g.round + 1}/${g.total}) ▶</button>`}
   </div>`;
 }
 function vPodium(){
@@ -1186,8 +1794,183 @@ function vPodium(){
     <div class="podium">${stepH(list[1], 2)}${stepH(list[0], 1)}${stepH(list[2], 3)}</div>
     ${list.length > 3 ? `<div class="sl">${list.slice(3).map(x => `<div class="si"><span>${medal(x.rank)}</span>${av(x, 's')}<span class="n">${nm(x)}</span><span class="p">${x.score}</span></div>`).join('')}</div>` : ''}
     <div class="grow"></div>
-    <button class="btn primary big" data-a="rematch">🔁 Revanche !</button>
-    <button class="btn ghost" data-a="home">🏠 Accueil</button>
+    ${!g.multi ? `<button class="btn primary big" data-a="rematch">🔁 Revanche !</button>
+    <button class="btn ghost" data-a="home">🏠 Accueil</button>`
+    : g.guest ? `<p class="tip">🔁 En attente d'une revanche lancée par l'hôte…</p>
+    <button class="btn ghost" data-a="modal" data-v="leaveRoom">🚪 Quitter la salle</button>`
+    : `<button class="btn primary big" data-a="mRematch">🔁 Revanche ! <small>(${plural(S.net ? S.net.players.length : 0, 'joueur')} dans la salle)</small></button>
+    <div class="row"><button class="btn ghost" data-a="openRoom">👥 La salle</button><button class="btn ghost" data-a="home">🏠 Fermer la salle</button></div>`}
+  </div>`;
+}
+
+/* --- un téléphone par joueur : salle, connexion, écrans de partie --- */
+function vLobby(){
+  const R = S.net; if (!R) return vHome();
+  const n = R.players.length, ids = new Set(R.players.map(p => p.id));
+  const mine = S.roster.filter(p => p.id === R.hostMe || !ids.has(p.id));
+  return `<div class="screen">
+    <div class="top"><button class="icon" data-a="back" aria-label="Retour">←</button><h2>Salle de jeu</h2><button class="icon" data-a="modal" data-v="closeRoom" aria-label="Fermer la salle">✕</button></div>
+    ${roomCard(R.code)}
+    <div class="sec">Sur ce téléphone</div>
+    <div class="card"><div class="chips">
+      ${mine.map(p => `<button class="chip pl ${p.id === R.hostMe ? 'on' : ''}" data-a="hostMe" data-id="${esc(p.id)}">${av(p)}${nm(p)}</button>`).join('')}
+      <button class="chip add" data-a="modal" data-v="newPlayer">＋ Nouveau</button>
+      <button class="chip ${R.hostMe ? '' : 'on'}" data-a="hostMe" data-id="">📺 Je ne joue pas</button>
+    </div>${R.hostMe ? '' : '<p class="muted small" style="margin-top:10px">Ce téléphone sert juste d\'écran de jeu. Touche ton prénom si tu joues aussi.</p>'}</div>
+    <div class="sec">Joueurs dans la salle · ${n}</div>
+    ${n ? `<div class="sl">${R.players.map(p => `<div class="si">${av(p, 's')}<span class="n">${nm(p)}${p.id === R.hostMe ? ' <span class="muted small">(ce téléphone)</span>' : ''}</span>
+      ${p.id === R.hostMe ? '' : `<span class="dot ${Net.isOnline(p.id) ? '' : 'off'}" title="${Net.isOnline(p.id) ? 'Connecté' : 'Hors ligne'}"></span><button class="mini" data-a="kick" data-id="${esc(p.id)}" aria-label="Retirer">✕</button>`}</div>`).join('')}</div>` : ''}
+    ${n < MIN_P ? `<p class="tip">Encore ${plural(MIN_P - n, 'joueur')} au minimum. Les autres ouvrent le jeu, touchent « 📲 Rejoindre une partie » et tapent le code, ou scannent le QR code.</p>` : ''}
+    <div class="card">${settingsSummary(n)}
+      <div style="margin-top:10px"><button class="btn ghost" data-a="go" data-v="settings">⚙️ Modifier les réglages</button></div></div>
+    <button class="btn primary big" data-a="mStart" ${n < MIN_P || Net.status !== 'on' ? 'disabled' : ''}>C'est parti ! 🚀</button>
+  </div>`;
+}
+function vJoin(){
+  const G = S.guest, cfg = sbConfig();
+  if (!G){
+    return `<div class="screen">${header('Rejoindre une partie')}
+      <div class="center" style="gap:6px;margin-top:10px"><div style="font-size:3.5rem">📲</div><p class="muted">Tape le code affiché sur le téléphone<br>qui a ouvert la salle.</p></div>
+      <input id="jcode" class="codein" data-field="joinCode" value="${esc(S.ui.joinCode || '')}" maxlength="4" placeholder="ABCD" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go" aria-label="Code de la salle">
+      ${cfg ? '' : `<div class="warn">⚙️ La connexion en ligne n'est pas configurée sur ce téléphone. Le plus simple : ouvre le <b>lien d'invitation</b> ou scanne le <b>QR code</b> de l'hôte, il contient la connexion. Sinon : Réglages → Connexion en ligne.</div>`}
+      <div class="grow"></div>
+      <button class="btn primary big" data-a="joinGo" ${cfg ? '' : 'disabled'}>Rejoindre ➜</button>
+    </div>`;
+  }
+  const top = `<div class="top"><button class="icon" data-a="${G.joined ? 'modal' : 'mLeaveYes'}" data-v="leaveRoom" aria-label="Quitter">←</button><h2>Salle ${esc(G.code)}</h2><span style="width:44px"></span></div>`;
+  if (!G.lobby){
+    const nobody = G.err === 'nobody';
+    return `<div class="screen">${top}
+      <div class="center grow wait">
+        <div style="font-size:3.5rem">${nobody ? '🤷' : '<span class="spin">🔄</span>'}</div>
+        <h2>${nobody ? 'Personne dans cette salle' : 'Connexion à la salle…'}</h2>
+        <p class="muted">${nobody ? `Vérifie le code <b>${esc(G.code)}</b> et que le téléphone de l'hôte a bien la salle ouverte. On continue d'attendre…` : (Net.status === 'down' ? '📵 Connexion impossible pour l\'instant, nouvel essai…' : 'Un instant…')}</p>
+      </div>
+      ${nobody ? '<button class="btn ghost" data-a="mLeaveYes">Changer de code</button>' : ''}
+    </div>`;
+  }
+  const L = G.lobby;
+  const players = `<div class="queue q2">${L.players.map(p => avNet(p, true)).join('')}</div>`;
+  if (!G.joined){
+    return `<div class="screen">${top}
+      <p class="muted" style="text-align:center">Salle de <b>${esc(L.host)}</b> ✓</p>
+      ${L.started ? '<div class="warn">Une partie est déjà en cours : tu joueras à la prochaine (revanche).</div>' : ''}
+      <div class="sec">Qui es-tu ?</div>
+      ${L.roster.length ? `<div class="chips">${L.roster.map(p => `<button class="chip pl" data-a="joinAs" data-id="${esc(p.id)}">${av(p)}${nm(p)}</button>`).join('')}</div>` : ''}
+      <div class="card row"><input id="jname" data-field="joinName" value="${esc(S.ui.joinName != null ? S.ui.joinName : ((store.get('me', null) || {}).name || ''))}" placeholder="${L.roster.length ? 'Ou écris ton prénom' : 'Ton prénom'}" maxlength="16" autocomplete="off" enterkeyhint="go"><button class="btn primary" style="width:auto;flex:none" data-a="joinName">OK</button></div>
+      ${L.players.length ? `<div class="sec">Déjà dans la salle</div>${players}` : ''}
+      ${netWarn()}
+    </div>`;
+  }
+  const me = L.players.find(p => p.id === G.me) || G.prof;
+  return `<div class="screen">${top}
+    <div class="center grow wait">
+      ${me ? av(me, 'xl') : ''}
+      <h1>Bienvenue ${me ? nm(me) : ''} !</h1>
+      <p class="muted">${L.started || G.watching ? 'Une partie est en cours dans cette salle.<br>Tu joueras à la prochaine !' : `En attente du lancement par <b>${esc(L.host)}</b>…`}</p>
+      <div class="sec">Dans la salle · ${L.players.length}</div>
+      ${players}
+    </div>
+    ${netWarn()}
+    <p class="tip">Garde le jeu ouvert : la partie s'affichera toute seule.</p>
+    <button class="btn ghost" data-a="modal" data-v="leaveRoom">🚪 Quitter la salle</button>
+  </div>`;
+}
+function vOnline(){
+  const baked = !!(SUPABASE_URL && SUPABASE_KEY);
+  return `<div class="screen">
+    ${header('Connexion en ligne')}
+    <p class="muted small">Le mode « un téléphone par joueur » relie les téléphones grâce à <b>Supabase Realtime</b> (gratuit). Rien n'est enregistré sur le serveur : les messages passent juste d'un téléphone à l'autre pendant la partie.</p>
+    ${DEV_LOCAL ? '<div class="warn">🧪 Mode test local actif (?local=1) : les onglets de ce navigateur communiquent entre eux, sans serveur.</div>' : ''}
+    ${baked ? '<div class="card">✅ <b>Connexion intégrée au jeu.</b> Rien à faire sur ce téléphone.</div>' : `
+    <div class="set"><label>Adresse du projet</label>
+      <input data-field="sbUrl" id="sbUrl" value="${esc(S.sb.url)}" placeholder="https://xxxx.supabase.co" autocomplete="off" spellcheck="false" inputmode="url"></div>
+    <div class="set"><label>Clé publique (Publishable key)</label>
+      <input data-field="sbKey" id="sbKey" value="${esc(S.sb.key)}" placeholder="sb_publishable_…" autocomplete="off" spellcheck="false"></div>`}
+    <button class="btn primary" data-a="sbTest" ${S.ui.sbTesting ? 'disabled' : ''}>${S.ui.sbTesting ? '<span class="spin">🔄</span> Test en cours…' : '🔌 Tester la connexion'}</button>
+    ${baked ? '' : `<div class="card rules"><b>Mise en place (une seule fois, 5 minutes)</b><ol>
+      <li>Crée un compte gratuit sur <a href="https://supabase.com" target="_blank" rel="noopener">supabase.com</a> puis un nouveau projet.</li>
+      <li>Dans <b>Project Settings → API Keys</b>, copie l'adresse du projet et la clé <b>Publishable</b> (sb_publishable_…). Aucune table à créer.</li>
+      <li>Colle-les ici et touche « Tester la connexion ».</li>
+    </ol><p class="muted small">Les invités n'ont rien à saisir : le lien d'invitation et le QR code transmettent la connexion. Pour l'intégrer définitivement au jeu, renseigne <code>SUPABASE_URL</code> et <code>SUPABASE_KEY</code> en haut de index.html.</p></div>`}
+    <p class="tip">La clé publique est faite pour être visible dans une appli web. Ne colle jamais la clé « secret ».</p>
+  </div>`;
+}
+function vMWords(){
+  const g = S.game, r = g.r, me = ME(), plays = !!me && g.players.some(p => p.id === me), ready = r.ready || {};
+  const nReady = g.players.filter(p => ready[p.id]).length;
+  let main;
+  if (!plays) main = `<div class="center grow wait"><div style="font-size:4rem">🤫</div><h2>Chacun découvre son mot</h2><p class="muted">sur son propre téléphone…</p></div>`;
+  else {
+    const w = myWord();
+    if (w === undefined) main = `<div class="hold"><div class="hint"><span class="big spin">⏳</span>Réception de ton mot…</div></div><div class="grow"></div>`;
+    else if (ready[me]) main = `<div class="center grow wait"><div style="font-size:4rem">✅</div><h2>C'est noté !</h2><p class="muted">On attend que tout le monde ait vu son mot…</p></div>
+      <button class="btn ghost" data-a="modal" data-v="myCard">🤫 Revoir mon mot</button>`;
+    else main = `<div class="center" style="gap:8px">${av(P(me))}<h2>${nm(P(me))}, voici ton mot</h2></div>
+      ${holdCard(me, w)}
+      <p class="tip">Personne d'autre ne voit ton écran 😉 Retiens bien ton mot.</p>
+      <div class="grow"></div>
+      <button id="seenBtn" class="btn primary big" data-a="mSeen" ${S.ui.revealed ? '' : 'disabled'}>J'ai retenu mon mot ✓</button>`;
+  }
+  return `<div class="screen">${topbar()}
+    ${main}
+    <div class="queue q2">${g.players.map(p => avNet(p, ready[p.id], 's')).join('')}</div>
+    <p class="tip">${nReady} / ${g.players.length} ont vu leur mot</p>
+    ${plays || amHost() ? `<button class="btn ghost" data-a="modal" data-v="mRedo">🔄 Changer de mots<br><small>mot pas compris ou déjà joué</small></button>` : ''}
+    ${amHost() && nReady < g.players.length ? '<button class="linkbtn" data-a="mForce">Commencer les indices sans attendre</button>' : ''}
+  </div>`;
+}
+function vMClues(){
+  const g = S.game, r = g.r, cur = r.order[r.idx], p = PP(cur), me = ME(), mine = !!me && cur === me;
+  const plays = !!me && g.players.some(x => x.id === me);
+  const tie = r.tieIds && r.tieIds.length ? ' entre ' + r.tieIds.map(id => nm(PP(id))).join(' et ') : '';
+  const head = r.tieRound ? `⚖️ Égalité${tie} ! Encore un tour d'indices` : `Tour d'indices ${r.clueRound} / ${r.cluesNeeded}`;
+  return `<div class="screen">${topbar()}
+    <p class="center muted" style="font-weight:800">${head}</p>
+    <div class="center grow" style="gap:6px">
+      ${av(p, 'xl')}
+      <h1>${mine ? 'À toi !' : nm(p)}</h1>
+      <p class="muted">${mine ? 'Donne un indice sur ton mot, à voix haute 🎤' : 'donne un indice sur son mot'}</p>
+      ${timerHtml()}
+    </div>
+    <div class="queue">${r.order.map((id, i) => av(PP(id), 's ' + (i === r.idx ? 'cur' : i < r.idx ? 'done' : ''))).join('')}</div>
+    ${mine ? '<button class="btn primary big" data-a="mClued">Indice donné ✓</button>'
+      : amHost() ? `<button class="btn ghost" data-a="mClued">⏭️ ${nm(p)} a donné son indice</button>` : ''}
+    ${plays || amHost() ? `<div class="row">${plays ? '<button class="btn ghost" data-a="modal" data-v="myCard">🤫 Mon mot</button>' : ''}${amHost() ? '<button class="btn ghost" data-a="mSkipVote">🗳️ Voter</button>' : ''}</div>` : ''}
+    <p class="tip">💡 Pas trop précis… pas trop vague !</p>
+  </div>`;
+}
+function vMVote(){
+  const g = S.game, r = g.r, me = ME(), canVote = !!me && r.alive.includes(me);
+  const voted = r.votes || {}, n = r.alive.filter(id => voted[id]).length;
+  const mine = !g.guest ? r.votes[me] : (S.ui.myVote && S.ui.myVote.v === r.voteId && voted[me] ? S.ui.myVote.id : null);
+  const pending = g.guest && S.ui.myVote && S.ui.myVote.v === r.voteId && !voted[me];
+  return `<div class="screen">${topbar()}
+    <h2 class="center">🗳️ ${r.tieRound ? 'On revote !' : 'Vote secret'}</h2>
+    ${canVote ? `<p class="muted center small">${mine ? '✓ Vote enregistré. Tu peux changer d\'avis tant que tout le monde n\'a pas voté.' : pending ? 'Envoi du vote…' : 'Qui a un mot différent ? Personne ne voit ton choix.'}</p>
+      <div class="grid">${r.alive.filter(id => id !== me).map(id => { const p = PP(id); return `<button class="pcard ${mine === id ? 'sel' : ''}" data-a="mVote" data-id="${esc(id)}">${av(p, 'l')}${nm(p)}</button>`; }).join('')}</div>
+      <div class="grow"></div>`
+    : `<div class="center grow wait"><div style="font-size:4rem">🗳️</div><p class="muted">Les joueurs votent en secret…</p></div>`}
+    <div class="queue q2">${r.alive.map(id => avNet(PP(id), voted[id], 's')).join('')}</div>
+    <p class="tip">${n} / ${r.alive.length} votes</p>
+    ${canVote ? '<button class="btn ghost" data-a="modal" data-v="myCard">🤫 Mon mot</button>' : ''}
+    ${amHost() && n > 0 && n < r.alive.length ? '<button class="linkbtn" data-a="modal" data-v="closeVote">Clôturer le vote sans attendre</button>' : ''}
+  </div>`;
+}
+function vMGuess(){
+  const g = S.game, r = g.r, p = PP(r.last), white = r.guessType === 'white', me = ME(), isG = !!me && me === r.last;
+  const judge = !isG && (amHost() || (!!me && g.players.some(x => x.id === me)));
+  return `<div class="screen">${topbar()}
+    <div class="center grow" style="gap:12px">
+      <div style="font-size:3.5rem">${white ? '🎩' : '🎯'}</div>
+      <h1>${white ? 'Mr White, à toi !' : 'Dernière chance !'}</h1>
+      ${av(p, 'l')}
+      ${isG ? `<p style="font-size:1.15rem">Quel est le mot des civils ?<br><b>Dis-le à voix haute !</b></p><p class="muted">Les autres valident sur leur téléphone.</p>`
+        : `<p style="font-size:1.15rem"><b>${nm(p)}</b> doit deviner le mot des civils, à voix haute.</p>${judge ? '<p class="muted">Est-ce que c\'est le bon mot ?</p>' : ''}`}
+      <p class="pill">${white ? 'S\'il trouve, Mr White gagne la manche !' : `+${PTS.lastChance} points s'il trouve`}</p>
+    </div>
+    ${judge ? '<div class="row"><button class="btn green big" data-a="mGuess" data-v="yes">✅ Trouvé</button><button class="btn red big" data-a="mGuess" data-v="no">❌ Raté</button></div>'
+      : '<p class="tip">En attente de la réponse des autres joueurs…</p>'}
   </div>`;
 }
 
@@ -1199,7 +1982,23 @@ function vModal(){
   let body = '';
   const g = S.game, r = g && g.r;
   switch (m.type){
-    case 'menu': {
+    case 'menu': if (g && g.multi){
+      const host = !g.guest, me = ME(), plays = !!me && g.players.some(p => p.id === me);
+      const canRedo = r && !r.firstVoteDone && (plays || host) && ['words','clues','vote'].includes(r.phase);
+      body = `<h2>Menu</h2>
+        <button class="btn ghost" data-a="modal" data-v="scores">📊 Scores</button>
+        ${plays && r && !g.done ? '<button class="btn ghost" data-a="modal" data-v="myCard">🤫 Revoir mon mot</button>' : ''}
+        ${canRedo ? '<button class="btn ghost" data-a="modal" data-v="mRedo">🔄 Changer de mots <small>(nouvelle paire)</small></button>' : ''}
+        <button class="btn ghost" data-a="modal" data-v="room">📲 Salle ${esc(g.code)} <small>(inviter, QR code)</small></button>
+        <button class="btn ghost" data-a="modal" data-v="rules">📖 Règles</button>
+        <button class="btn ghost" data-a="toggleSound">${S.settings.sound ? '🔊 Son activé' : '🔇 Son coupé'}</button>
+        ${host ? `${g.log.length ? '<button class="btn ghost" data-a="modal" data-v="endNow">🏁 Terminer la partie maintenant</button>' : ''}
+        <button class="btn ghost" data-a="home">🏠 Accueil <small>(la salle reste ouverte)</small></button>
+        <button class="btn ghost" data-a="modal" data-v="quit">🛑 Abandonner et fermer la salle</button>`
+        : '<button class="btn ghost" data-a="modal" data-v="leaveRoom">🚪 Quitter la salle</button>'}
+        <button class="btn primary" data-a="closeModal">Fermer</button>`;
+      break;
+    } else {
       const canPeek = r && ['clues','vote'].includes(r.phase);
       const canRedo = r && !r.firstVoteDone && ['pass','reveal','clues','vote'].includes(r.phase);
       body = `<h2>Menu</h2>
@@ -1225,7 +2024,18 @@ function vModal(){
     case 'redo': body = `<div class="center" style="gap:6px"><div style="font-size:3rem">🔄</div></div>` + yesNo('Changer de mots ?', 'Un mot pas compris, ou une paire déjà jouée ? La manche recommence avec une nouvelle paire de mots. Les rôles sont retirés au sort et <b>les points ne changent pas</b>.', 'redoYes', '🔄 Changer', 'primary'); break;
     case 'endNow': body = yesNo('Terminer la partie maintenant ?', `Le classement est arrêté après ${plural(g.log.length, 'manche')} et la partie est enregistrée dans l'historique.${r && r.phase !== 'end' ? ' La manche en cours ne compte pas.' : ''}`, 'endNowYes', '🏁 Terminer', 'primary'); break;
     case 'quit': body = yesNo('Abandonner la partie ?', 'Les scores de cette partie seront perdus et elle n\'ira pas dans l\'historique.', 'quitYes', 'Oui, abandonner'); break;
-    case 'replace': body = yesNo('Une partie est en cours', 'En commencer une nouvelle effacera la partie en cours.', 'replaceYes', 'Nouvelle partie', 'primary'); break;
+    case 'replace': body = yesNo('Une partie est en cours', 'En commencer une nouvelle effacera la partie en cours.', m.yes || 'replaceYes', 'Nouvelle partie', 'primary'); break;
+    case 'myCard': {
+      const me = ME(), w = myWord();
+      body = w === undefined || !me ? `<p class="center muted">Ton mot n'est pas encore arrivé…</p><button class="btn primary" data-a="closeModal">Fermer</button>`
+        : `${holdCard(me, w)}<button class="btn primary" data-a="closeModal">C'est bon, j'ai vu ✓</button>`;
+      break;
+    }
+    case 'mRedo': body = `<div class="center" style="gap:6px"><div style="font-size:3rem">🔄</div></div>` + yesNo('Changer de mots ?', 'Un mot pas compris, ou une paire déjà jouée ? La manche recommence pour tout le monde avec une nouvelle paire. Les rôles sont retirés au sort et <b>les points ne changent pas</b>.', 'mRedoYes', '🔄 Changer', 'primary'); break;
+    case 'closeVote': body = yesNo('Clôturer le vote ?', 'Le dépouillement se fera avec les votes déjà reçus (utile si un téléphone est déconnecté).', 'mCloseVoteYes', 'Clôturer', 'primary'); break;
+    case 'room': body = `<h2>📲 Salle de jeu</h2>${roomCard(roomCode())}<p class="muted small">Quelqu'un a fermé le jeu par erreur ? Il le rouvre : il retrouve la partie tout seul, ou via « Rejoindre une partie » avec ce code.</p><button class="btn primary" data-a="closeModal">Fermer</button>`; break;
+    case 'closeRoom': body = yesNo('Fermer la salle ?', 'Les joueurs connectés seront déconnectés' + (S.game && S.game.multi && !S.game.done ? ' et la partie en cours sera abandonnée.' : '.'), 'closeRoomYes', 'Fermer la salle'); break;
+    case 'leaveRoom': body = yesNo('Quitter la salle ?', 'Tu pourras revenir avec le même code.', 'mLeaveYes', 'Quitter'); break;
     case 'resetStats': body = yesNo('Tout effacer ?', 'L\'historique des parties et toutes les statistiques seront supprimés de cet appareil.', 'resetStatsYes', 'Effacer'); break;
     case 'delGame': body = yesNo('Supprimer cette partie ?', 'Elle disparaîtra de l\'historique et des statistiques.', 'delGameYes', 'Supprimer'); break;
     case 'gistForget': body = yesNo('Oublier le jeton ?', 'Le jeton GitHub sera effacé de cet appareil. Tes données restent sur GitHub.', 'gistForgetYes', 'Oublier'); break;
@@ -1268,21 +2078,30 @@ function vModal(){
 /* =========================================================
    Rendu & minuteur
    ========================================================= */
-let lastKey = '';
+let lastKey = '', renderPending = false;
 function render(){
+  pushState();   // hôte : envoie l'état aux autres téléphones s'il a changé
+  if (holdEl){ renderPending = true; return; }   // ne pas cacher un mot pendant qu'on le regarde
+  renderPending = false;
   const views = {home:vHome, players:vPlayers, roster:vRoster, settings:vSettings, words:vWords, rules:vRules, stats:vStats,
-    history:vHistory, gameDetail:vGameDetail, export:vExport, import:vImport, gist:vGist, game:vGame, podium:vPodium};
+    history:vHistory, gameDetail:vGameDetail, export:vExport, import:vImport, gist:vGist, game:vGame, podium:vPodium,
+    lobby:vLobby, join:vJoin, online:vOnline};
   if ((S.view === 'game' || S.view === 'podium') && !S.game) S.view = 'home';
+  // un message réseau ne doit pas faire perdre la saisie en cours
+  const ae = document.activeElement, keep = netRender && ae && ae.id && /^(INPUT|TEXTAREA)$/.test(ae.tagName) ? {id:ae.id, v:ae.value, a:ae.selectionStart, b:ae.selectionEnd} : null;
   app.innerHTML = (views[S.view] || vHome)() + vModal();
+  if (keep){ const el = document.getElementById(keep.id); if (el){ el.value = keep.v; el.focus(); try { el.setSelectionRange(keep.a, keep.b); } catch(e){} } }
   const key = S.view + (S.game && S.game.r ? S.game.r.phase + S.game.round : '');
   if (key !== lastKey){ window.scrollTo(0, 0); lastKey = key; }
   if (S.modal && S.modal.type === 'newPlayer'){ const el = $('#np'); if (el) el.focus(); }
+  const qr = document.getElementById('qr'), rc = roomCode();
+  if (qr && rc && !(S.ui.qr && S.ui.qr.code === rc)) makeQR(rc);
   syncTimer();
-  wake(S.view === 'game');
+  wake(['game','lobby','join'].includes(S.view));
 }
 let T = null;
 function timerKey(){
-  const g = S.game; if (!g || S.view !== 'game' || !S.settings.timer) return null;
+  const g = S.game; if (!g || S.view !== 'game' || !gset('timer')) return null;
   const r = g.r; if (r.phase !== 'clues') return null;
   return [g.id, g.round, r.order.join(','), r.clueRound, r.idx, r.tieRound ? 't' : ''].join('|');
 }
@@ -1290,7 +2109,7 @@ function syncTimer(){
   const k = timerKey();
   if (T && T.key !== k){ clearInterval(T.iv); T = null; }
   if (k && !T){
-    const t = {key:k, left:S.settings.timer, tot:S.settings.timer};
+    const t = {key:k, left:gset('timer'), tot:gset('timer')};
     t.iv = setInterval(() => {
       t.left--;
       if (T === t){ if (t.left > 0 && t.left <= 5) Snd.tick(); if (t.left === 0) Snd.buzz(); paintTimer(); }
@@ -1322,6 +2141,9 @@ document.addEventListener('input', e => {
   if (f === 'impTxt') S.ui.impTxt = t.value;
   else if (f === 'gistToken'){ S.gist.token = t.value.trim(); saveGist(); }
   else if (f === 'gistId'){ S.gist.id = t.value.trim(); saveGist(); }
+  else if (f === 'joinCode'){ const c = cleanCode(t.value); if (t.value !== c) t.value = c; S.ui.joinCode = c; }
+  else if (f === 'joinName') S.ui.joinName = t.value;
+  else if (f === 'sbUrl' || f === 'sbKey'){ S.sb[f === 'sbUrl' ? 'url' : 'key'] = t.value.trim(); store.set('sb', S.sb); }
 });
 document.addEventListener('change', e => {
   const t = e.target;
@@ -1343,6 +2165,8 @@ document.addEventListener('keydown', e => {
   else if (id === 'wb'){ e.preventDefault(); ACTIONS.addWord(); }
   else if (id === 'np'){ e.preventDefault(); ACTIONS.npAdd(); }
   else if (id === 'rn'){ e.preventDefault(); ACTIONS.rAdd(); }
+  else if (id === 'jcode'){ e.preventDefault(); ACTIONS.joinGo(); }
+  else if (id === 'jname'){ e.preventDefault(); ACTIONS.joinName(); }
   else if (e.target.dataset && e.target.dataset.field === 'rname') e.target.blur();
 });
 /* carte « maintiens pour voir » */
@@ -1356,19 +2180,46 @@ document.addEventListener('pointerdown', e => {
   S.ui.revealed = true;
   const b = document.getElementById('seenBtn'); if (b) b.disabled = false;
 });
-const releaseHold = () => { if (holdEl){ holdEl.classList.remove('on'); holdEl = null; } };
+const releaseHold = () => {
+  if (holdEl){ holdEl.classList.remove('on'); holdEl = null; }
+  if (renderPending){ netRender = true; try { render(); } finally { netRender = false; } }
+};
 document.addEventListener('pointerup', releaseHold);
 document.addEventListener('pointercancel', releaseHold);
 window.addEventListener('blur', releaseHold);
 document.addEventListener('contextmenu', e => { if (e.target.closest('[data-hold]')) e.preventDefault(); });
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden) releaseHold(); else if (S.view === 'game'){ wakeLock = null; wake(true); }
+  if (document.hidden) return releaseHold();
+  if (['game','lobby','join'].includes(S.view)){ wakeLock = null; wake(true); }
+  // retour sur l'appli : on resynchronise
+  if (Net.status === 'on'){ if (Net.role === 'guest') guestUp(); else if (Net.role === 'host') pushState(true); }
 });
 
 /* hors ligne (GitHub Pages / https uniquement) */
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')){
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 }
+
+/* un téléphone par joueur : lien d'invitation (?salle=ABCD) et reconnexion automatique */
+(function initNet(){
+  const code = cleanCode(QS.get('salle')), sbp = QS.get('sb');
+  if (sbp && !SUPABASE_URL){
+    try { const [url, key] = b64dec(sbp).split('|'); if (/^https:\/\//.test(url) && key){ S.sb = {url, key}; store.set('sb', S.sb); } } catch(e){}
+  }
+  if (QS.has('salle') || QS.has('sb')){
+    const u = new URL(location.href); u.searchParams.delete('salle'); u.searchParams.delete('sb');
+    try { history.replaceState(null, '', u.pathname + u.search + u.hash); } catch(e){}
+  }
+  if (S.game && S.game.multi && !S.game.done && !S.net) S.net = {code:S.game.code, hostMe:S.game.hostMe || null, players:S.game.players.slice()};
+  if (S.net && !(S.game && S.game.multi && !S.game.done) && !recent(S.net.at)){ S.net = null; saveRoom(); }
+  if (code){
+    if (S.net && S.net.code === code){ S.view = 'lobby'; hostConnect(); }
+    else if (savedGuest && savedGuest.code === code) guestConnect(savedGuest);
+    else { S.ui.joinCode = code; if (sbConfig()) guestConnect({code}); else S.view = 'join'; }
+  }
+  else if (S.net) hostConnect();
+  else if (savedGuest && savedGuest.joined && recent(savedGuest.at)) guestConnect(savedGuest);
+})();
 
 render();
 </script>

@@ -1,7 +1,7 @@
 {
   "name": "Undercover Famille",
   "short_name": "Undercover",
-  "description": "Le jeu Undercover pour jouer en famille sur un seul téléphone.",
+  "description": "Le jeu Undercover pour jouer en famille, sur un seul téléphone ou un téléphone par joueur.",
   "lang": "fr",
   "start_url": "./",
   "scope": "./",
