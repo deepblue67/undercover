@@ -184,15 +184,15 @@ input.codein{text-align:center;font-size:2.3rem;letter-spacing:.45em;text-transf
 .feed .fr .cl{display:flex;flex-wrap:wrap;gap:5px;flex:1}
 .feed .ct{background:#fff;color:#1b1640;border-radius:10px;padding:3px 9px;font-weight:800;font-size:.92rem;line-height:1.3}
 .feed .ct.voice{background:rgba(255,255,255,.18);color:#fff}
-.feed .ct.new{animation:pop .35s ease}
+.feed .ct.new{animation:pop2 .35s ease}
 .feed .fr .rl{margin-left:auto;font-size:1.1rem;flex:none}
 .feed .fr.under{background:rgba(255,93,115,.18)}.feed .fr.white{background:rgba(255,255,255,.14)}
 .cluebox{display:flex;gap:8px;width:100%}
 .cluebox input{flex:1;font-size:1.15rem;font-weight:700}
 .cluebox .btn{width:auto;flex:none}
 /* dépouillement */
-.tv{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);border-radius:14px;padding:7px 10px;animation:pop .35s ease}
-.tv .n{font-weight:800}.tv .ar{color:#ffcc33;font-weight:900;margin:0 2px}
+.vrow{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);border-radius:14px;padding:7px 10px;animation:pop2 .35s ease}
+.vrow .n{font-weight:800}.vrow .ar{color:#ffcc33;font-weight:900;margin:0 2px}
 .bars{display:flex;flex-direction:column;gap:7px;width:100%}
 .bars .b{display:flex;align-items:center;gap:8px}
 .bars .b .nm{width:84px;font-weight:800;font-size:.92rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -200,7 +200,82 @@ input.codein{text-align:center;font-size:2.3rem;letter-spacing:.45em;text-transf
 .bars .b .fl{display:block;height:100%;background:linear-gradient(90deg,#ffcc33,#ff9f43);border-radius:99px;transition:width .45s ease;min-width:0}
 .bars .b.top .fl{background:linear-gradient(90deg,#ff5d73,#ff9f43)}
 .bars .b .ct{width:22px;text-align:right;font-weight:900}
-@keyframes pop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+/* ===== écran TV (paysage, lisible à 3 m) ===== */
+body.tvmode #app{max-width:none;padding:2.2vh 2.2vw;height:100vh;height:100dvh;overflow:hidden}
+body.tvmode .toast{font-size:3vh;padding:1.4vh 2vw}
+.tvw{flex:1;display:flex;flex-direction:column;gap:1.8vh;min-height:0;font-size:2.4vh}
+.tvbar{display:flex;align-items:center;gap:1.4vw;font-weight:900;font-size:2.4vh}
+.tvbar .brand{font-size:3.4vh;background:linear-gradient(90deg,#ffcc33,#ff5d73,#b388ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.tvbar .sp{flex:1}
+.tvbar .pill{font-size:2.4vh;padding:.8vh 1.4vw}
+.tvbar .tb{background:rgba(255,255,255,.1);border:0;color:#fff;border-radius:1.4vh;padding:.8vh 1vw;font:inherit;font-size:2vh;cursor:pointer;opacity:.55}
+.tvbar .tb:hover{opacity:1}
+.tvmain{flex:1;display:grid;grid-template-columns:minmax(0,1fr) 29vw;gap:1.8vw;min-height:0}
+.stage{background:rgba(255,255,255,.05);border-radius:3vh;padding:3vh 2.6vw;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2vh;min-height:0;overflow:hidden;text-align:center;position:relative;animation:in .35s ease}
+.stage h1{font-size:7vh;margin:0;line-height:1.05}
+.stage h2{font-size:4.4vh;margin:0}
+.stage .muted{font-size:3vh}
+.stage .kicker{font-size:2.6vh;font-weight:900;color:#ffcc33;letter-spacing:.08em;text-transform:uppercase}
+.stage .grow{flex:1}
+.side{background:rgba(255,255,255,.06);border-radius:3vh;padding:2.2vh 1.4vw;display:flex;flex-direction:column;gap:1.1vh;min-height:0;overflow:hidden}
+.side h3{margin:0 0 .6vh;font-size:2.6vh;letter-spacing:.08em;text-transform:uppercase;color:#c3bdf0}
+.side .rk{display:flex;align-items:center;gap:.9vw;padding:1vh .9vw;border-radius:1.8vh;background:rgba(255,255,255,.07);font-size:3.1vh;font-weight:800;transition:transform .3s}
+.side .rk.cur{outline:.45vh solid #ffcc33;transform:scale(1.03)}
+.side .rk.out{opacity:.45}
+.side .rk .pos{width:3.4vh;text-align:center;flex:none}
+.side .rk .nm2{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.side .rk .rl{font-size:2.4vh}
+.side .rk .sc{margin-left:auto;font-size:3.8vh;font-weight:900}
+.side .rk .pl2{color:#3ddc97;font-size:2.4vh;font-weight:900}
+.side .goal{margin-top:auto;text-align:center;font-weight:800;color:#c3bdf0;font-size:2.4vh}
+.tvw .av{width:6vh;height:6vh;font-size:3.6vh}
+.tvw .av.s{width:5vh;height:5vh;font-size:3vh}
+.tvw .av.l{width:13vh;height:13vh;font-size:8vh}
+.tvw .av.xl{width:24vh;height:24vh;font-size:15vh;box-shadow:inset 0 -1vh 0 rgba(0,0,0,.15),0 0 0 1vh rgba(255,255,255,.08)}
+.tvrow{display:flex;flex-wrap:wrap;gap:2vh 2.2vw;justify-content:center}
+.tvp{display:flex;flex-direction:column;align-items:center;gap:.8vh;font-weight:800;font-size:2.9vh;position:relative;transition:opacity .3s}
+.tvp.dim{opacity:.38}
+.tvp.cur .av{outline:.6vh solid #ffcc33;outline-offset:.5vh}
+.tvp .ck{position:absolute;top:-.6vh;right:-.6vh;background:#3ddc97;color:#10302a;border-radius:50%;width:4.2vh;height:4.2vh;font-size:2.4vh;display:flex;align-items:center;justify-content:center;font-weight:900;animation:pop2 .3s ease}
+.tvcols{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.3fr);gap:2.4vw;width:100%;align-items:center;flex:1;min-height:0}
+.tvcols > div{display:flex;flex-direction:column;align-items:center;gap:1.8vh;min-height:0}
+.tvw .feed{gap:1vh;max-height:100%;overflow:hidden;width:100%}
+.tvw .feed.two{display:grid;grid-template-columns:1fr 1fr;gap:1vh 1.2vw}
+.tvw .bars,.tvw .votes{width:100%}
+.tvcols > .bars{align-items:stretch}
+.tvcols.eq{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.tvw .qr:empty + p{display:none}
+.tvw .feed .fr{padding:1vh 1vw;border-radius:1.8vh;gap:1vw}
+.tvw .feed .fr .who{font-size:2.7vh;min-width:9.5vw;max-width:12vw;gap:.6vw;overflow:hidden}
+.tvw .feed .ct{font-size:2.9vh;padding:.5vh .9vw;border-radius:1.3vh}
+.tvw .feed .fr .rl{font-size:3vh}
+.tvw .timer{width:17vh;height:17vh}.tvw .timer svg{width:100%;height:100%}.tvw .timer .t{font-size:5.5vh}
+.tvw .bars{gap:1.4vh}
+.tvw .bars .b{gap:1vw}
+.tvw .bars .b .nm{width:11vw;font-size:3vh;text-align:left}
+.tvw .bars .b .tr{height:3.8vh}
+.tvw .bars .b .ct{font-size:3.6vh;width:4vw}
+.tvw .vrow{font-size:2.7vh;padding:1vh 1vw;border-radius:1.8vh;gap:.8vw}
+.tvw .badge{font-size:5vh;padding:1.6vh 2.6vw;border-radius:3vh;white-space:nowrap}
+.tvw .sl{gap:1vh}.tvw .sl .si{font-size:2.7vh;padding:1vh 1vw;gap:.8vw;border-radius:1.8vh}.tvw .sec{font-size:2.4vh}
+.tvw .qmark{font-size:16vh}
+.tvw .words{width:100%;gap:2vw;max-width:58vw}.tvw .words div{border-radius:2.4vh;padding:2vh 1vw}.tvw .words b{font-size:5.2vh}.tvw .words span{font-size:2.6vh}
+.tvw .qr svg{width:32vh;height:32vh;border-radius:2vh;padding:1vh}
+.tvw .code{gap:1vw}.tvw .code span{width:9vh;height:11vh;font-size:7vh;border-radius:2vh}
+.tvw .podium{gap:1.5vw;margin:0;width:70%}
+.tvw .step .nm{font-size:3vh}
+.tvw .block{font-size:4.4vh;border-radius:2vh 2vh 0 0}
+.tvw .block small{font-size:2.6vh}
+.tvw .s1 .block{height:26vh}.tvw .s2 .block{height:19vh}.tvw .s3 .block{height:14vh}
+.tvw .card{border-radius:2.4vh;padding:2vh 1.6vw}
+.tvw .pill{font-size:2.6vh;padding:.8vh 1.4vw}
+.tvw .flair{display:flex;align-items:center;gap:1vw;font-size:2.8vh;font-weight:800;background:rgba(61,220,151,.15);border-radius:2vh;padding:1vh 1.4vw}
+.tvw .pts{display:flex;flex-wrap:wrap;gap:1vh 1.4vw;justify-content:center}
+.tvw .pts span{display:flex;align-items:center;gap:.6vw;font-size:2.8vh;font-weight:800;background:rgba(255,255,255,.07);border-radius:1.8vh;padding:.8vh 1vw}
+.tvw .pts b{color:#3ddc97}
+.tvw .cd{position:absolute;font-size:30vh;border-radius:3vh}.tvw .cd span.go{font-size:10vh}
+.tvjoin{max-width:640px;margin:auto;width:100%;display:flex;flex-direction:column;gap:16px;text-align:center}
+@keyframes pop2{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
 </style>
 </head>
 <body>
@@ -247,7 +322,7 @@ const ROLE = {
 const LEVELS = {facile:[1],moyen:[1,2],difficile:[2,3],mix:[1,2,3]};
 const LEVEL_LBL = {facile:'Facile',moyen:'Moyen',difficile:'Difficile',mix:'Mélange'};
 const PTS = {civil:2, under:6, white:6, lastChance:3, detective:1};
-const APP_ID = 'undercover-famille', APP_VERSION = '2.3.0', GIST_FILE = 'undercover-famille.json';
+const APP_ID = 'undercover-famille', APP_VERSION = '2.4.0', GIST_FILE = 'undercover-famille.json';
 
 /* ---------- Mode « un téléphone par joueur » : connexion Supabase Realtime ----------
    Renseignez ici l'adresse du projet et sa clé publique (« Publishable key », sb_publishable_…)
@@ -312,7 +387,7 @@ const b64dec = s => { const bin = atob(s); const b = new Uint8Array(bin.length);
 
 /* ---------- État & migration depuis la v1 ---------- */
 const DEFAULT_SETTINGS = {
-  mode:'single', writtenClues:true, detective:true, level:'moyen', clueRounds:2, timer:0, rounds:5, endMode:'rounds', goal:15, unders:0, whites:0, lastChance:true, sound:true, vibrate:true, family:true,
+  mode:'single', writtenClues:true, detective:true, level:'moyen', clueRounds:2, timer:0, rounds:5, endMode:'rounds', goal:15, unders:0, whites:0, lastChance:true, sound:true, vibrate:true, tv:false, family:true,
   themes:Object.fromEntries(Object.keys(THEMES).map(k => [k, true]))
 };
 const mergeSettings = s => {
@@ -497,9 +572,9 @@ function startGame(list, multi){
     underCount:Object.fromEntries(players.map(p => [p.id, 0])),
     log:[], done:false
   };
-  if (multi){
-    Object.assign(S.game, {multi:true, code:S.net.code, hostMe:S.net.hostMe || null, cfg:{timer:S.settings.timer, lastChance:S.settings.lastChance, writtenClues:S.settings.writtenClues, detective:S.settings.detective}});
-  }
+  S.game.cfg = {timer:S.settings.timer, lastChance:S.settings.lastChance, writtenClues:S.settings.writtenClues, detective:S.settings.detective};
+  if (multi) Object.assign(S.game, {multi:true, code:S.net.code, hostMe:S.net.hostMe || null});
+  else if (S.settings.tv && S.net){ S.game.tv = true; S.game.code = S.net.code; }
   startRound();
   S.view = 'game'; S.nav = []; S.modal = null;
   render();
@@ -773,6 +848,10 @@ function sbConfig(){
   const url = String(SUPABASE_URL || S.sb.url || '').trim().replace(/\/(rest|auth|realtime)\/v1.*$/, '').replace(/\/+$/, ''), key = String(SUPABASE_KEY || S.sb.key || '').trim();
   return /^https:\/\/[^\s/]+/.test(url) && key ? {url, key} : null;
 }
+function tvLink(code){
+  const u = new URL(joinLink(code)); u.searchParams.delete('salle'); u.searchParams.set('tv', code);
+  return u.toString();
+}
 function joinLink(code){
   const u = new URL(location.href.split('#')[0]); u.search = '';
   u.searchParams.set('salle', code);
@@ -841,15 +920,15 @@ const Net = {
     Object.assign(this, {role, code, status:'connecting', online:{}, onKey:'', lastState:'', lastPriv:''});
     const guard = fn => (...a) => { if (tok !== this.tok) return; netRender = true; try { fn(...a); } catch(e){ console.error(e); } finally { netRender = false; } };
     const h = {
-      msg:guard(m => { if (m && m.t) role === 'host' ? hostMsg(m) : guestMsg(m); }),
+      msg:guard(m => { if (m && m.t) (role === 'host' ? hostMsg : role === 'tv' ? tvMsg : guestMsg)(m); }),
       presence:guard(o => {
         this.online = o;
-        const k = Object.values(o).map(m => (m && m.pid || '') + (m && m.host ? '*' : '')).sort().join(',');
+        const k = Object.values(o).map(m => (m && m.pid || '') + (m && m.host ? '*' : '') + (m && m.tv ? '#' : '')).sort().join(',');
         if (k !== this.onKey){ this.onKey = k; render(); }
       }),
       status:guard(st => {
         const was = this.status; this.status = st;
-        if (st === 'on'){ this.track(); role === 'host' ? hostUp() : guestUp(); }
+        if (st === 'on'){ this.track(); (role === 'host' ? hostUp : role === 'tv' ? tvUp : guestUp)(); }
         if (was !== st) render();
       })
     };
@@ -859,7 +938,7 @@ const Net = {
   track(){
     if (!this.tr) return;
     const pid = this.role === 'host' ? (S.net && S.net.hostMe) : (S.guest && S.guest.joined ? S.guest.me : null);
-    this.tr.track({pid:pid || null, host:this.role === 'host'});
+    this.tr.track({pid:this.role === 'tv' ? null : pid || null, host:this.role === 'host', tv:this.role === 'tv'});
   },
   send(m){
     if (!this.tr || this.status !== 'on') return false;
@@ -872,7 +951,8 @@ const Net = {
   },
   seen(){ return Object.keys(this.online).length > 1; },
   isOnline(pid){ return Object.values(this.online).some(m => m && m.pid === pid); },
-  hostOnline(){ return Object.values(this.online).some(m => m && m.host); }
+  hostOnline(){ return Object.values(this.online).some(m => m && m.host); },
+  tvOnline(){ return Object.values(this.online).some(m => m && m.tv); }
 };
 let netRender = false;
 function netErr(e){
@@ -898,7 +978,7 @@ function pushLobby(){
   const ids = new Set(S.net.players.map(p => p.id)), names = new Set(S.net.players.map(p => p.name.toLowerCase()));
   Net.send({t:'lobby', code:S.net.code, host:hostName(), players:S.net.players,
     roster:S.roster.filter(p => !ids.has(p.id) && !names.has(p.name.toLowerCase())).map(({id, name, emoji, color}) => ({id, name, emoji, color})),
-    started:!!(S.game && S.game.multi && !S.game.done)});
+    started:!!(S.game && S.game.multi && !S.game.done), single:!!S.net.single});
 }
 function publicGame(g){
   const c = JSON.parse(JSON.stringify(g)), r = g.r;
@@ -916,10 +996,15 @@ function sendPriv(id){
   Net.send({t:'priv', to:id, n:g.r.nonce, w, white:w === null});
 }
 function pushState(force){
+  if (Net.role !== 'host' || Net.status !== 'on') return;
   const g = S.game;
-  if (Net.role !== 'host' || !g || !g.multi || g.guest || Net.status !== 'on') return;
+  if (!g || g.guest || !(g.multi || g.tv)){
+    if (force || Net.lastState !== 'null'){ Net.lastState = 'null'; Net.send({t:'state', g:null}); }
+    return;
+  }
   const pub = publicGame(g), js = JSON.stringify(pub);
   if (force || js !== Net.lastState){ Net.lastState = js; Net.send({t:'state', g:pub}); }
+  if (!g.multi) return;
   const pk = g.id + '|' + (g.r ? g.r.nonce : '');
   if (force || pk !== Net.lastPriv){ Net.lastPriv = pk; g.players.forEach(p => sendPriv(p.id)); }
 }
@@ -930,7 +1015,7 @@ function hostMsg(m){
       S.net.players.push(cleanPlayer(Object.assign({}, m.prof, {id:m.me}), S.net.players.length)); saveRoom();
     }
     pushLobby();
-    if (S.game && S.game.multi){ Net.lastState = ''; pushState(); if (m.me) sendPriv(m.me); }
+    Net.lastState = ''; pushState(); if (m.me) sendPriv(m.me);
     render();
   }
   else if (m.t === 'join') hostJoin(m);
@@ -945,6 +1030,7 @@ function hostJoin(m){
   if (!S.net) return;
   const prof = m.prof || {}, name = String(prof.name || '').trim().slice(0, 16);
   const err = msg => Net.send({t:'joinErr', cid:m.cid, msg});
+  if (S.net.single) return err('📺 Cette salle sert seulement à l\'écran TV : la partie se joue sur un seul téléphone');
   if (!name) return err('Écris ton prénom ✏️');
   let p = S.net.players.find(x => x.name.toLowerCase() === name.toLowerCase());
   if (p){
@@ -1092,9 +1178,16 @@ function setHostMe(id){
 }
 async function hostConnect(){
   if (!S.net) return;
+  if (Net.role === 'guest' || Net.role === 'tv') return;
   if (Net.role === 'host' && Net.code === S.net.code && Net.status !== 'off') return;
   try { await Net.open('host', S.net.code); } catch(e){ netErr(e); }
   render();
+}
+/* mode un téléphone + écran TV : le téléphone ouvre une salle juste pour la TV */
+function ensureTvRoom(){
+  if (!S.settings.tv || S.settings.mode === 'multi' || Net.role === 'guest' || Net.role === 'tv' || !sbConfig()) return;
+  if (!S.net){ S.net = {code:newCode(), hostMe:null, players:[], single:true}; saveRoom(); }
+  hostConnect();
 }
 function closeRoom(){
   Net.send({t:'closed'});
@@ -1190,18 +1283,223 @@ function guestState(g){
   render();
 }
 
+/* ---------- écran TV (spectateur, ne reçoit jamais les mots) ---------- */
+async function tvConnect(code){
+  if (Net.role === 'host' || Net.role === 'guest') return toast('Ce téléphone est déjà dans une salle de jeu');
+  S.tv = {code, lobby:null, err:'', closed:false};
+  store.set('tvRoom', {code, at:Date.now()});
+  S.view = 'tv'; S.nav = []; S.modal = null;
+  if (S.game && !S.game.guest) S.game = null;   // la partie locale reste sauvegardée
+  render();
+  try { await Net.open('tv', code); } catch(e){ netErr(e); }
+  render();
+}
+function tvUp(){
+  Net.send({t:'hello', cid:Net.cid, tv:true});
+  clearTimeout(Net.waitT);
+  if (S.tv && !S.tv.lobby) Net.waitT = setTimeout(() => { if (S.tv && !S.tv.lobby){ S.tv.err = 'nobody'; render(); } }, 8000);
+}
+function tvLeave(){
+  const tr = Net.tr; Net.tr = null; Net.close();
+  if (tr) setTimeout(() => { try { tr.close(); } catch(e){} }, 300);
+  S.tv = null; store.del('tvRoom'); TVCD = null;
+  S.game = store.get('game', null); S.view = 'home'; S.nav = []; render();
+  try { if (document.fullscreenElement) document.exitFullscreen(); } catch(e){}
+}
+function tvMsg(m){
+  const T = S.tv; if (!T) return;
+  if (m.t === 'lobby'){ clearTimeout(Net.waitT); T.lobby = m; T.err = ''; T.closed = false; render(); }
+  else if (m.t === 'state') tvState(m.g);
+  else if (m.t === 'toast'){ if (!m.to) toast(m.msg); }
+  else if (m.t === 'closed'){ T.lobby = null; T.closed = true; S.game = null; render(); }
+}
+function tvState(g){
+  clearTimeout(Net.waitT);
+  if (S.tv){ S.tv.err = ''; S.tv.closed = false; }
+  if (!g){ S.game = null; return render(); }
+  const prev = S.game && S.game.guest && S.game.id === g.id ? S.game : null, pr = prev && prev.r, r = g.r;
+  g.guest = true; S.game = g;
+  if (g.done){ if (!(prev && prev.done)){ Snd.fanfare(); confetti(); } return render(); }
+  if (r && pr){
+    const changed = pr.phase !== r.phase || prev.round !== g.round;
+    if (changed && r.phase === 'suspense') Snd.drum();
+    else if (changed && r.phase === 'role') r.roles[r.last] === 'civil' ? Snd.bad() : Snd.good();
+    else if (changed && r.phase === 'end') (r.result && r.result.winner === 'civils') ? Snd.good() : Snd.fanfare();
+    else if (r.phase === 'clues' && (pr.idx !== r.idx || pr.phase !== 'clues')) Snd.tap();
+    else if (r.phase === 'pass' && pr.distIdx !== r.distIdx) Snd.tap();
+    if (r.phase === 'vote' && r.voteStep === 'count' && pr.voteStep !== 'count') tvCountdown(r.voteId);
+  }
+  render();
+}
+/* décompte « 3, 2, 1… montrez du doigt ! » rejoué sur la TV (mode un téléphone) */
+let TVCD = null;
+function tvCountdown(k){
+  const seq = ['3', '2', '1', '👉 Montrez du doigt !'];
+  TVCD = {k, i:0};
+  const step = () => {
+    if (!TVCD || TVCD.k !== k) return;
+    TVCD.txt = seq[TVCD.i]; TVCD.go = TVCD.i === 3;
+    TVCD.go ? Snd.go() : Snd.count(); render();
+    TVCD.i++;
+    setTimeout(() => { if (!TVCD || TVCD.k !== k) return; if (TVCD.i < seq.length) step(); else { TVCD = null; render(); } }, TVCD.i === 4 ? 1500 : 800);
+  };
+  step();
+}
+function tvFullscreen(){
+  const el = document.documentElement;
+  try { (el.requestFullscreen || el.webkitRequestFullscreen).call(el); } catch(e){ toast('Plein écran non disponible sur cet appareil'); }
+}
+const tvP = (p, o) => `<div class="tvp ${o && o.dim ? 'dim' : ''} ${o && o.cur ? 'cur' : ''}">${av(p, o && o.size || '')}${o && o.ck ? '<span class="ck">✓</span>' : ''}<span>${nm(p)}</span></div>`;
+function vTv(){
+  const T = S.tv;
+  if (!T) return vTvJoin();
+  const g = S.game && S.game.guest ? S.game : null;
+  const st = Net.status === 'on' ? '🟢' : Net.status === 'connecting' ? '🟠' : '🔴';
+  return `<div class="tvw">
+    <div class="tvbar"><span class="brand">🕵️ Undercover Famille</span><span class="pill">${st} Salle ${esc(T.code)}</span>${g ? `<span class="pill">${roundLbl(g)}</span>` : ''}
+      <span class="sp"></span><button class="tb" data-a="tvFull">⛶ Plein écran</button><button class="tb" data-a="tvQuit">✕ Quitter</button></div>
+    <div class="tvmain"><div class="stage" ${g && g.r ? `data-k="${esc(g.r.phase)}"` : ''}>${tvStage(g)}${TVCD ? `<div class="cd"><span class="${TVCD.go ? 'go' : ''}">${TVCD.txt}</span></div>` : ''}</div>
+      <aside class="side">${tvSide(g)}</aside></div>
+  </div>`;
+}
+function vTvJoin(){
+  const cfg = sbConfig();
+  return `<div class="screen"><div class="tvjoin">
+    ${header('📺 Écran TV')}
+    <div style="font-size:4rem">📺</div>
+    <h1>Afficher la partie sur la TV</h1>
+    <p class="muted">Tape le code de la salle affiché sur le téléphone de l'hôte.</p>
+    <input id="tvcode" class="codein" data-field="tvCode" value="${esc(S.ui.tvCode || '')}" maxlength="4" placeholder="ABCD" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go" aria-label="Code de la salle">
+    ${cfg ? '' : '<div class="warn">⚙️ La connexion en ligne n\'est pas configurée sur cet appareil. Ouvre plutôt le lien « Écran TV » envoyé par l\'hôte.</div>'}
+    <button class="btn primary big" data-a="tvGo" ${cfg ? '' : 'disabled'}>📺 Afficher</button>
+    <div class="card rules" style="text-align:left"><b>Sur la TV</b><ul>
+      <li><b>iPad / iPhone :</b> Centre de contrôle → <b>Recopie de l'écran</b> → ta TV, puis tourne l'appareil à l'horizontale.</li>
+      <li><b>Ordinateur :</b> branche-le en HDMI ou « caste » l'onglet, puis passe en plein écran.</li>
+      <li><b>Navigateur de la TV :</b> ouvre l'adresse du jeu et tape le code (selon le modèle).</li>
+    </ul></div>
+  </div></div>`;
+}
+function tvSide(g){
+  if (!g){
+    const L = S.tv.lobby;
+    if (!L || L.single || !L.players.length) return `<h3>📺 Écran TV</h3><p class="muted">Le classement s'affichera ici pendant la partie.</p>`;
+    return `<h3>👥 Dans la salle · ${L.players.length}</h3>${L.players.map(p => `<div class="rk">${av(p, 's')}<span class="nm2">${nm(p)}</span></div>`).join('')}`;
+  }
+  const r = g.r, cur = r && r.phase === 'clues' ? r.order[r.idx] : r && r.phase === 'pass' || r && r.phase === 'reveal' ? r.distOrder[r.distIdx] : null;
+  const list = rankList(g.players.map(p => Object.assign({}, p, {score:g.scores[p.id]})));
+  const gain = r && r.phase === 'end' && r.result ? r.result.pts : null;
+  return `<h3>🏆 Classement</h3>
+    ${list.map(x => {
+      const out = r && !g.done && !r.alive.includes(x.id), role = r && r.roles && r.roles[x.id];
+      return `<div class="rk ${cur === x.id ? 'cur' : ''} ${out ? 'out' : ''}"><span class="pos">${x.score ? medal(x.rank) : ''}</span>${av(x, 's')}<span class="nm2">${nm(x)}</span>${role && (out || r.phase === 'end') ? `<span class="rl">${ROLE[role].emo}</span>` : ''}${gain && gain[x.id] ? `<span class="pl2">+${gain[x.id]}</span>` : ''}<span class="sc">${x.score}</span></div>`;
+    }).join('')}
+    <div class="goal">${g.goal ? `🎯 Premier à ${g.goal} points` : `Manche ${g.round} sur ${g.total}`}</div>`;
+}
+function tvStage(g){
+  const T = S.tv;
+  if (!g){
+    if (T.closed) return `<div style="font-size:12vh">🚪</div><h1>Salle fermée</h1><p class="muted">L'hôte a fermé la salle. Ouvre une nouvelle salle et entre son code.</p>`;
+    if (!T.lobby) return T.err === 'nobody'
+      ? `<div style="font-size:12vh">🤷</div><h1>Personne dans la salle ${esc(T.code)}</h1><p class="muted">Vérifie le code et que le téléphone de l'hôte a la salle ouverte. On continue d'attendre…</p>`
+      : `<div style="font-size:12vh"><span class="spin">🔄</span></div><h1>Connexion à la salle ${esc(T.code)}…</h1>`;
+    if (T.lobby.single) return `<div style="font-size:14vh">📱</div><h1>La partie va commencer…</h1><p class="muted">Elle se lance sur le téléphone : tout s'affichera ici.</p>`;
+    return `<div class="kicker">Rejoignez la partie</div>
+      <div class="tvcols"><div>${qrBox(joinLink(T.code))}<p class="muted">Scannez avec votre téléphone</p></div>
+      <div><p class="muted">ou ouvrez le jeu, touchez<br><b>📲 Rejoindre une partie</b><br>et tapez le code</p><div class="code">${T.code.split('').map(c => `<span>${c}</span>`).join('')}</div>
+      <div class="tvrow">${T.lobby.players.map(p => tvP(p)).join('')}</div></div></div>`;
+  }
+  if (g.done) return tvPodium(g);
+  const r = g.r; if (!r) return '';
+  const tieTxt = r.tieIds && r.tieIds.length ? ' entre ' + r.tieIds.map(id => nm(PP(id))).join(' et ') : '';
+  switch (r.phase){
+    case 'pass': case 'reveal': {
+      const p = PP(r.distOrder[r.distIdx]);
+      return `<div class="kicker">Distribution des mots · ${r.distIdx + 1} / ${r.distOrder.length}</div>
+        ${r.phase === 'pass' ? `<h2>📱 Le téléphone passe à</h2>${av(p, 'xl')}<h1>${nm(p)}</h1><p class="muted">Les autres, on ne regarde pas ! 🙈</p>`
+          : `${av(p, 'xl')}<h1>${nm(p)} découvre son mot…</h1><p class="muted">🤫 Chut !</p>`}
+        <div class="tvrow">${r.distOrder.map((id, i) => tvP(PP(id), {ck:i < r.distIdx, dim:i > r.distIdx, cur:i === r.distIdx})).join('')}</div>`;
+    }
+    case 'words': {
+      const n = g.players.filter(p => r.ready[p.id]).length;
+      return `<div class="kicker">Distribution des mots</div><div style="font-size:12vh">🤫</div><h1>Chacun découvre son mot</h1><p class="muted">sur son téléphone… ${n} / ${g.players.length} prêts</p>
+        <div class="tvrow">${g.players.map(p => tvP(p, {ck:r.ready[p.id], dim:!r.ready[p.id]})).join('')}</div>`;
+    }
+    case 'clues': {
+      const p = PP(r.order[r.idx]), feed = g.multi ? clueFeed(r) : '';
+      const head = r.tieRound ? `⚖️ Égalité${tieTxt} ! Encore un tour d'indices` : `Tour d'indices ${r.clueRound} / ${r.cluesNeeded}`;
+      const who = `${av(p, 'xl')}<h1>${nm(p)}</h1><p class="muted">${g.multi && gcfg('writtenClues') ? 'écrit son indice…' : 'donne un indice sur son mot 🎤'}</p>${timerHtml()}`;
+      const queue = `<div class="tvrow">${r.order.map((id, i) => tvP(PP(id), {cur:i === r.idx, dim:i < r.idx})).join('')}</div>`;
+      return `<div class="kicker">${head}</div>${feed ? `<div class="tvcols"><div>${who}</div><div>${feed}</div></div>${queue}` : `${who}${queue}`}`;
+    }
+    case 'vote': {
+      if (g.multi){
+        const n = r.alive.filter(id => r.votes[id]).length, feed = clueFeed(r);
+        const left = `<div style="font-size:11vh">🗳️</div><h1>${r.tieRound ? 'On revote !' : 'Vote secret'}</h1><p class="muted">Chacun vote sur son téléphone… ${n} / ${r.alive.length}</p><div class="tvrow">${r.alive.map(id => tvP(PP(id), {ck:r.votes[id], dim:!r.votes[id]})).join('')}</div>`;
+        return feed ? `<div class="tvcols"><div>${left}</div><div>${feed}</div></div>` : left;
+      }
+      if (r.voteStep === 'pick') return `<div style="font-size:11vh">👉</div><h1>Qui a été désigné ?</h1><p class="muted">Le téléphone indique le joueur éliminé…</p><div class="tvrow">${r.alive.map(id => tvP(PP(id), {size:'l'})).join('')}</div>`;
+      return `<div style="font-size:11vh">🗳️</div><h1>${r.tieRound ? 'On revote !' : 'Place au vote !'}</h1><p class="muted">Discutez : qui semble avoir un mot différent ?</p><div class="tvrow">${r.alive.map(id => tvP(PP(id), {size:'l'})).join('')}</div>`;
+    }
+    case 'tally': {
+      const t = r.tally || {order:[], ties:[]}, lv = r.lastVotes || {};
+      const n = Math.min(S.ui.tally && S.ui.tally.k === t.id ? S.ui.tally.n : 0, t.order.length), done = n >= t.order.length;
+      const shown = t.order.slice(0, n), cnt = {};
+      shown.forEach(v => cnt[lv[v]] = (cnt[lv[v]] || 0) + 1);
+      const lead = Math.max(0, ...Object.values(cnt)), tot = Math.max(1, t.order.length);
+      const targets = r.alive.filter(id => Object.values(lv).includes(id));
+      return `<div class="kicker">🗳️ Dépouillement · ${n} / ${t.order.length}</div>
+        <div class="bars" style="max-width:52vw">${targets.map(id => `<div class="b ${cnt[id] && cnt[id] === lead ? 'top' : ''}">${av(PP(id), 's')}<span class="nm">${nm(PP(id))}</span><span class="tr"><span class="fl" style="width:${(cnt[id] || 0) / tot * 100}%"></span></span><span class="ct">${cnt[id] || 0}</span></div>`).join('')}</div>
+        <div class="tvrow">${shown.slice(-6).reverse().map(v => `<div class="vrow">${av(PP(v), 's')}<span class="n">${nm(PP(v))}</span><span class="ar">➜</span>${av(PP(lv[v]), 's')}<span class="n">${nm(PP(lv[v]))}</span></div>`).join('')}</div>
+        ${done ? `<h1>${t.res ? `😱 ${nm(PP(t.res))} est éliminé…` : '⚖️ Égalité !'}</h1>` : '<h2 class="muted">…</h2>'}`;
+    }
+    case 'suspense': { const p = PP(r.last); return `${av(p, 'xl')}<h1>${nm(p)}</h1><p class="muted">était…</p><div class="qmark shake">❓</div>`; }
+    case 'role': {
+      const p = PP(r.last), role = r.roles[r.last], R = ROLE[role];
+      const msg = {civil:'Oups, un innocent ! L\'intrus court toujours…', under:'Démasqué ! Bien joué les détectives 🔍', white:'Mr White est démasqué !'}[role];
+      const fl = r.flairLast && r.flairLast.length ? `<div class="flair">🔍 Bonus détective +${PTS.detective} : ${r.flairLast.map(id => av(PP(id), 's')).join('')}</div>` : '';
+      const who = `${av(p, 'xl')}<h1>${nm(p)}</h1><p class="muted">était</p><div class="badge ${R.cls}">${R.emo} ${R.lbl}</div><p class="muted">${msg}</p>`;
+      const right = (g.multi ? votesHtml(r).replace('class="card"', 'class="card votes"') : '') + fl;
+      return right ? `<div class="tvcols eq"><div>${who}</div><div>${right}</div></div>` : who;
+    }
+    case 'guess': {
+      const p = PP(r.last), white = r.guessType === 'white';
+      return `<div style="font-size:11vh">${white ? '🎩' : '🎯'}</div><h1>${white ? 'Mr White tente sa chance !' : 'Dernière chance !'}</h1>${av(p, 'l')}
+        ${r.guessTxt ? `<p class="muted">${nm(p)} a répondu</p><h1>« ${esc(r.guessTxt)} »</h1><p class="muted">🤔 Les civils décident si ça compte…</p>`
+          : `<p class="muted"><b>${nm(p)}</b> cherche le mot des civils…</p>`}
+        <span class="pill">${white ? 'S\'il trouve, Mr White gagne la manche !' : `+${PTS.lastChance} points s'il trouve`}</span>`;
+    }
+    case 'end': {
+      const res = r.result || {}, feed = g.multi && (r.clues || []).some(c => c.txt) ? clueFeed(r, true) : '';
+      const title = res.winner === 'civils' ? '🎉 Les civils gagnent !' : res.winner === 'white' ? '🎩 Mr White a trouvé !' : '🕵️ Les intrus gagnent !';
+      const pts = `<div class="pts">${g.players.filter(p => res.pts && res.pts[p.id]).map(p => `<span>${av(p, 's')}${nm(p)} <b>+${res.pts[p.id]}</b></span>`).join('')}</div>`;
+      const words = `<div class="words"><div class="c"><span class="muted">Mot des civils</span><b>${esc(r.pair.civil)}</b></div><div class="u"><span class="muted">Mot de l'Undercover</span><b>${esc(r.pair.under)}</b></div></div>`;
+      return `<h1>${title}</h1>${words}${pts}${feed ? feed.replace('class="feed"', 'class="feed two"') : ''}`;
+    }
+  }
+  return '';
+}
+function tvPodium(g){
+  const list = rankList(g.players.map(p => Object.assign({}, p, {score:g.scores[p.id]})));
+  const stepH = (x, pos) => x ? `<div class="step s${pos}">${av(x, pos === 1 ? 'l' : '')}<div class="nm">${nm(x)}</div><div class="block">${medal(x.rank)}<small>${x.score} pts</small></div></div>` : '<div class="step"></div>';
+  const ties = list.filter(x => x.rank === 1);
+  return `<div style="font-size:10vh">🏆</div><h1>${ties.length > 1 ? 'Égalité au sommet !' : `Bravo ${nm(list[0])} !`}</h1>
+    <p class="muted">${plural(g.log.length, 'manche')} jouée${g.log.length > 1 ? 's' : ''}</p>
+    <div class="podium">${stepH(list[1], 2)}${stepH(list[0], 1)}${stepH(list[2], 3)}</div>`;
+}
+
 /* ---------- QR code (chargé à la demande) ---------- */
-let qrMod = null, qrBusy = false;
-async function makeQR(code){
-  if (qrBusy) return; qrBusy = true;
+let qrMod = null;
+const QRS = {};   // url -> svg ('' si indisponible)
+async function makeQR(url){
+  if (url in QRS) return; QRS[url] = '';
   try {
     if (!qrMod) qrMod = (await import(QR_CDN)).default;
-    const q = qrMod(0, 'M'); q.addData(joinLink(code)); q.make();
-    S.ui.qr = {code, svg:q.createSvgTag({cellSize:4, margin:2, scalable:true})};
-  } catch(e){ S.ui.qr = {code, svg:''}; }
-  qrBusy = false;
-  const el = document.getElementById('qr'); if (el && S.ui.qr.code === code) el.innerHTML = S.ui.qr.svg;
+    const q = qrMod(0, 'M'); q.addData(url); q.make();
+    QRS[url] = q.createSvgTag({cellSize:4, margin:2, scalable:true});
+  } catch(e){}
+  document.querySelectorAll('[data-qr]').forEach(el => { if (el.dataset.qr === url) el.innerHTML = QRS[url]; });
 }
+const qrBox = (url, cls) => `<div class="qr ${cls || ''}" data-qr="${esc(url)}">${QRS[url] || ''}</div>`;
 
 /* =========================================================
    Actions (boutons data-a="...")
@@ -1215,12 +1513,24 @@ const ACTIONS = {
   },
   resume(){
     S.nav = []; S.view = S.game.done ? 'podium' : 'game'; render();
-    if (S.game.multi && !S.game.guest){
-      if (!S.net) S.net = {code:S.game.code, hostMe:S.game.hostMe || null, players:S.game.players.slice()};
+    if ((S.game.multi || S.game.tv) && !S.game.guest){
+      if (!S.net) S.net = {code:S.game.code, hostMe:S.game.hostMe || null, players:S.game.multi ? S.game.players.slice() : [], single:!S.game.multi};
       saveRoom(); hostConnect();
     }
   },
-  newGame(){ if (S.settings.mode === 'multi') return ACTIONS.openRoom(); ACTIONS.go({v:'players'}); },
+  newGame(){ if (S.settings.mode === 'multi') return ACTIONS.openRoom(); ensureTvRoom(); ACTIONS.go({v:'players'}); },
+  /* --- écran TV --- */
+  tvStart(){ S.nav.push(S.view); S.view = 'tv'; S.tv = null; render(); },
+  tvGo(){ const c = cleanCode(S.ui.tvCode); if (c.length !== 4) return toast('Le code de la salle fait 4 lettres'); tvConnect(c); },
+  tvQuit(){ tvLeave(); },
+  tvFull(){ tvFullscreen(); },
+  async tvShare(){
+    const code = roomCode(); if (!code) return;
+    const url = tvLink(code);
+    try { if (navigator.share) await navigator.share({title:'Undercover Famille · écran TV', url}); else { await copyText(url); toast('Lien de l\'écran TV copié ✓'); } }
+    catch(e){ if (e && e.name !== 'AbortError'){ await copyText(url); toast('Lien de l\'écran TV copié ✓'); } }
+  },
+  async tvCopy(){ const code = roomCode(); if (code) toast(await copyText(tvLink(code)) ? 'Lien de l\'écran TV copié ✓' : 'Copie impossible'); },
 
   /* --- un téléphone par joueur : salle (hôte) --- */
   openRoom(){
@@ -1231,8 +1541,9 @@ const ACTIONS = {
       S.net = {code:newCode(), hostMe:p ? p.id : null, players:p ? [cleanPlayer(p, 0)] : []};
       saveRoom();
     }
+    if (S.net.single){ S.net.single = false; saveRoom(); }
     if (S.view !== 'lobby'){ S.nav.push(S.view); S.view = 'lobby'; }
-    S.modal = null; render(); hostConnect();
+    S.modal = null; render(); hostConnect(); pushLobby();
   },
   hostMe(d){ setHostMe(d.id || null); },
   kick(d){
@@ -1342,9 +1653,9 @@ const ACTIONS = {
     if (n < MIN_P) return toast(`Choisis au moins ${MIN_P} joueurs`);
     if (n > MAX_P) return toast(`${MAX_P} joueurs maximum`);
     if (S.game && !S.game.done){ S.modal = {type:'replace'}; return render(); }
-    startGame();
+    ensureTvRoom(); startGame();
   },
-  replaceYes(){ startGame(); },
+  replaceYes(){ ensureTvRoom(); startGame(); },
 
   /* --- joueurs enregistrés --- */
   rAdd(){ const el = $('#rn'); const p = newRosterPlayer(el && el.value); if (!p) return; render(); setTimeout(() => { const e2 = $('#rn'); if (e2) e2.focus(); }, 0); },
@@ -1462,7 +1773,7 @@ const ACTIONS = {
   nextRound(){ startRound(); render(); },
   podium(){ finishGame(); },
   endNowYes(){ finishGame(); },
-  rematch(){ S.game = null; startGame(); },
+  rematch(){ S.game = null; ensureTvRoom(); startGame(); },
 
   /* --- fenêtres --- */
   menu(){ S.modal = {type:'menu'}; render(); },
@@ -1543,7 +1854,8 @@ function rulesHtml(){
 }
 function topbar(){
   const g = S.game;
-  const net = g.multi ? `<button class="pill net" data-a="modal" data-v="room" aria-label="Salle">${Net.status === 'on' ? '🟢' : '🟠'} ${esc(g.code || Net.code)}</button>` : '';
+  const net = g.multi ? `<button class="pill net" data-a="modal" data-v="room" aria-label="Salle">${Net.status === 'on' ? '🟢' : '🟠'} ${esc(g.code || Net.code)}</button>`
+    : g.tv && !g.guest ? `<button class="pill net" data-a="modal" data-v="tvlink" aria-label="Écran TV">📺 ${Net.status === 'on' && Net.tvOnline() ? '🟢' : '⚪'} ${esc(g.code || Net.code)}</button>` : '';
   return `<div class="top"><div class="pill">${roundLbl(g)}</div>${net}<button class="icon" data-a="menu" aria-label="Menu">☰</button></div>${g.multi ? netWarn() : ''}`;
 }
 function netWarn(){
@@ -1561,11 +1873,20 @@ function timerHtml(){
   const t = gset('timer');
   return t ? `<div class="timer" id="timer" style="margin-top:10px"><svg width="90" height="90" viewBox="0 0 90 90"><circle cx="45" cy="45" r="40" stroke="rgba(255,255,255,.15)" stroke-width="8" fill="none"/><circle class="ring" cx="45" cy="45" r="40" stroke="#ffcc33" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="251.33" stroke-dashoffset="0"/></svg><div class="t">${t}</div></div>` : '';
 }
+/* état de l'écran TV, côté hôte */
+function tvCard(){
+  if (!S.settings.tv) return '';
+  if (!sbConfig()) return `<div class="card">📺 <b>Écran TV</b><br><span class="muted small">Configure d'abord la connexion en ligne (Réglages).</span></div>`;
+  const code = roomCode(), on = Net.role === 'host' && Net.tvOnline();
+  return `<div class="card row" style="align-items:center;gap:12px"><div style="font-size:2rem">📺</div>
+    <div class="grow"><b>Écran TV ${on ? '<span style="color:#3ddc97">· connecté ✓</span>' : ''}</b><br><span class="muted small">${code ? (on ? 'La partie s\'affiche sur la TV.' : `Sur la TV : « 📺 Afficher sur la TV », code <b>${esc(code)}</b>`) : 'Ouverture…'}</span></div>
+    ${code ? '<button class="btn ghost" style="width:auto;flex:none" data-a="modal" data-v="tvlink">QR / lien</button>' : ''}</div>`;
+}
 function roomCard(code){
   return `<div class="card center" style="gap:10px">
     <span class="muted small">Code de la salle</span>
     <div class="code">${code.split('').map(c => `<span>${c}</span>`).join('')}</div>
-    <div id="qr" class="qr">${S.ui.qr && S.ui.qr.code === code ? S.ui.qr.svg : ''}</div>
+    ${qrBox(joinLink(code))}
     <div class="row" style="width:100%"><button class="btn ghost" data-a="shareRoom">📤 Inviter</button><button class="btn ghost" data-a="copyRoom">📋 Copier le lien</button></div>
     <span class="small muted">${Net.status === 'on' ? '🟢 Salle ouverte' : Net.status === 'connecting' ? '<span class="spin">🔄</span> Ouverture de la salle…' : '📵 Hors ligne : vérifie internet'}${DEV_LOCAL ? ' · mode test local' : ''}</span>
   </div>`;
@@ -1585,6 +1906,7 @@ function vHome(){
     ${savedGuest && savedGuest.joined && !S.net ? `<button class="btn green big" data-a="rejoin">↩️ Revenir dans la salle ${esc(savedGuest.code)}<br><small>${savedGuest.prof ? esc(savedGuest.prof.name) : ''}</small></button>` : ''}
     <button class="btn primary big" data-a="newGame">🎲 Nouvelle partie<br><small>${S.settings.mode === 'multi' ? '📱📱 un téléphone par joueur' : '📱 un téléphone pour tous'}</small></button>
     <button class="btn ghost" data-a="go" data-v="join">📲 Rejoindre une partie <small>(code de salle)</small></button>
+    <button class="linkbtn" data-a="tvStart">📺 Afficher sur la TV (cet appareil sert d'écran)</button>
     <div class="row"><button class="btn ghost" data-a="go" data-v="rules">📖 Règles</button><button class="btn ghost" data-a="go" data-v="history">🗂️ Historique</button></div>
     <div class="row"><button class="btn ghost" data-a="go" data-v="stats">📊 Stats</button><button class="btn ghost" data-a="go" data-v="settings">⚙️ Réglages</button></div>
     <p class="tip">📲 Ajoute le jeu à l'écran d'accueil pour y jouer même sans internet.</p>
@@ -1609,6 +1931,7 @@ function vPlayers(){
       <button class="mini" data-a="selToggle" data-id="${esc(p.id)}" aria-label="Retirer">✕</button></div>`).join('')}</div>` : ''}
     <div class="card">${settingsSummary()}
       <div style="margin-top:10px"><button class="btn ghost" data-a="go" data-v="settings">⚙️ Modifier les réglages</button></div></div>
+    ${tvCard()}
     <div class="grow"></div>
     <button class="btn primary big" data-a="launch" ${n < MIN_P ? 'disabled' : ''}>C'est parti ! 🚀</button>
   </div>`;
@@ -1659,6 +1982,8 @@ function vSettings(){
     <div class="set"><label>Thèmes</label><div class="chips">
       ${Object.entries(THEMES).map(([k,t]) => `<button class="chip ${s.themes[k] ? 'on' : ''}" data-a="theme" data-k="${k}">${t.icon} ${t.label}</button>`).join('')}
     </div></div>
+    <div class="set"><label>📺 Écran TV</label>${seg('tv', [[false,'Non'],[true,'Oui']])}
+      <div class="note">${s.tv ? `Un écran en plus (TV, iPad recopié sur la TV, ordinateur) affiche le déroulement, à qui le tour et le classement en direct. Sur cet écran : ouvre le jeu, touche « 📺 Afficher sur la TV » et tape le code de la salle.${s.mode === 'multi' ? '' : ' En mode un téléphone, il faut internet pour la TV (la partie, elle, continue sans).'}` : 'Afficher la partie sur une TV pendant que vous jouez.'}</div></div>
     <div class="set"><label>Sons</label>${seg('sound', [[true,'Oui'],[false,'Non']])}</div>
     <div class="set"><label>Vibrations</label>${seg('vibrate', [[true,'Oui'],[false,'Non']])}
       <div class="note">Le téléphone vibre quand c'est ton tour (Android ; l'iPhone ne permet pas aux sites de vibrer).</div></div>
@@ -2044,6 +2369,7 @@ function vLobby(){
     ${n < MIN_P ? `<p class="tip">Encore ${plural(MIN_P - n, 'joueur')} au minimum. Les autres ouvrent le jeu, touchent « 📲 Rejoindre une partie » et tapent le code, ou scannent le QR code.</p>` : ''}
     <div class="card">${settingsSummary(n)}
       <div style="margin-top:10px"><button class="btn ghost" data-a="go" data-v="settings">⚙️ Modifier les réglages</button></div></div>
+    ${tvCard()}
     <button class="btn primary big" data-a="mStart" ${n < MIN_P || Net.status !== 'on' ? 'disabled' : ''}>C'est parti ! 🚀</button>
   </div>`;
 }
@@ -2192,7 +2518,7 @@ function vMTally(){
   return `<div class="screen">${topbar()}
     <h2 class="center">🗳️ Dépouillement</h2>
     <div class="bars card">${targets.map(id => `<div class="b ${cnt[id] && cnt[id] === lead ? 'top' : ''}">${av(PP(id), 's')}<span class="nm">${nm(PP(id))}</span><span class="tr"><span class="fl" style="width:${(cnt[id] || 0) / max * 100}%"></span></span><span class="ct">${cnt[id] || 0}</span></div>`).join('')}</div>
-    <div class="sl">${shown.slice().reverse().map(v => `<div class="tv">${av(PP(v), 's')}<span class="n">${nm(PP(v))}</span><span class="ar">➜</span>${av(PP(lv[v]), 's')}<span class="n">${nm(PP(lv[v]))}</span></div>`).join('')}</div>
+    <div class="sl">${shown.slice().reverse().map(v => `<div class="vrow">${av(PP(v), 's')}<span class="n">${nm(PP(v))}</span><span class="ar">➜</span>${av(PP(lv[v]), 's')}<span class="n">${nm(PP(lv[v]))}</span></div>`).join('')}</div>
     <div class="grow"></div>
     ${done ? `<div class="center wait"><h1>${t.res ? `😱 ${nm(PP(t.res))} est éliminé…` : '⚖️ Égalité !'}</h1><p class="muted">${t.res ? 'Mais qui était-il vraiment ?' : t.ties.map(id => nm(PP(id))).join(' et ') + ' à égalité : nouveau tour d\'indices'}</p></div>`
       : `<p class="tip">Bulletin ${n} / ${t.order.length}…</p>`}
@@ -2276,6 +2602,18 @@ function vModal(){
     case 'mRedo': body = `<div class="center" style="gap:6px"><div style="font-size:3rem">🔄</div></div>` + yesNo('Changer de mots ?', 'Un mot pas compris, ou une paire déjà jouée ? La manche recommence pour tout le monde avec une nouvelle paire. Les rôles sont retirés au sort et <b>les points ne changent pas</b>.', 'mRedoYes', '🔄 Changer', 'primary'); break;
     case 'closeVote': body = yesNo('Clôturer le vote ?', 'Le dépouillement se fera avec les votes déjà reçus (utile si un téléphone est déconnecté).', 'mCloseVoteYes', 'Clôturer', 'primary'); break;
     case 'room': body = `<h2>📲 Salle de jeu</h2>${roomCard(roomCode())}<p class="muted small">Quelqu'un a fermé le jeu par erreur ? Il le rouvre : il retrouve la partie tout seul, ou via « Rejoindre une partie » avec ce code.</p><button class="btn primary" data-a="closeModal">Fermer</button>`; break;
+    case 'tvlink': {
+      const code = roomCode();
+      body = code ? `<h2>📺 Écran TV</h2>
+        <p class="muted small">Sur l'appareil relié à la TV (iPad recopié, ordinateur, navigateur de la TV) : ouvre le jeu et touche <b>« 📺 Afficher sur la TV »</b>, puis tape le code. Ou scanne ce QR code avec l'iPad.</p>
+        <div class="code">${code.split('').map(c => `<span>${c}</span>`).join('')}</div>
+        <div class="center">${qrBox(tvLink(code))}</div>
+        <p class="center small">${Net.role === 'host' && Net.tvOnline() ? '🟢 TV connectée' : Net.status === 'on' ? '⚪ En attente de la TV…' : '🟠 Connexion…'}</p>
+        <div class="row"><button class="btn ghost" data-a="tvShare">📤 Envoyer le lien</button><button class="btn ghost" data-a="tvCopy">📋 Copier</button></div>
+        <button class="btn primary" data-a="closeModal">Fermer</button>`
+        : `<p class="muted">La salle n'est pas encore ouverte.</p><button class="btn primary" data-a="closeModal">Fermer</button>`;
+      break;
+    }
     case 'closeRoom': body = yesNo('Fermer la salle ?', 'Les joueurs connectés seront déconnectés' + (S.game && S.game.multi && !S.game.done ? ' et la partie en cours sera abandonnée.' : '.'), 'closeRoomYes', 'Fermer la salle'); break;
     case 'leaveRoom': body = yesNo('Quitter la salle ?', 'Tu pourras revenir avec le même code.', 'mLeaveYes', 'Quitter'); break;
     case 'resetStats': body = yesNo('Tout effacer ?', 'L\'historique des parties et toutes les statistiques seront supprimés de cet appareil.', 'resetStatsYes', 'Effacer'); break;
@@ -2327,7 +2665,8 @@ function render(){
   renderPending = false;
   const views = {home:vHome, players:vPlayers, roster:vRoster, settings:vSettings, words:vWords, rules:vRules, stats:vStats,
     history:vHistory, gameDetail:vGameDetail, export:vExport, import:vImport, gist:vGist, game:vGame, podium:vPodium,
-    lobby:vLobby, join:vJoin, online:vOnline};
+    lobby:vLobby, join:vJoin, online:vOnline, tv:vTv};
+  document.body.classList.toggle('tvmode', S.view === 'tv' && !!S.tv);
   if ((S.view === 'game' || S.view === 'podium') && !S.game) S.view = 'home';
   // un message réseau ne doit pas faire perdre la saisie en cours
   const ae = document.activeElement, keep = netRender && ae && ae.id && /^(INPUT|TEXTAREA)$/.test(ae.tagName) ? {id:ae.id, v:ae.value, a:ae.selectionStart, b:ae.selectionEnd} : null;
@@ -2336,14 +2675,13 @@ function render(){
   const key = S.view + (S.game && S.game.r ? S.game.r.phase + S.game.round : '');
   if (key !== lastKey){ window.scrollTo(0, 0); lastKey = key; }
   if (S.modal && S.modal.type === 'newPlayer'){ const el = $('#np'); if (el) el.focus(); }
-  const qr = document.getElementById('qr'), rc = roomCode();
-  if (qr && rc && !(S.ui.qr && S.ui.qr.code === rc)) makeQR(rc);
+  document.querySelectorAll('[data-qr]').forEach(el => { if (!(el.dataset.qr in QRS)) makeQR(el.dataset.qr); });
   syncTimer(); syncTally(); hostTallyWatch(); turnAlerts();
-  wake(['game','lobby','join'].includes(S.view));
+  wake(['game','lobby','join','tv'].includes(S.view));
 }
 let T = null;
 function timerKey(){
-  const g = S.game; if (!g || S.view !== 'game' || !gset('timer')) return null;
+  const g = S.game; if (!g || !(S.view === 'game' || S.view === 'tv') || !gset('timer') || !g.r) return null;
   const r = g.r; if (r.phase !== 'clues') return null;
   return [g.id, g.round, r.order.join(','), r.clueRound, r.idx, r.tieRound ? 't' : ''].join('|');
 }
@@ -2364,7 +2702,7 @@ function turnAlerts(){
 }
 let TA = null;
 function syncTally(){
-  const g = S.game, r = g && g.r, t = r && r.phase === 'tally' && S.view === 'game' ? r.tally : null;
+  const g = S.game, r = g && g.r, t = r && r.phase === 'tally' && (S.view === 'game' || S.view === 'tv') ? r.tally : null;
   if (TA && (!t || TA.k !== t.id)){ clearInterval(TA.iv); TA = null; }
   if (!t || TA) return;
   if (!S.ui.tally || S.ui.tally.k !== t.id) S.ui.tally = {k:t.id, n:0};
@@ -2415,6 +2753,7 @@ document.addEventListener('input', e => {
   else if (f === 'joinCode'){ const c = cleanCode(t.value); if (t.value !== c) t.value = c; S.ui.joinCode = c; }
   else if (f === 'joinName') S.ui.joinName = t.value;
   else if (f === 'guessTxt') S.ui.guessTxt = t.value;
+  else if (f === 'tvCode'){ const c = cleanCode(t.value); if (t.value !== c) t.value = c; S.ui.tvCode = c; }
   else if (f === 'clueTxt'){ S.ui.clueTxt = t.value; S.ui.clueKey = clueKey(); }
   else if (f === 'sbUrl' || f === 'sbKey'){ S.sb[f === 'sbUrl' ? 'url' : 'key'] = t.value.trim(); store.set('sb', S.sb); }
 });
@@ -2442,6 +2781,7 @@ document.addEventListener('keydown', e => {
   else if (id === 'jname'){ e.preventDefault(); ACTIONS.joinName(); }
   else if (id === 'clueIn'){ e.preventDefault(); ACTIONS.mClued(); }
   else if (id === 'guessIn'){ e.preventDefault(); ACTIONS.guessType(); }
+  else if (id === 'tvcode'){ e.preventDefault(); ACTIONS.tvGo(); }
   else if (e.target.dataset && e.target.dataset.field === 'rname') e.target.blur();
 });
 /* carte « maintiens pour voir » */
@@ -2465,9 +2805,9 @@ window.addEventListener('blur', releaseHold);
 document.addEventListener('contextmenu', e => { if (e.target.closest('[data-hold]')) e.preventDefault(); });
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) return releaseHold();
-  if (['game','lobby','join'].includes(S.view)){ wakeLock = null; wake(true); }
+  if (['game','lobby','join','tv'].includes(S.view)){ wakeLock = null; wake(true); }
   // retour sur l'appli : on resynchronise
-  if (Net.status === 'on'){ if (Net.role === 'guest') guestUp(); else if (Net.role === 'host') pushState(true); }
+  if (Net.status === 'on'){ if (Net.role === 'guest') guestUp(); else if (Net.role === 'tv') tvUp(); else if (Net.role === 'host') pushState(true); }
 });
 
 /* hors ligne (GitHub Pages / https uniquement) */
@@ -2477,17 +2817,20 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 
 /* un téléphone par joueur : lien d'invitation (?salle=ABCD) et reconnexion automatique */
 (function initNet(){
-  const code = cleanCode(QS.get('salle')), sbp = QS.get('sb');
+  const code = cleanCode(QS.get('salle')), sbp = QS.get('sb'), tvc = cleanCode(QS.get('tv'));
   if (sbp && !SUPABASE_URL){
     try { const [url, key] = b64dec(sbp).split('|'); if (/^https:\/\//.test(url) && key){ S.sb = {url, key}; store.set('sb', S.sb); } } catch(e){}
   }
-  if (QS.has('salle') || QS.has('sb')){
-    const u = new URL(location.href); u.searchParams.delete('salle'); u.searchParams.delete('sb');
+  if (QS.has('salle') || QS.has('sb') || QS.has('tv')){
+    const u = new URL(location.href); u.searchParams.delete('salle'); u.searchParams.delete('sb'); u.searchParams.delete('tv');
     try { history.replaceState(null, '', u.pathname + u.search + u.hash); } catch(e){}
   }
-  if (S.game && S.game.multi && !S.game.done && !S.net) S.net = {code:S.game.code, hostMe:S.game.hostMe || null, players:S.game.players.slice()};
-  if (S.net && !(S.game && S.game.multi && !S.game.done) && !recent(S.net.at)){ S.net = null; saveRoom(); }
-  if (code){
+  if (S.game && (S.game.multi || S.game.tv) && !S.game.done && !S.net) S.net = {code:S.game.code, hostMe:S.game.hostMe || null, players:S.game.multi ? S.game.players.slice() : [], single:!S.game.multi};
+  if (S.net && !(S.game && (S.game.multi || S.game.tv) && !S.game.done) && !recent(S.net.at)){ S.net = null; saveRoom(); }
+  const tvSaved = store.get('tvRoom', null);
+  if (tvc) tvConnect(tvc);
+  else if (!code && tvSaved && recent(tvSaved.at)) tvConnect(tvSaved.code);
+  else if (code){
     if (S.net && S.net.code === code){ S.view = 'lobby'; hostConnect(); }
     else if (savedGuest && savedGuest.code === code) guestConnect(savedGuest);
     else { S.ui.joinCode = code; if (sbConfig()) guestConnect({code}); else S.view = 'join'; }

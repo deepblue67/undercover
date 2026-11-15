@@ -25,6 +25,7 @@ Tout le monde reçoit un mot secret… sauf l'intrus, qui a un mot légèrement 
 - 🏁 **Fin de partie** au nombre de manches ou **« premier à X points »** (10, 15, 20 ou 30)
 - 👎 **Paire nulle** : en fin de manche, une paire mal choisie peut être écartée pour toujours (liste et remise en jeu dans « Mes mots », incluse dans la synchronisation)
 - 📳 **Vibrations** quand c'est ton tour en mode un téléphone par joueur (Android)
+- 📺 **Écran TV** : un écran en plus (TV, iPad recopié sur la TV, ordinateur) affiche le déroulement de la partie, à qui le tour et le classement en direct, dans les deux modes
 - ⏱️ Minuteur par indice (optionnel), sons, confettis et podium final
 - 🤫 Bouton « Revoir mon mot » pour ceux qui l'ont oublié
 - 🗂️ **Historique des parties** : classement et détail de chaque manche (mots, intrus, gagnants)
@@ -78,6 +79,18 @@ Le téléphone de l'hôte garde la partie : il doit rester allumé avec le jeu o
 ### Tester sur un ordinateur, sans serveur
 
 Ouvrez plusieurs onglets du même navigateur avec `?local=1&p=nom` (un nom différent par onglet, par exemple `index.html?local=1&p=hote`, `?local=1&p=alice`…). Les onglets communiquent entre eux et chacun a ses propres données.
+
+## 📺 Écran TV
+
+Dans **Réglages → 📺 Écran TV**, choisissez **Oui**. Un écran supplémentaire affiche alors la partie en grand, au format paysage : à qui le tour (distribution des mots, indices), le minuteur, le vote et son décompte « 3, 2, 1 » (mode un téléphone), le fil des indices et le dépouillement (mode un téléphone par joueur), le rôle révélé, les mots de fin de manche, le **classement en direct** et le podium. La TV joue aussi les sons.
+
+**Mise en route**
+
+1. Sur le téléphone de l'hôte : « Qui joue ? » (un téléphone) ou la salle de jeu (un par joueur) affiche une carte **📺 Écran TV** avec le code de la salle et un bouton **QR / lien**.
+2. Sur l'appareil relié à la TV : ouvrez le jeu, touchez **« 📺 Afficher sur la TV »** et tapez le code (ou scannez le QR code / ouvrez le lien `…/?tv=CODE`). La carte de l'hôte passe à « connecté ✓ ».
+3. **Avec un iPad ou un iPhone** : Centre de contrôle → **Recopie de l'écran** → la TV (AirPlay), puis tournez l'appareil à l'horizontale. Le bouton « ⛶ Plein écran » masque les barres du navigateur quand c'est possible. **Avec un ordinateur** : HDMI ou « cast » de l'onglet. Le navigateur intégré de certaines TV peut aussi fonctionner, selon le modèle.
+
+L'écran TV ne reçoit jamais les mots secrets ni les rôles avant leur révélation. En mode un téléphone, il faut internet pour la TV, mais la partie continue normalement sur le téléphone si la connexion tombe (seule la TV se fige). Si la TV se recharge, elle retrouve la partie toute seule.
 
 ## 🚀 Mise en ligne sur GitHub Pages
 
