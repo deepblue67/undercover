@@ -15,6 +15,7 @@ Tout le monde reçoit un mot secret… sauf l'intrus, qui a un mot légèrement 
 - 🗳️ **Dépouillement** bulletin par bulletin, avec barres de score, sur tous les écrans
 - 🔍 **Bonus détective** : +1 pour chaque civil qui a voté contre l'intrus éliminé
 - 👨‍👩‍👧‍👦 De **3 à 10 joueurs**, choisis dans une **liste de joueurs enregistrés** (prénom, avatar, couleur) au lancement de chaque partie
+- 👥 **Groupes de joueurs** (Famille, Amis, Travail… renommables, on peut en ajouter) : un joueur peut appartenir à plusieurs groupes, et le maître de jeu choisit le groupe qui joue. Seuls ses joueurs sont proposés dans « Qui joue ? » et dans le « Qui es-tu ? » des téléphones
 - 📚 **246 paires de mots** adaptées aux enfants, réparties en 11 thèmes et 3 niveaux
 - ✏️ **Mots perso** : ajoutez vos propres paires (prénoms, lieux de vacances, blagues de famille)
 - 🔄 **« Changer de mots »** : un mot pas compris ou une paire déjà jouée ? La manche recommence avec une nouvelle paire, sans toucher aux points
@@ -53,6 +54,13 @@ Tout le monde reçoit un mot secret… sauf l'intrus, qui a un mot légèrement 
 | Bonus détective (un téléphone par joueur, réglable) : civil ayant voté contre l'intrus éliminé | +1 |
 
 Répartition des rôles : réglable dans **Réglages** (1 à 3 Undercovers, 0 à 2 Mr White). En automatique : 1 Undercover jusqu'à 6 joueurs, 2 à partir de 7. Il faut toujours au moins 2 civils et au moins autant de civils que d'intrus : sinon le jeu réduit les intrus et le signale. Mr White est conseillé à partir de 5 joueurs.
+
+## 👥 Groupes de joueurs
+
+- **Ranger les joueurs** : Réglages → Joueurs enregistrés. Sous chaque joueur, touchez les pastilles des groupes auxquels il appartient (plusieurs possibles). Les filtres en haut montrent les membres de chaque groupe ; « ⚙️ Groupes » permet de renommer, changer l'icône, ajouter ou supprimer un groupe (supprimer un groupe ne supprime aucun joueur).
+- **Choisir le groupe qui joue** : Réglages → « Groupe qui joue » (aussi affiché sur « Qui joue ? » et dans la salle de jeu). « Tous » propose tout le monde.
+- En mode un téléphone par joueur, le « Qui es-tu ? » des invités ne montre que les joueurs de ce groupe ; quelqu'un d'extérieur peut toujours taper son prénom.
+- Un joueur créé pendant qu'un groupe est choisi est rangé directement dans ce groupe. Les joueurs enregistrés avant l'arrivée des groupes ont été placés dans « Famille ».
 
 ## 📱📱 Un téléphone par joueur
 

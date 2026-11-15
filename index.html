@@ -50,7 +50,10 @@ input{width:100%;min-width:0;padding:13px 14px;border-radius:14px;border:2px sol
 input::placeholder{color:rgba(255,255,255,.45)}
 input:focus{outline:none;border-color:#ffcc33}
 .plist{display:flex;flex-direction:column;gap:10px}
-.prow{display:flex;gap:8px;align-items:center}
+.prow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pgroups{flex-basis:100%;display:flex;flex-wrap:wrap;gap:6px;padding-left:60px;margin-top:-2px}
+.gchip{border:1.5px solid rgba(255,255,255,.22);background:transparent;color:#c3bdf0;border-radius:99px;padding:4px 10px;font:inherit;font-size:.82rem;font-weight:700;cursor:pointer}
+.gchip.on{background:#ffcc33;border-color:#ffcc33;color:#1b1640}
 .mini{width:40px;height:40px;border:0;border-radius:12px;background:rgba(255,255,255,.1);color:#fff;font-size:1rem;cursor:pointer;flex:none;font-family:inherit}
 .mini:disabled{opacity:.25}
 .stepper{width:48px;height:48px;border:0;border-radius:14px;background:#ffcc33;color:#1b1640;font-size:1.6rem;font-weight:900;cursor:pointer;font-family:inherit;box-shadow:0 4px 0 rgba(0,0,0,.25);line-height:1}
@@ -322,7 +325,7 @@ const ROLE = {
 const LEVELS = {facile:[1],moyen:[1,2],difficile:[2,3],mix:[1,2,3]};
 const LEVEL_LBL = {facile:'Facile',moyen:'Moyen',difficile:'Difficile',mix:'Mélange'};
 const PTS = {civil:2, under:6, white:6, lastChance:3, detective:1};
-const APP_ID = 'undercover-famille', APP_VERSION = '2.4.0', GIST_FILE = 'undercover-famille.json';
+const APP_ID = 'undercover-famille', APP_VERSION = '2.5.0', GIST_FILE = 'undercover-famille.json';
 
 /* ---------- Mode « un téléphone par joueur » : connexion Supabase Realtime ----------
    Renseignez ici l'adresse du projet et sa clé publique (« Publishable key », sb_publishable_…)
@@ -387,7 +390,7 @@ const b64dec = s => { const bin = atob(s); const b = new Uint8Array(bin.length);
 
 /* ---------- État & migration depuis la v1 ---------- */
 const DEFAULT_SETTINGS = {
-  mode:'single', writtenClues:true, detective:true, level:'moyen', clueRounds:2, timer:0, rounds:5, endMode:'rounds', goal:15, unders:0, whites:0, lastChance:true, sound:true, vibrate:true, tv:false, family:true,
+  mode:'single', group:'', writtenClues:true, detective:true, level:'moyen', clueRounds:2, timer:0, rounds:5, endMode:'rounds', goal:15, unders:0, whites:0, lastChance:true, sound:true, vibrate:true, tv:false, family:true,
   themes:Object.fromEntries(Object.keys(THEMES).map(k => [k, true]))
 };
 const mergeSettings = s => {
@@ -397,8 +400,14 @@ const mergeSettings = s => {
   return o;
 };
 function cleanPlayer(p, i){
-  return {id:String(p.id || uid()).slice(0, 40), name:String(p.name || '').trim().slice(0, 16), emoji:String(p.emoji || EMOJIS[i % EMOJIS.length]).slice(0, 8), color:safeColor(p.color || COLORS[i % COLORS.length])};
+  const o = {id:String(p.id || uid()).slice(0, 40), name:String(p.name || '').trim().slice(0, 16), emoji:String(p.emoji || EMOJIS[i % EMOJIS.length]).slice(0, 8), color:safeColor(p.color || COLORS[i % COLORS.length])};
+  if (Array.isArray(p.groups)) o.groups = p.groups.map(String).slice(0, 12);
+  return o;
 }
+/* groupes de joueurs (un joueur peut être dans plusieurs groupes) */
+const GROUP_ICONS = ['🏠','🎉','💼','⚽','🎒','🏖️','🎲','🎵','🌳','⭐','👥','🍕'];
+const DEFAULT_GROUPS = [{id:'famille', name:'Famille', icon:'🏠'}, {id:'amis', name:'Amis', icon:'🎉'}, {id:'travail', name:'Travail', icon:'💼'}];
+const cleanGroup = g => ({id:String(g.id || uid()).slice(0, 40), name:String(g.name || '').trim().slice(0, 20) || 'Groupe', icon:String(g.icon || '👥').slice(0, 8)});
 let roster = store.get('roster', null), selection = store.get('selection', null);
 if (!roster){
   const old = store.get('players', null) || [1,2,3,4].map(i => ({id:uid(), name:'Joueur ' + i, emoji:EMOJIS[i-1], color:COLORS[i-1]}));
@@ -406,12 +415,15 @@ if (!roster){
   selection = roster.map(p => p.id);
   store.set('roster', roster); store.set('selection', selection); store.del('players');
 }
+// les joueurs enregistrés avant les groupes rejoignent « Famille »
+if (roster.some(p => !Array.isArray(p.groups))){ roster.forEach(p => { if (!Array.isArray(p.groups)) p.groups = ['famille']; }); store.set('roster', roster); }
 let legacyStats = store.get('legacyStats', null);
 if (!legacyStats){ legacyStats = store.get('stats', {}); store.set('legacyStats', legacyStats); store.del('stats'); }
 
 const S = {
   view:'home', nav:[], modal:null, ui:{},
   roster, selection:(selection || []).filter(id => roster.some(p => p.id === id)),
+  groups:(store.get('groups', null) || DEFAULT_GROUPS).map(cleanGroup),
   settings:mergeSettings(store.get('settings', {})),
   custom:store.get('custom', []),
   history:store.get('history', []),
@@ -436,7 +448,12 @@ if (S.game){
     r.candidates = null;
   }
 }
-const saveRoster = () => { store.set('roster', S.roster); store.set('selection', S.selection); };
+const saveRoster = () => { store.set('roster', S.roster); store.set('selection', S.selection); store.set('groups', S.groups); };
+/* groupe choisi par le maître de jeu ('' = tout le monde) */
+const curGroup = () => S.groups.find(g => g.id === S.settings.group) || null;
+const inGroup = p => !curGroup() || (p.groups || []).includes(S.settings.group);
+const groupRoster = () => S.roster.filter(inGroup);
+const groupLbl = g => g ? g.icon + ' ' + esc(g.name) : '👥 Tout le monde';
 const saveSettings = () => store.set('settings', S.settings);
 const saveGame = () => { if (S.game && S.game.guest) return; S.game ? store.set('game', S.game) : store.del('game'); };
 const saveGames = () => store.set('games', S.games);
@@ -518,7 +535,7 @@ function newRosterPlayer(name){
   if (!name){ toast('Écris un prénom ✏️'); return null; }
   if (S.roster.some(p => p.name.toLowerCase() === name.toLowerCase())){ toast(`${name} existe déjà`); return null; }
   const ue = S.roster.map(p => p.emoji), uc = S.roster.map(p => p.color);
-  const p = {id:uid(), name, emoji:EMOJIS.find(e => !ue.includes(e)) || pick(EMOJIS), color:COLORS.find(c => !uc.includes(c)) || COLORS[S.roster.length % COLORS.length]};
+  const p = {id:uid(), name, emoji:EMOJIS.find(e => !ue.includes(e)) || pick(EMOJIS), color:COLORS.find(c => !uc.includes(c)) || COLORS[S.roster.length % COLORS.length], groups:curGroup() ? [S.settings.group] : []};
   S.roster.push(p); saveRoster();
   return p;
 }
@@ -718,7 +735,7 @@ function computeStats(){
    Export / import / GitHub Gist
    ========================================================= */
 function exportData(){
-  return {app:APP_ID, v:2, at:new Date().toISOString(), roster:S.roster, selection:S.selection, settings:S.settings, custom:S.custom, banned:S.banned, games:S.games, legacyStats:S.legacyStats};
+  return {app:APP_ID, v:2, at:new Date().toISOString(), roster:S.roster, groups:S.groups, selection:S.selection, settings:S.settings, custom:S.custom, banned:S.banned, games:S.games, legacyStats:S.legacyStats};
 }
 const exportCode = () => 'UCF2:' + b64enc(JSON.stringify(exportData()));
 function parseData(txt){
@@ -737,14 +754,21 @@ function parseData(txt){
     custom:arr(o.custom).filter(c => c && c.a && c.b).map(c => ({a:String(c.a).slice(0, 30), b:String(c.b).slice(0, 30)})),
     games:arr(o.games).filter(g => g && g.id && Array.isArray(g.players) && Array.isArray(g.log)).map(g => Object.assign({}, g, {id:String(g.id), players:g.players.map(cleanPlayer).map((p, i) => Object.assign(p, {score:+g.players[i].score || 0}))})),
     legacyStats:o.legacyStats && typeof o.legacyStats === 'object' ? o.legacyStats : {},
-    banned:arr(o.banned).map(String).filter(k => k.includes('|')).slice(0, 2000)
+    banned:arr(o.banned).map(String).filter(k => k.includes('|')).slice(0, 2000),
+    groups:arr(o.groups).filter(g => g && g.name).map(cleanGroup).slice(0, 30)
   };
 }
 function mergeData(d){
   const added = {games:0, players:0, words:0};
+  (d.groups || []).forEach(g => { if (!S.groups.some(x => x.id === g.id)) S.groups.push(g); });
   const names = new Set(S.roster.map(p => p.name.toLowerCase()));
   d.roster.forEach(p => {
-    const k = p.name.toLowerCase(); if (names.has(k)) return;
+    const k = p.name.toLowerCase();
+    if (names.has(k)){   // même joueur : on réunit ses groupes
+      const me = S.roster.find(x => x.name.toLowerCase() === k);
+      if (me && p.groups) me.groups = Array.from(new Set((me.groups || []).concat(p.groups)));
+      return;
+    }
     names.add(k); S.roster.push(Object.assign({}, p, {id:S.roster.some(x => x.id === p.id) ? uid() : p.id})); added.players++;
   });
   const wk = new Set(S.custom.map(c => (c.a + '|' + c.b).toLowerCase()));
@@ -759,6 +783,7 @@ function mergeData(d){
 }
 function replaceData(d){
   if (d.roster.length) S.roster = d.roster;
+  if (d.groups && d.groups.length) S.groups = d.groups;
   S.selection = d.selection.filter(id => S.roster.some(p => p.id === id));
   if (d.settings) S.settings = mergeSettings(d.settings);
   S.custom = d.custom; S.games = d.games.sort((a,b) => a.date - b.date); S.legacyStats = d.legacyStats;
@@ -977,7 +1002,7 @@ function pushLobby(){
   if (Net.role !== 'host' || !S.net) return;
   const ids = new Set(S.net.players.map(p => p.id)), names = new Set(S.net.players.map(p => p.name.toLowerCase()));
   Net.send({t:'lobby', code:S.net.code, host:hostName(), players:S.net.players,
-    roster:S.roster.filter(p => !ids.has(p.id) && !names.has(p.name.toLowerCase())).map(({id, name, emoji, color}) => ({id, name, emoji, color})),
+    roster:groupRoster().filter(p => !ids.has(p.id) && !names.has(p.name.toLowerCase())).map(({id, name, emoji, color}) => ({id, name, emoji, color})),
     started:!!(S.game && S.game.multi && !S.game.done), single:!!S.net.single});
 }
 function publicGame(g){
@@ -1639,7 +1664,7 @@ const ACTIONS = {
     saveRoster(); render();
   },
   selUp(d){ const i = S.selection.indexOf(d.id); if (i < 1) return; [S.selection[i-1], S.selection[i]] = [S.selection[i], S.selection[i-1]]; saveRoster(); render(); },
-  selAll(){ S.selection = S.roster.slice(0, MAX_P).map(p => p.id); saveRoster(); render(); },
+  selAll(){ S.selection = groupRoster().slice(0, MAX_P).map(p => p.id); saveRoster(); render(); },
   selNone(){ S.selection = []; saveRoster(); render(); },
   npAdd(){
     const el = $('#np'); const p = newRosterPlayer(el && el.value); if (!p) return;
@@ -1671,7 +1696,46 @@ const ACTIONS = {
   rDelYes(){ const id = S.modal.id; S.roster = S.roster.filter(p => p.id !== id); S.selection = S.selection.filter(x => x !== id); saveRoster(); S.modal = null; render(); },
 
   /* --- réglages & mots --- */
-  set(d){ S.settings[d.k] = JSON.parse(d.v); saveSettings(); render(); },
+  set(d){
+    S.settings[d.k] = JSON.parse(d.v); saveSettings();
+    if (d.k === 'group'){   // la sélection ne garde que les joueurs du groupe
+      S.selection = S.selection.filter(id => inGroup(S.roster.find(p => p.id === id) || {}));
+      if (S.net && S.net.hostMe && !inGroup(S.roster.find(p => p.id === S.net.hostMe) || {})) setHostMe(null);
+      saveRoster(); pushLobby();
+    }
+    render();
+  },
+  rGroup(d){
+    const p = S.roster.find(x => x.id === d.id); if (!p) return;
+    const gs = new Set(p.groups || []); gs.has(d.g) ? gs.delete(d.g) : gs.add(d.g);
+    p.groups = S.groups.map(g => g.id).filter(id => gs.has(id));
+    saveRoster(); pushLobby(); render();
+  },
+  rFilter(d){ S.ui.rFilter = d.g || ''; render(); },
+  grAdd(){
+    const el = $('#grn'), name = String(el && el.value || '').trim().slice(0, 20);
+    if (!name) return toast('Écris le nom du groupe ✏️');
+    if (S.groups.some(g => g.name.toLowerCase() === name.toLowerCase())) return toast('Ce groupe existe déjà');
+    S.groups.push({id:uid(), name, icon:GROUP_ICONS[S.groups.length % GROUP_ICONS.length]}); saveRoster(); render();
+    setTimeout(() => { const e2 = $('#grn'); if (e2) e2.focus(); }, 0);
+  },
+  grIcon(d){
+    const g = S.groups.find(x => x.id === d.g); if (!g) return;
+    g.icon = GROUP_ICONS[(GROUP_ICONS.indexOf(g.icon) + 1) % GROUP_ICONS.length]; saveRoster(); render();
+  },
+  grDel(d){
+    if (S.groups.length <= 1) return toast('Garde au moins un groupe');
+    const g = S.groups.find(x => x.id === d.g); if (!g) return;
+    S.modal = {type:'grDel', g:d.g}; render();
+  },
+  grDelYes(){
+    const id = S.modal.g;
+    S.groups = S.groups.filter(g => g.id !== id);
+    S.roster.forEach(p => { if (p.groups) p.groups = p.groups.filter(x => x !== id); });
+    if (S.settings.group === id){ S.settings.group = ''; saveSettings(); }
+    if (S.ui.rFilter === id) S.ui.rFilter = '';
+    saveRoster(); S.modal = null; render();
+  },
   theme(d){
     const th = S.settings.themes, on = Object.values(th).filter(Boolean).length;
     if (th[d.k] && on <= 1) return toast('Garde au moins un thème');
@@ -1793,6 +1857,11 @@ const ACTIONS = {
 const backBtn = () => `<button class="icon" data-a="back" aria-label="Retour">←</button>`;
 const header = title => `<div class="top">${backBtn()}<h2>${title}</h2><span style="width:44px"></span></div>`;
 const li = (a, v, ic, title, sub) => `<button class="li" data-a="${a}"${v ? ` data-v="${v}"` : ''}><span class="ic">${ic}</span><span class="tx"><b>${title}</b><small>${sub}</small></span><span class="chev">›</span></button>`;
+/* choix du groupe qui joue (réglages, Qui joue ?, salle) */
+function groupSeg(){
+  return `<div class="set"><label>Groupe qui joue</label>${seg('group', [['', '👥 Tous']].concat(S.groups.map(g => [g.id, g.icon + ' ' + esc(g.name)])))}
+    <div class="note">${curGroup() ? `Seuls les joueurs du groupe ${groupLbl(curGroup())} sont proposés${S.settings.mode === 'multi' ? ', aussi dans le « Qui es-tu ? » des téléphones' : ''}.` : 'Tous les joueurs enregistrés sont proposés.'}</div></div>`;
+}
 function seg(k, opts){
   return `<div class="seg">${opts.map(([v,l]) => `<button class="${S.settings[k] === v ? 'on' : ''}" data-a="set" data-k="${k}" data-v="${esc(JSON.stringify(v))}">${l}</button>`).join('')}</div>`;
 }
@@ -1917,12 +1986,14 @@ function vPlayers(){
   const sel = selPlayers(), n = sel.length;
   return `<div class="screen">
     ${header('Qui joue ?')}
+    ${groupSeg()}
     <div class="card">
       <div class="row between" style="margin-bottom:12px"><b>Touche les joueurs de la partie</b><span class="pill">${plural(n, 'joueur')}</span></div>
       <div class="chips">
-        ${S.roster.map(p => { const i = S.selection.indexOf(p.id); return `<button class="chip pl ${i >= 0 ? 'on' : ''}" data-a="selToggle" data-id="${esc(p.id)}">${av(p)}${nm(p)}${i >= 0 ? `<span class="num">${i + 1}</span>` : ''}</button>`; }).join('')}
+        ${groupRoster().map(p => { const i = S.selection.indexOf(p.id); return `<button class="chip pl ${i >= 0 ? 'on' : ''}" data-a="selToggle" data-id="${esc(p.id)}">${av(p)}${nm(p)}${i >= 0 ? `<span class="num">${i + 1}</span>` : ''}</button>`; }).join('')}
         <button class="chip add" data-a="modal" data-v="newPlayer">＋ Nouveau</button>
       </div>
+      ${curGroup() && !groupRoster().length ? `<p class="muted small" style="margin-top:10px">Personne dans ce groupe pour l'instant : ajoute un joueur, ou coche ce groupe sur les joueurs dans « Gérer la liste ».</p>` : ''}
       ${S.roster.length > 1 ? `<div class="row" style="margin-top:12px;gap:4px"><button class="linkbtn" data-a="selAll">Tout le monde</button><button class="linkbtn" data-a="selNone">Personne</button><span class="grow"></span><button class="linkbtn" data-a="go" data-v="roster">✏️ Gérer la liste</button></div>` : ''}
     </div>
     ${n ? `<div class="sec">Ordre autour de la table</div>
@@ -1937,15 +2008,19 @@ function vPlayers(){
   </div>`;
 }
 function vRoster(){
+  const f = S.ui.rFilter || '', list = S.roster.filter(p => !f || (p.groups || []).includes(f));
   return `<div class="screen">
     ${header('Joueurs enregistrés')}
-    <p class="muted small">Ces joueurs sont proposés au début de chaque partie. Touche l'animal pour le changer, et le petit rond pour changer la couleur.</p>
-    <div class="plist">${S.roster.map(p => `<div class="prow">
+    <p class="muted small">Touche l'animal pour le changer, le petit rond pour la couleur, et les pastilles pour ranger le joueur dans un ou plusieurs groupes.</p>
+    <div class="chips">${[['', '👥 Tous', S.roster.length]].concat(S.groups.map(g => [g.id, g.icon + ' ' + esc(g.name), S.roster.filter(p => (p.groups || []).includes(g.id)).length])).map(([id, l, n]) => `<button class="chip ${f === id ? 'on' : ''}" data-a="rFilter" data-g="${esc(id)}">${l} <small>${n}</small></button>`).join('')}
+      <button class="chip add" data-a="modal" data-v="groups">⚙️ Groupes</button></div>
+    <div class="plist">${list.map(p => `<div class="prow">
       <button class="av" style="--c:${safeColor(p.color)}" data-a="rEmoji" data-id="${esc(p.id)}" aria-label="Changer l'avatar">${esc(p.emoji)}</button>
       <input data-field="rname" data-id="${esc(p.id)}" value="${esc(p.name)}" maxlength="16" autocomplete="off" enterkeyhint="done" aria-label="Prénom">
       <button class="mini" data-a="rColor" data-id="${esc(p.id)}" aria-label="Changer la couleur" style="background:${safeColor(p.color)}"></button>
       <button class="mini" data-a="rDel" data-id="${esc(p.id)}" aria-label="Supprimer">✕</button>
-    </div>`).join('') || '<p class="muted center">Aucun joueur pour l\'instant.</p>'}</div>
+      <div class="pgroups">${S.groups.map(g => `<button class="gchip ${(p.groups || []).includes(g.id) ? 'on' : ''}" data-a="rGroup" data-id="${esc(p.id)}" data-g="${esc(g.id)}">${g.icon} ${esc(g.name)}</button>`).join('')}</div>
+    </div>`).join('') || `<p class="muted center">${f ? 'Personne dans ce groupe.' : 'Aucun joueur pour l\'instant.'}</p>`}</div>
     <div class="card row"><input id="rn" placeholder="Prénom du nouveau joueur" maxlength="16" autocomplete="off" enterkeyhint="done"><button class="btn primary" style="width:auto;flex:none" data-a="rAdd">＋</button></div>
     <p class="tip">Supprimer un joueur ne touche pas à l'historique des parties.</p>
   </div>`;
@@ -1955,6 +2030,7 @@ function vSettings(){
   return `<div class="screen">
     ${header('Réglages')}
     <div class="sec">🎮 Partie</div>
+    ${groupSeg()}
     <div class="set"><label>Téléphones</label>${seg('mode', [['single','📱 Un pour tous'],['multi','📱📱 Un par joueur']])}
       <div class="note">${s.mode === 'multi'
         ? 'Chaque joueur rejoint la salle avec son téléphone grâce à un code. Mots sur chaque écran, votes secrets. Il faut internet.'
@@ -2353,10 +2429,11 @@ function vPodium(){
 function vLobby(){
   const R = S.net; if (!R) return vHome();
   const n = R.players.length, ids = new Set(R.players.map(p => p.id));
-  const mine = S.roster.filter(p => p.id === R.hostMe || !ids.has(p.id));
+  const mine = S.roster.filter(p => p.id === R.hostMe || (!ids.has(p.id) && inGroup(p)));
   return `<div class="screen">
     <div class="top"><button class="icon" data-a="back" aria-label="Retour">←</button><h2>Salle de jeu</h2><button class="icon" data-a="modal" data-v="closeRoom" aria-label="Fermer la salle">✕</button></div>
     ${roomCard(R.code)}
+    ${groupSeg()}
     <div class="sec">Sur ce téléphone</div>
     <div class="card"><div class="chips">
       ${mine.map(p => `<button class="chip pl ${p.id === R.hostMe ? 'on' : ''}" data-a="hostMe" data-id="${esc(p.id)}">${av(p)}${nm(p)}</button>`).join('')}
@@ -2619,6 +2696,15 @@ function vModal(){
     case 'resetStats': body = yesNo('Tout effacer ?', 'L\'historique des parties et toutes les statistiques seront supprimés de cet appareil.', 'resetStatsYes', 'Effacer'); break;
     case 'delGame': body = yesNo('Supprimer cette partie ?', 'Elle disparaîtra de l\'historique et des statistiques.', 'delGameYes', 'Supprimer'); break;
     case 'gistForget': body = yesNo('Oublier le jeton ?', 'Le jeton GitHub sera effacé de cet appareil. Tes données restent sur GitHub.', 'gistForgetYes', 'Oublier'); break;
+    case 'groups': body = `<h2>⚙️ Groupes</h2>
+        <p class="muted small">Touche l'icône pour la changer, le nom pour le modifier.</p>
+        <div class="sl">${S.groups.map(g => `<div class="si"><button class="mini" style="font-size:1.2rem" data-a="grIcon" data-g="${esc(g.id)}" aria-label="Changer l'icône">${g.icon}</button>
+          <input data-field="gname" data-g="${esc(g.id)}" value="${esc(g.name)}" maxlength="20" autocomplete="off" style="flex:1">
+          <span class="muted small">${S.roster.filter(p => (p.groups || []).includes(g.id)).length}</span>
+          <button class="mini" data-a="grDel" data-g="${esc(g.id)}" aria-label="Supprimer">✕</button></div>`).join('')}</div>
+        <div class="row"><input id="grn" placeholder="Nouveau groupe (ex. Foot, Voisins)" maxlength="20" autocomplete="off" enterkeyhint="done"><button class="btn primary" style="width:auto;flex:none" data-a="grAdd">＋</button></div>
+        <button class="btn primary" data-a="closeModal">Terminé</button>`; break;
+    case 'grDel': { const g = S.groups.find(x => x.id === m.g); body = yesNo(`Supprimer le groupe ${g ? groupLbl(g) : ''} ?`, 'Les joueurs ne sont pas supprimés : ils quittent seulement ce groupe.', 'grDelYes', 'Supprimer'); break; }
     case 'rDel': { const p = S.roster.find(x => x.id === m.id); body = yesNo(`Supprimer ${p ? nm(p) : 'ce joueur'} ?`, 'Il ne sera plus proposé au début des parties. L\'historique est conservé.', 'rDelYes', 'Supprimer'); break; }
     case 'newPlayer': body = `<h2>＋ Nouveau joueur</h2>
         <input id="np" placeholder="Prénom" maxlength="16" autocomplete="off" enterkeyhint="done">
@@ -2762,6 +2848,10 @@ document.addEventListener('change', e => {
   if (t.id === 'impFile' && t.files && t.files[0]){
     t.files[0].text().then(txt => { S.ui.impTxt = txt; render(); toast('Fichier chargé ✓ Touche « Importer »'); }).catch(() => toast('Fichier illisible'));
   }
+  if (t.dataset && t.dataset.field === 'gname'){
+    const g = S.groups.find(x => x.id === t.dataset.g), v = t.value.trim().slice(0, 20);
+    if (g && v){ g.name = v; saveRoster(); }
+  }
   if (t.dataset && t.dataset.field === 'rname'){
     const p = S.roster.find(x => x.id === t.dataset.id); if (!p) return;
     const v = t.value.trim().slice(0, 16);
@@ -2777,12 +2867,13 @@ document.addEventListener('keydown', e => {
   else if (id === 'wb'){ e.preventDefault(); ACTIONS.addWord(); }
   else if (id === 'np'){ e.preventDefault(); ACTIONS.npAdd(); }
   else if (id === 'rn'){ e.preventDefault(); ACTIONS.rAdd(); }
+  else if (id === 'grn'){ e.preventDefault(); ACTIONS.grAdd(); }
   else if (id === 'jcode'){ e.preventDefault(); ACTIONS.joinGo(); }
   else if (id === 'jname'){ e.preventDefault(); ACTIONS.joinName(); }
   else if (id === 'clueIn'){ e.preventDefault(); ACTIONS.mClued(); }
   else if (id === 'guessIn'){ e.preventDefault(); ACTIONS.guessType(); }
   else if (id === 'tvcode'){ e.preventDefault(); ACTIONS.tvGo(); }
-  else if (e.target.dataset && e.target.dataset.field === 'rname') e.target.blur();
+  else if (e.target.dataset && (e.target.dataset.field === 'rname' || e.target.dataset.field === 'gname')) e.target.blur();
 });
 /* carte « maintiens pour voir » */
 let holdEl = null;
