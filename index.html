@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Undercover Famille</title>
+<title>Undercover</title>
 <meta name="description" content="Le jeu Undercover pour jouer en famille, sur un seul téléphone ou un téléphone par joueur : qui a un mot différent ?">
 <meta name="theme-color" content="#1b1640">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -287,7 +287,7 @@ body.tvmode .toast{font-size:3vh;padding:1.4vh 2vw}
 <script>
 'use strict';
 /* =========================================================
-   Undercover Famille — jeu d'ambiance pour un seul téléphone
+   Undercover — jeu d'ambiance, sur un seul téléphone ou un téléphone par joueur
    https://cdesmottes.fr
    ========================================================= */
 
@@ -325,7 +325,7 @@ const ROLE = {
 const LEVELS = {facile:[1],moyen:[1,2],difficile:[2,3],mix:[1,2,3]};
 const LEVEL_LBL = {facile:'Facile',moyen:'Moyen',difficile:'Difficile',mix:'Mélange'};
 const PTS = {civil:2, under:6, white:6, lastChance:3, detective:1};
-const APP_ID = 'undercover-famille', APP_VERSION = '2.5.0', GIST_FILE = 'undercover-famille.json';
+const APP_ID = 'undercover-famille', APP_VERSION = '2.5.1', GIST_FILE = 'undercover-famille.json';
 
 /* ---------- Mode « un téléphone par joueur » : connexion Supabase Realtime ----------
    Renseignez ici l'adresse du projet et sa clé publique (« Publishable key », sb_publishable_…)
@@ -453,6 +453,7 @@ const saveRoster = () => { store.set('roster', S.roster); store.set('selection',
 const curGroup = () => S.groups.find(g => g.id === S.settings.group) || null;
 const inGroup = p => !curGroup() || (p.groups || []).includes(S.settings.group);
 const groupRoster = () => S.roster.filter(inGroup);
+const byName = (a, b) => a.name.localeCompare(b.name, 'fr', {sensitivity:'base'});
 const groupLbl = g => g ? g.icon + ' ' + esc(g.name) : '👥 Tout le monde';
 const saveSettings = () => store.set('settings', S.settings);
 const saveGame = () => { if (S.game && S.game.guest) return; S.game ? store.set('game', S.game) : store.del('game'); };
@@ -745,7 +746,7 @@ function parseData(txt){
   if (t[0] === '{') json = t;
   else { try { json = b64dec(t.replace(/^UCF\d*:/, '').replace(/\s+/g, '')); } catch(e){ throw new Error('Code illisible : vérifie qu\'il est complet'); } }
   let o; try { o = JSON.parse(json); } catch(e){ throw new Error('Code illisible : vérifie qu\'il est complet'); }
-  if (!o || o.app !== APP_ID) throw new Error('Ces données ne viennent pas d\'Undercover Famille');
+  if (!o || o.app !== APP_ID) throw new Error('Ces données ne viennent pas d\'Undercover');
   const arr = x => Array.isArray(x) ? x : [];
   return {
     roster:arr(o.roster).filter(p => p && p.name && String(p.name).trim()).map(cleanPlayer),
@@ -809,8 +810,8 @@ async function shareData(){
   try {
     const name = `undercover-famille-${new Date().toISOString().slice(0, 10)}.json`;
     const file = new File([JSON.stringify(exportData(), null, 2)], name, {type:'application/json'});
-    if (navigator.canShare && navigator.canShare({files:[file]})) await navigator.share({title:'Undercover Famille — mes données', files:[file]});
-    else if (navigator.share) await navigator.share({title:'Undercover Famille — mes données', text:exportCode()});
+    if (navigator.canShare && navigator.canShare({files:[file]})) await navigator.share({title:'Undercover — mes données', files:[file]});
+    else if (navigator.share) await navigator.share({title:'Undercover — mes données', text:exportCode()});
     else { await copyText(exportCode()); toast('Code copié ✓'); }
   } catch(e){ if (e && e.name !== 'AbortError') toast('Partage impossible : utilise « Copier le code »'); }
 }
@@ -843,7 +844,7 @@ async function gistSync(){
     const files = {[GIST_FILE]:{content:JSON.stringify(exportData(), null, 1)}};
     const res = await fetch(api + '/gists' + (id ? '/' + encodeURIComponent(id) : ''), {
       method:id ? 'PATCH' : 'POST', headers:Object.assign({'Content-Type':'application/json'}, H),
-      body:JSON.stringify(id ? {files} : {description:'Undercover Famille — sauvegarde', public:false, files})
+      body:JSON.stringify(id ? {files} : {description:'Undercover — sauvegarde', public:false, files})
     });
     if (!res.ok) throw fail(res);
     S.gist.id = (await res.json()).id; S.gist.last = Date.now(); saveGist();
@@ -1002,7 +1003,7 @@ function pushLobby(){
   if (Net.role !== 'host' || !S.net) return;
   const ids = new Set(S.net.players.map(p => p.id)), names = new Set(S.net.players.map(p => p.name.toLowerCase()));
   Net.send({t:'lobby', code:S.net.code, host:hostName(), players:S.net.players,
-    roster:groupRoster().filter(p => !ids.has(p.id) && !names.has(p.name.toLowerCase())).map(({id, name, emoji, color}) => ({id, name, emoji, color})),
+    roster:groupRoster().filter(p => !ids.has(p.id) && !names.has(p.name.toLowerCase())).sort(byName).map(({id, name, emoji, color}) => ({id, name, emoji, color})),
     started:!!(S.game && S.game.multi && !S.game.done), single:!!S.net.single});
 }
 function publicGame(g){
@@ -1381,7 +1382,7 @@ function vTv(){
   const g = S.game && S.game.guest ? S.game : null;
   const st = Net.status === 'on' ? '🟢' : Net.status === 'connecting' ? '🟠' : '🔴';
   return `<div class="tvw">
-    <div class="tvbar"><span class="brand">🕵️ Undercover Famille</span><span class="pill">${st} Salle ${esc(T.code)}</span>${g ? `<span class="pill">${roundLbl(g)}</span>` : ''}
+    <div class="tvbar"><span class="brand">🕵️ Undercover</span><span class="pill">${st} Salle ${esc(T.code)}</span>${g ? `<span class="pill">${roundLbl(g)}</span>` : ''}
       <span class="sp"></span><button class="tb" data-a="tvFull">⛶ Plein écran</button><button class="tb" data-a="tvQuit">✕ Quitter</button></div>
     <div class="tvmain"><div class="stage" ${g && g.r ? `data-k="${esc(g.r.phase)}"` : ''}>${tvStage(g)}${TVCD ? `<div class="cd"><span class="${TVCD.go ? 'go' : ''}">${TVCD.txt}</span></div>` : ''}</div>
       <aside class="side">${tvSide(g)}</aside></div>
@@ -1552,7 +1553,7 @@ const ACTIONS = {
   async tvShare(){
     const code = roomCode(); if (!code) return;
     const url = tvLink(code);
-    try { if (navigator.share) await navigator.share({title:'Undercover Famille · écran TV', url}); else { await copyText(url); toast('Lien de l\'écran TV copié ✓'); } }
+    try { if (navigator.share) await navigator.share({title:'Undercover · écran TV', url}); else { await copyText(url); toast('Lien de l\'écran TV copié ✓'); } }
     catch(e){ if (e && e.name !== 'AbortError'){ await copyText(url); toast('Lien de l\'écran TV copié ✓'); } }
   },
   async tvCopy(){ const code = roomCode(); if (code) toast(await copyText(tvLink(code)) ? 'Lien de l\'écran TV copié ✓' : 'Copie impossible'); },
@@ -1578,9 +1579,9 @@ const ACTIONS = {
   },
   async shareRoom(){
     const code = roomCode(); if (!code) return;
-    const url = joinLink(code), text = `Rejoins ma partie d'Undercover Famille ! Code de la salle : ${code}`;
+    const url = joinLink(code), text = `Rejoins ma partie d'Undercover ! Code de la salle : ${code}`;
     try {
-      if (navigator.share) await navigator.share({title:'Undercover Famille', text, url});
+      if (navigator.share) await navigator.share({title:'Undercover', text, url});
       else { await copyText(url); toast('Lien copié ✓'); }
     } catch(e){ if (e && e.name !== 'AbortError'){ await copyText(url); toast('Lien copié ✓'); } }
   },
@@ -1967,7 +1968,6 @@ function vHome(){
     <div class="center grow hero">
       <div class="logo">🕵️</div>
       <h1 class="title">Undercover</h1>
-      <div class="subtitle">Famille</div>
       <p class="muted">Qui a un mot différent ?<br>Démasque l'intrus… ou bluffe !</p>
     </div>
     ${resume ? `<button class="btn green big" data-a="resume">▶ Reprendre la partie<br><small>${roundLbl(g).toLowerCase()}${g.multi ? ' · salle ' + esc(g.code) : ''}</small></button>` : ''}
@@ -1978,8 +1978,7 @@ function vHome(){
     <button class="linkbtn" data-a="tvStart">📺 Afficher sur la TV (cet appareil sert d'écran)</button>
     <div class="row"><button class="btn ghost" data-a="go" data-v="rules">📖 Règles</button><button class="btn ghost" data-a="go" data-v="history">🗂️ Historique</button></div>
     <div class="row"><button class="btn ghost" data-a="go" data-v="stats">📊 Stats</button><button class="btn ghost" data-a="go" data-v="settings">⚙️ Réglages</button></div>
-    <p class="tip">📲 Ajoute le jeu à l'écran d'accueil pour y jouer même sans internet.</p>
-    <p class="foot">Undercover Famille · v${APP_VERSION} · <a href="https://cdesmottes.fr" target="_blank" rel="noopener">cdesmottes.fr</a></p>
+    <p class="foot">Undercover · v${APP_VERSION} · <a href="https://cdesmottes.fr" target="_blank" rel="noopener">cdesmottes.fr</a></p>
   </div>`;
 }
 function vPlayers(){
@@ -2195,7 +2194,7 @@ function vGist(){
     <p class="muted small">Tes données sont rangées dans un Gist secret sur ton compte GitHub. Sur chaque appareil, colle le même jeton puis touche « Synchroniser » : les parties et joueurs des deux côtés sont fusionnés.</p>
     <div class="set"><label>Jeton GitHub (permission « gist »)</label>
       <input type="password" data-field="gistToken" value="${esc(g.token)}" placeholder="ghp_…" autocomplete="off" spellcheck="false">
-      <div class="note"><a href="https://github.com/settings/tokens/new?scopes=gist&description=Undercover%20Famille" target="_blank" rel="noopener">Créer un jeton</a> en ne cochant que « gist ». Il reste sur cet appareil et n'est jamais exporté.</div></div>
+      <div class="note"><a href="https://github.com/settings/tokens/new?scopes=gist&description=Undercover" target="_blank" rel="noopener">Créer un jeton</a> en ne cochant que « gist ». Il reste sur cet appareil et n'est jamais exporté.</div></div>
     <div class="set"><label>Identifiant du Gist <span class="muted">(facultatif)</span></label>
       <input data-field="gistId" value="${esc(g.id)}" placeholder="trouvé automatiquement" autocomplete="off" spellcheck="false">
       <div class="note">Laisse vide : le jeu retrouve tout seul son Gist, ou le crée à la première synchro.</div></div>
@@ -2429,7 +2428,7 @@ function vPodium(){
 function vLobby(){
   const R = S.net; if (!R) return vHome();
   const n = R.players.length, ids = new Set(R.players.map(p => p.id));
-  const mine = S.roster.filter(p => p.id === R.hostMe || (!ids.has(p.id) && inGroup(p)));
+  const mine = S.roster.filter(p => p.id === R.hostMe || (!ids.has(p.id) && inGroup(p))).sort(byName);
   return `<div class="screen">
     <div class="top"><button class="icon" data-a="back" aria-label="Retour">←</button><h2>Salle de jeu</h2><button class="icon" data-a="modal" data-v="closeRoom" aria-label="Fermer la salle">✕</button></div>
     ${roomCard(R.code)}
@@ -2480,7 +2479,7 @@ function vJoin(){
       <p class="muted" style="text-align:center">Salle de <b>${esc(L.host)}</b> ✓</p>
       ${L.started ? '<div class="warn">Une partie est déjà en cours : tu joueras à la prochaine (revanche).</div>' : ''}
       <div class="sec">Qui es-tu ?</div>
-      ${L.roster.length ? `<div class="chips">${L.roster.map(p => `<button class="chip pl" data-a="joinAs" data-id="${esc(p.id)}">${av(p)}${nm(p)}</button>`).join('')}</div>` : ''}
+      ${L.roster.length ? `<div class="chips">${L.roster.slice().sort(byName).map(p => `<button class="chip pl" data-a="joinAs" data-id="${esc(p.id)}">${av(p)}${nm(p)}</button>`).join('')}</div>` : ''}
       <div class="card row"><input id="jname" data-field="joinName" value="${esc(S.ui.joinName != null ? S.ui.joinName : ((store.get('me', null) || {}).name || ''))}" placeholder="${L.roster.length ? 'Ou écris ton prénom' : 'Ton prénom'}" maxlength="16" autocomplete="off" enterkeyhint="go"><button class="btn primary" style="width:auto;flex:none" data-a="joinName">OK</button></div>
       ${L.players.length ? `<div class="sec">Déjà dans la salle</div>${players}` : ''}
       ${netWarn()}
