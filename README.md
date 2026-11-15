@@ -9,15 +9,22 @@ Tout le monde reçoit un mot secret… sauf l'intrus, qui a un mot légèrement 
 
 ## ✨ Fonctionnalités
 
-- 📱 **Un seul téléphone** qui passe de main en main : le mot ne s'affiche que tant qu'on garde le doigt dessus
+- 📱 **Un seul téléphone** qui passe de main en main : la carte se retourne pour montrer le mot tant qu'on garde le doigt dessus
 - 📱📱 **Ou un téléphone par joueur** (réglage « Téléphones ») : salle avec un code de 4 lettres et un QR code, mot sur chaque écran, **votes secrets** puis dépouillement (Supabase Realtime, gratuit)
+- ✍️ **Fil des indices** (mode un téléphone par joueur) : chacun tape son indice, tous les indices restent affichés jusqu'au vote et sont relus en fin de manche avec les rôles
+- 🗳️ **Dépouillement** bulletin par bulletin, avec barres de score, sur tous les écrans
+- 🔍 **Bonus détective** : +1 pour chaque civil qui a voté contre l'intrus éliminé
 - 👨‍👩‍👧‍👦 De **3 à 10 joueurs**, choisis dans une **liste de joueurs enregistrés** (prénom, avatar, couleur) au lancement de chaque partie
 - 📚 **246 paires de mots** adaptées aux enfants, réparties en 11 thèmes et 3 niveaux
 - ✏️ **Mots perso** : ajoutez vos propres paires (prénoms, lieux de vacances, blagues de famille)
 - 🔄 **« Changer de mots »** : un mot pas compris ou une paire déjà jouée ? La manche recommence avec une nouvelle paire, sans toucher aux points
 - 🗳️ Vote à main levée « 3, 2, 1… montrez du doigt ! » ; en cas d'égalité, nouveau tour d'indices puis nouveau vote
-- 🎯 **Dernière chance** : l'Undercover éliminé peut deviner le mot des civils
+- 🎯 **Dernière chance** : l'Undercover éliminé peut deviner le mot des civils. On **tape sa réponse**, vérifiée avec tolérance (accents, pluriel, « le / la / un… », petite faute de frappe) ; sinon les autres décident si ça compte
 - 🎩 **Mr White** en option (un joueur sans mot qui doit bluffer)
+- 🎛️ **Rôles au choix** : 1 à 3 Undercovers (ou automatique) et 0 à 2 Mr White, ajustés si les joueurs ne suffisent pas
+- 🏁 **Fin de partie** au nombre de manches ou **« premier à X points »** (10, 15, 20 ou 30)
+- 👎 **Paire nulle** : en fin de manche, une paire mal choisie peut être écartée pour toujours (liste et remise en jeu dans « Mes mots », incluse dans la synchronisation)
+- 📳 **Vibrations** quand c'est ton tour en mode un téléphone par joueur (Android)
 - ⏱️ Minuteur par indice (optionnel), sons, confettis et podium final
 - 🤫 Bouton « Revoir mon mot » pour ceux qui l'ont oublié
 - 🗂️ **Historique des parties** : classement et détail de chaque manche (mots, intrus, gagnants)
@@ -42,8 +49,9 @@ Tout le monde reçoit un mot secret… sauf l'intrus, qui a un mot légèrement 
 | Undercover gagnant | +6 |
 | Dernière chance réussie (Undercover éliminé qui devine le mot des civils) | +3 |
 | Mr White gagnant (survit ou devine le mot des civils) | +6 |
+| Bonus détective (un téléphone par joueur, réglable) : civil ayant voté contre l'intrus éliminé | +1 |
 
-Répartition des rôles : 1 Undercover jusqu'à 6 joueurs, 2 à partir de 7. Mr White est conseillé à partir de 5 joueurs.
+Répartition des rôles : réglable dans **Réglages** (1 à 3 Undercovers, 0 à 2 Mr White). En automatique : 1 Undercover jusqu'à 6 joueurs, 2 à partir de 7. Il faut toujours au moins 2 civils et au moins autant de civils que d'intrus : sinon le jeu réduit les intrus et le signale. Mr White est conseillé à partir de 5 joueurs.
 
 ## 📱📱 Un téléphone par joueur
 
@@ -51,9 +59,9 @@ Dans **Réglages → Téléphones**, choisissez **Un par joueur**. Puis **Nouvel
 
 1. Le téléphone de l'hôte affiche un **code de 4 lettres** et un **QR code**. L'hôte indique s'il joue aussi (son prénom) ou si son téléphone sert seulement d'écran de jeu.
 2. Les autres ouvrent le jeu, touchent **📲 Rejoindre une partie** et tapent le code, ou scannent le QR code / ouvrent le lien d'invitation. Ils choisissent leur prénom dans la liste des joueurs de l'hôte ou en tapent un nouveau.
-3. Chacun voit **son mot sur son écran**. Les indices se donnent toujours à voix haute : le téléphone du joueur dont c'est le tour affiche « À toi ! ».
-4. **Vote secret** sur chaque téléphone (on peut changer d'avis tant que tout le monde n'a pas voté), puis dépouillement : qui a voté pour qui. Égalité → nouveau tour d'indices.
-5. Dernière chance / Mr White : le joueur éliminé dit le mot à voix haute, les autres valident sur leur téléphone.
+3. Chacun voit **son mot sur son écran**. Quand c'est son tour, le téléphone affiche « À toi ! » : on **tape son indice** (réglage « Indices : Écrits », par défaut) et il s'ajoute au fil des indices visible par tous. Un indice qui contient son propre mot est refusé. Avec le réglage « À voix haute », on le dit simplement et on valide.
+4. **Vote secret** sur chaque téléphone (on peut changer d'avis tant que tout le monde n'a pas voté), puis **dépouillement** bulletin par bulletin sur tous les écrans. Égalité → nouveau tour d'indices. Si l'intrus est éliminé, les civils qui ont voté contre lui gagnent le **bonus détective**.
+5. Dernière chance / Mr White : le joueur éliminé tape sa réponse sur son téléphone. Si elle est reconnue (même avec une petite faute), c'est validé ; sinon les autres voient la réponse et décident sur leur téléphone. Ils peuvent aussi valider une réponse donnée à voix haute.
 
 Le téléphone de l'hôte garde la partie : il doit rester allumé avec le jeu ouvert (l'écran reste allumé automatiquement). Si un joueur ferme le jeu par erreur, il le rouvre et retrouve la partie tout seul. Si un téléphone est déconnecté, l'hôte peut passer son tour d'indice ou clôturer le vote. La partie est enregistrée dans l'historique de l'hôte et de chaque joueur.
 

@@ -70,13 +70,20 @@ input:focus{outline:none;border-color:#ffcc33}
 @keyframes float{50%{transform:translateY(-8px) rotate(-4deg)}}
 .title{font-size:3rem;font-weight:900;letter-spacing:-.02em;background:linear-gradient(90deg,#ffcc33,#ff5d73,#b388ff);-webkit-background-clip:text;background-clip:text;color:transparent;margin:0}
 .subtitle{font-size:1.3rem;font-weight:900;letter-spacing:.35em;text-transform:uppercase;color:#4cc9f0;margin-bottom:10px}
-.hold{position:relative;min-height:280px;border-radius:26px;background:linear-gradient(145deg,#4b3bb5,#2a2163);border:3px dashed rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;text-align:center;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:none;cursor:pointer;padding:20px;transition:background .15s}
+.hold{position:relative;min-height:280px;perspective:1100px;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:none;cursor:pointer;text-align:center}
+.hold .fc{position:absolute;inset:0;transform-style:preserve-3d;-webkit-transform-style:preserve-3d;transition:transform .42s cubic-bezier(.3,1.35,.5,1);pointer-events:none}
+.hold.on .fc{transform:rotateY(180deg)}
+.hold .face{position:absolute;inset:0;border-radius:26px;display:flex;align-items:center;justify-content:center;padding:20px;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.hold .front{background:radial-gradient(circle at 20% 15%,rgba(255,255,255,.14) 0 18%,transparent 19%),radial-gradient(circle at 85% 90%,rgba(255,204,51,.16) 0 22%,transparent 23%),linear-gradient(145deg,#4b3bb5,#2a2163);border:3px dashed rgba(255,255,255,.35);box-shadow:0 10px 26px rgba(0,0,0,.3)}
+.hold .front::after{content:'🕵️';position:absolute;right:16px;top:12px;font-size:1.6rem;opacity:.35}
+.hold .back{background:#fff;color:#1b1640;border:3px solid #ffcc33;transform:rotateY(180deg);box-shadow:0 12px 30px rgba(0,0,0,.35)}
+.hold.on .back{animation:glow 1.2s ease-in-out infinite alternate}
+@keyframes glow{to{box-shadow:0 12px 34px rgba(255,204,51,.55)}}
+@media (prefers-reduced-motion:reduce){.hold .fc{transition:none}}
 .hold .hint{font-size:1.25rem;font-weight:800;color:#dcd7ff;pointer-events:none}
 .hold .hint .big{font-size:3.5rem;display:block;margin-bottom:8px;animation:press 1.4s ease-in-out infinite}
 @keyframes press{50%{transform:scale(.85)}}
-.hold .word{display:none;pointer-events:none}
-.hold.on{background:#fff;color:#1b1640;border-style:solid;border-color:#ffcc33}
-.hold.on .hint{display:none}.hold.on .word{display:block}
+.hold .word{pointer-events:none}
 .word .lbl{font-size:1rem;color:#6b64a8;font-weight:800;margin-bottom:6px}
 .word .w{font-size:2.7rem;font-weight:900;word-break:break-word;line-height:1.1}
 .word .sub{font-size:1rem;color:#6b64a8;font-weight:700;margin-top:10px}
@@ -169,6 +176,31 @@ input.codein{text-align:center;font-size:2.3rem;letter-spacing:.45em;text-transf
 .pill.net{font-size:.85rem;letter-spacing:.08em;border:0;color:#fff;font-family:inherit;cursor:pointer}
 .vt{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
 .wait{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+/* fil des indices */
+.feed{display:flex;flex-direction:column;gap:6px;width:100%}
+.feed .fr{display:flex;align-items:flex-start;gap:8px;background:rgba(255,255,255,.07);border-radius:14px;padding:7px 10px}
+.feed .fr.out{opacity:.55}
+.feed .fr .who{display:flex;align-items:center;gap:6px;font-weight:800;min-width:92px;flex:none;font-size:.9rem;padding-top:3px}
+.feed .fr .cl{display:flex;flex-wrap:wrap;gap:5px;flex:1}
+.feed .ct{background:#fff;color:#1b1640;border-radius:10px;padding:3px 9px;font-weight:800;font-size:.92rem;line-height:1.3}
+.feed .ct.voice{background:rgba(255,255,255,.18);color:#fff}
+.feed .ct.new{animation:pop .35s ease}
+.feed .fr .rl{margin-left:auto;font-size:1.1rem;flex:none}
+.feed .fr.under{background:rgba(255,93,115,.18)}.feed .fr.white{background:rgba(255,255,255,.14)}
+.cluebox{display:flex;gap:8px;width:100%}
+.cluebox input{flex:1;font-size:1.15rem;font-weight:700}
+.cluebox .btn{width:auto;flex:none}
+/* dépouillement */
+.tv{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);border-radius:14px;padding:7px 10px;animation:pop .35s ease}
+.tv .n{font-weight:800}.tv .ar{color:#ffcc33;font-weight:900;margin:0 2px}
+.bars{display:flex;flex-direction:column;gap:7px;width:100%}
+.bars .b{display:flex;align-items:center;gap:8px}
+.bars .b .nm{width:84px;font-weight:800;font-size:.92rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bars .b .tr{display:block;flex:1;height:22px;background:rgba(255,255,255,.1);border-radius:99px;overflow:hidden}
+.bars .b .fl{display:block;height:100%;background:linear-gradient(90deg,#ffcc33,#ff9f43);border-radius:99px;transition:width .45s ease;min-width:0}
+.bars .b.top .fl{background:linear-gradient(90deg,#ff5d73,#ff9f43)}
+.bars .b .ct{width:22px;text-align:right;font-weight:900}
+@keyframes pop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
 </style>
 </head>
 <body>
@@ -214,8 +246,8 @@ const ROLE = {
 };
 const LEVELS = {facile:[1],moyen:[1,2],difficile:[2,3],mix:[1,2,3]};
 const LEVEL_LBL = {facile:'Facile',moyen:'Moyen',difficile:'Difficile',mix:'Mélange'};
-const PTS = {civil:2, under:6, white:6, lastChance:3};
-const APP_ID = 'undercover-famille', APP_VERSION = '2.1.0', GIST_FILE = 'undercover-famille.json';
+const PTS = {civil:2, under:6, white:6, lastChance:3, detective:1};
+const APP_ID = 'undercover-famille', APP_VERSION = '2.3.0', GIST_FILE = 'undercover-famille.json';
 
 /* ---------- Mode « un téléphone par joueur » : connexion Supabase Realtime ----------
    Renseignez ici l'adresse du projet et sa clé publique (« Publishable key », sb_publishable_…)
@@ -235,6 +267,27 @@ const app = $('#app');
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const rnd = n => Math.floor(Math.random() * n);
 const pick = a => a[rnd(a.length)];
+/* comparaison tolérante d'une réponse : accents, majuscules, articles, pluriel, une faute de frappe */
+function canonWord(s){
+  return norm(s).replace(/^(le|la|les|l|un|une|des|du|de|d)\s+/, '').split(' ').map(w => w.length > 3 ? w.replace(/(s|x)$/, '') : w).join(' ');
+}
+function lev(a, b){
+  const m = a.length, n = b.length; if (Math.abs(m - n) > 2) return 9;
+  let prev = Array.from({length:n + 1}, (_, j) => j);
+  for (let i = 1; i <= m; i++){
+    const cur = [i];
+    for (let j = 1; j <= n; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    prev = cur;
+  }
+  return prev[n];
+}
+function matchWord(guess, target){
+  const a = canonWord(guess), b = canonWord(target);
+  if (!a || !b) return false;
+  if (a === b || a.replace(/ /g, '') === b.replace(/ /g, '')) return true;
+  return b.length >= 5 && lev(a, b) <= (b.length >= 9 ? 2 : 1);
+}
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--){ const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
 const safeColor = c => /^#[0-9a-f]{3,8}$/i.test(String(c)) ? c : '#94a3ff';
 const store = {
@@ -259,10 +312,15 @@ const b64dec = s => { const bin = atob(s); const b = new Uint8Array(bin.length);
 
 /* ---------- État & migration depuis la v1 ---------- */
 const DEFAULT_SETTINGS = {
-  mode:'single', level:'moyen', clueRounds:2, timer:0, rounds:5, mrWhite:false, lastChance:true, sound:true, family:true,
+  mode:'single', writtenClues:true, detective:true, level:'moyen', clueRounds:2, timer:0, rounds:5, endMode:'rounds', goal:15, unders:0, whites:0, lastChance:true, sound:true, vibrate:true, family:true,
   themes:Object.fromEntries(Object.keys(THEMES).map(k => [k, true]))
 };
-const mergeSettings = s => Object.assign({}, DEFAULT_SETTINGS, s || {}, {themes:Object.assign({}, DEFAULT_SETTINGS.themes, (s && s.themes) || {})});
+const mergeSettings = s => {
+  const o = Object.assign({}, DEFAULT_SETTINGS, s || {}, {themes:Object.assign({}, DEFAULT_SETTINGS.themes, (s && s.themes) || {})});
+  if (s && s.mrWhite === true && s.whites == null) o.whites = 1;   // ancien réglage Oui/Non
+  delete o.mrWhite;
+  return o;
+};
 function cleanPlayer(p, i){
   return {id:String(p.id || uid()).slice(0, 40), name:String(p.name || '').trim().slice(0, 16), emoji:String(p.emoji || EMOJIS[i % EMOJIS.length]).slice(0, 8), color:safeColor(p.color || COLORS[i % COLORS.length])};
 }
@@ -282,6 +340,7 @@ const S = {
   settings:mergeSettings(store.get('settings', {})),
   custom:store.get('custom', []),
   history:store.get('history', []),
+  banned:store.get('banned', []),   // paires écartées (👎)
   games:store.get('games', []),
   legacyStats,
   gist:Object.assign({token:'', id:'', last:0}, store.get('gist', {})),
@@ -312,6 +371,10 @@ const P = id => S.game.players.find(p => p.id === id);
 const PP = id => P(id) || {id, name:'?', emoji:'❔', color:'#94a3ff'};
 /* réglage de la partie en cours : chez un invité, ce sont ceux de l'hôte */
 const gset = k => (S.game && S.game.guest && S.game.cfg && k in S.game.cfg) ? S.game.cfg[k] : S.settings[k];
+/* réglage figé au lancement d'une partie multi (hôte et invités) */
+const clueKey = () => { const r = S.game && S.game.r; return r ? r.nonce + '|' + (r.tour || 1) + '|' + r.idx : ''; };
+const gcfg = k => (S.game && S.game.cfg && k in S.game.cfg) ? S.game.cfg[k] : S.settings[k];
+const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
 const av = (p, cls='') => `<span class="av ${cls}" style="--c:${safeColor(p.color)}">${esc(p.emoji)}</span>`;
 const nm = p => esc(p.name);
 const selPlayers = () => S.selection.map(id => S.roster.find(p => p.id === id)).filter(Boolean);
@@ -388,15 +451,30 @@ function newRosterPlayer(name){
 /* =========================================================
    Logique de jeu
    ========================================================= */
+/* nombre de rôles : réglage choisi, ajusté s'il n'y a pas assez de joueurs
+   (il faut au moins 2 civils, et au moins autant de civils que d'intrus) */
 function rolesCount(n){
-  const under = n >= 7 ? 2 : 1;
-  const white = (S.settings.mrWhite && n >= 4) ? 1 : 0;
-  return {under, white, civil:n - under - white};
+  let under = S.settings.unders || (n >= 7 ? 2 : 1), white = S.settings.whites || 0;
+  const ok = () => { const c = n - under - white; return c >= 2 && c >= under + white; };
+  while (!ok() && white > 0) white--;
+  while (!ok() && under > 1) under--;
+  const wanted = (S.settings.unders || (n >= 7 ? 2 : 1)) + (S.settings.whites || 0);
+  return {under, white, civil:n - under - white, adjusted:under + white < wanted};
 }
+const pairKey = (a, b) => [norm(a), norm(b)].sort().join('|');
+function banPair(pair, on){
+  const k = pairKey(pair.civil, pair.under);
+  S.banned = S.banned.filter(x => x !== k); if (on) S.banned.push(k);
+  store.set('banned', S.banned);
+}
+const isBanned = pair => !!pair && S.banned.includes(pairKey(pair.civil, pair.under));
 function choosePair(){
   const lv = LEVELS[S.settings.level] || LEVELS.moyen;
   let pool = WORDS.filter(w => S.settings.themes[w.t] && lv.includes(w.l));
   if (S.settings.family) pool = pool.concat(S.custom.map(c => ({a:c.a, b:c.b, t:'famille', l:0})));
+  const ban = new Set(S.banned);
+  pool = pool.filter(w => !ban.has(pairKey(w.a, w.b)));
+  if (!pool.length) pool = WORDS.filter(w => !ban.has(pairKey(w.a, w.b)));
   if (!pool.length) pool = WORDS.slice();
   const key = w => w.a + '|' + w.b;
   let fresh = pool.filter(w => !S.history.includes(key(w)));
@@ -413,19 +491,23 @@ function choosePair(){
 function startGame(list, multi){
   const players = (list || selPlayers()).map(p => ({id:p.id, name:p.name.trim(), emoji:p.emoji, color:p.color}));
   S.game = {
-    id:uid(), started:Date.now(), round:0, total:S.settings.rounds, players,
+    id:uid(), started:Date.now(), round:0, players,
+    total:S.settings.endMode === 'points' ? 0 : S.settings.rounds, goal:S.settings.endMode === 'points' ? S.settings.goal : 0,
     scores:Object.fromEntries(players.map(p => [p.id, 0])),
     underCount:Object.fromEntries(players.map(p => [p.id, 0])),
     log:[], done:false
   };
   if (multi){
-    Object.assign(S.game, {multi:true, code:S.net.code, hostMe:S.net.hostMe || null, cfg:{timer:S.settings.timer, lastChance:S.settings.lastChance}});
+    Object.assign(S.game, {multi:true, code:S.net.code, hostMe:S.net.hostMe || null, cfg:{timer:S.settings.timer, lastChance:S.settings.lastChance, writtenClues:S.settings.writtenClues, detective:S.settings.detective}});
   }
   startRound();
   S.view = 'game'; S.nav = []; S.modal = null;
   render();
 }
 /* redo = true : on rejoue la même manche avec de nouveaux mots, sans toucher aux points */
+/* fin de partie : nombre de manches, ou premier à X points (garde-fou à 30 manches) */
+const isLastRound = g => g.goal ? (Math.max(0, ...Object.values(g.scores)) >= g.goal || g.round >= 30) : g.round >= g.total;
+const roundLbl = g => g.goal ? `Manche ${g.round} · 🎯 ${g.goal} pts` : `Manche ${g.round}/${g.total}`;
 function startRound(redo){
   const g = S.game; if (!redo) g.round++;
   const seat = g.players.map(p => p.id), n = seat.length;
@@ -443,7 +525,7 @@ function startRound(redo){
     distOrder:seat.slice(start).concat(seat.slice(0, start)), distIdx:0,
     phase:g.multi ? 'words' : 'pass', firstVoteDone:false, tieRound:false, clueRound:1, cluesNeeded:S.settings.clueRounds,
     order:[], idx:0, voteStep:'debate', elim:[], last:null, guessType:null, bonus:{}, result:null,
-    nonce:uid(), ready:{}, votes:{}, voteId:null, lastVotes:null, tieIds:null
+    nonce:uid(), ready:{}, votes:{}, voteId:null, lastVotes:null, tieIds:null, clues:[], tour:0, tally:null, flair:{}
   };
   S.ui.revealed = false;
   saveGame();
@@ -457,15 +539,28 @@ function startClues(){
   let choices = base.filter(id => r.roles[id] !== 'white'); if (!choices.length) choices = base;
   const first = pick(choices), i = base.indexOf(first);
   r.order = base.slice(i).concat(base.slice(0, i));
-  r.idx = 0; r.clueRound = 1;
+  r.idx = 0; r.clueRound = 1; r.tour = (r.tour || 0) + 1;
   r.cluesNeeded = (r.tieRound || r.firstVoteDone) ? 1 : S.settings.clueRounds;
   r.phase = 'clues';
 }
 function goVote(){ const r = S.game.r; r.phase = 'vote'; r.voteStep = 'debate'; r.votes = {}; r.voteId = uid(); }
-function eliminate(id){
+function submitGuess(txt){
+  const g = S.game, r = g.r;
+  S.ui.guessTxt = '';
+  if (matchWord(txt, r.pair.civil)){
+    (g.multi ? netToast : toast)(`✅ « ${txt} » : bonne réponse !`);
+    return ACTIONS.guess({v:'yes'});
+  }
+  r.guessTxt = txt; Snd.buzz(); saveGame(); render();
+}
+function eliminate(id, quick){
   const g = S.game, r = g.r;
   r.alive = r.alive.filter(x => x !== id); r.elim.push(id); r.last = id;
   r.firstVoteDone = true; r.tieRound = false; r.tieIds = null;
+  if (quick){   // le dépouillement a déjà fait monter le suspense
+    r.phase = 'role'; S.modal = null; saveGame(); render();
+    return r.roles[id] === 'civil' ? Snd.bad() : Snd.good();
+  }
   r.phase = 'suspense'; S.modal = null;
   saveGame(); render(); Snd.drum();
   setTimeout(() => {
@@ -490,6 +585,7 @@ function endRound(winner){
   if (winner === 'inf') r.alive.forEach(id => { if (r.roles[id] !== 'civil'){ pts[id] += PTS[r.roles[id]]; won[id] = true; } });
   if (winner === 'white'){ pts[r.last] += PTS.white; won[r.last] = true; }
   for (const id in r.bonus) pts[id] += r.bonus[id];
+  for (const id in (r.flair || {})) if (id in pts) pts[id] += r.flair[id];
   g.players.forEach(p => {
     g.scores[p.id] += pts[p.id];
     if (r.roles[p.id] === 'under') g.underCount[p.id]++;
@@ -503,7 +599,7 @@ function endRound(winner){
 function gameRecord(g){
   return {
     id:g.id, date:g.ended || Date.now(), started:g.started || null, total:g.total, played:g.log.length,
-    settings:{level:S.settings.level, mrWhite:S.settings.mrWhite, lastChance:S.settings.lastChance},
+    settings:{level:S.settings.level, unders:S.settings.unders, whites:S.settings.whites, goal:g.goal || 0, lastChance:S.settings.lastChance},
     players:g.players.map(p => ({id:p.id, name:p.name, emoji:p.emoji, color:p.color, score:g.scores[p.id]})),
     log:g.log
   };
@@ -547,7 +643,7 @@ function computeStats(){
    Export / import / GitHub Gist
    ========================================================= */
 function exportData(){
-  return {app:APP_ID, v:2, at:new Date().toISOString(), roster:S.roster, selection:S.selection, settings:S.settings, custom:S.custom, games:S.games, legacyStats:S.legacyStats};
+  return {app:APP_ID, v:2, at:new Date().toISOString(), roster:S.roster, selection:S.selection, settings:S.settings, custom:S.custom, banned:S.banned, games:S.games, legacyStats:S.legacyStats};
 }
 const exportCode = () => 'UCF2:' + b64enc(JSON.stringify(exportData()));
 function parseData(txt){
@@ -565,7 +661,8 @@ function parseData(txt){
     settings:o.settings && typeof o.settings === 'object' ? o.settings : null,
     custom:arr(o.custom).filter(c => c && c.a && c.b).map(c => ({a:String(c.a).slice(0, 30), b:String(c.b).slice(0, 30)})),
     games:arr(o.games).filter(g => g && g.id && Array.isArray(g.players) && Array.isArray(g.log)).map(g => Object.assign({}, g, {id:String(g.id), players:g.players.map(cleanPlayer).map((p, i) => Object.assign(p, {score:+g.players[i].score || 0}))})),
-    legacyStats:o.legacyStats && typeof o.legacyStats === 'object' ? o.legacyStats : {}
+    legacyStats:o.legacyStats && typeof o.legacyStats === 'object' ? o.legacyStats : {},
+    banned:arr(o.banned).map(String).filter(k => k.includes('|')).slice(0, 2000)
   };
 }
 function mergeData(d){
@@ -577,6 +674,7 @@ function mergeData(d){
   });
   const wk = new Set(S.custom.map(c => (c.a + '|' + c.b).toLowerCase()));
   d.custom.forEach(c => { const k = (c.a + '|' + c.b).toLowerCase(); if (!wk.has(k)){ wk.add(k); S.custom.push(c); added.words++; } });
+  S.banned = Array.from(new Set(S.banned.concat(d.banned || []))); store.set('banned', S.banned);
   const gids = new Set(S.games.map(g => g.id));
   d.games.forEach(g => { if (!gids.has(g.id)){ gids.add(g.id); S.games.push(g); added.games++; } });
   S.games.sort((a,b) => a.date - b.date);
@@ -589,6 +687,7 @@ function replaceData(d){
   S.selection = d.selection.filter(id => S.roster.some(p => p.id === id));
   if (d.settings) S.settings = mergeSettings(d.settings);
   S.custom = d.custom; S.games = d.games.sort((a,b) => a.date - b.date); S.legacyStats = d.legacyStats;
+  S.banned = d.banned || []; store.set('banned', S.banned);
   saveAll();
 }
 async function copyText(t){
@@ -884,11 +983,22 @@ function hostAct(from, a, d, isHost){
       startRound(true);
       netToast(`🔄 ${who ? who.name + ' a demandé' : 'Nouvelle paire :'} de nouveaux mots`);
       break;
-    case 'clued':
-      if (r.phase !== 'clues' || d.i !== r.idx || d.c !== r.clueRound || (from !== r.order[r.idx] && !isHost)) return;
+    case 'clued': {
+      const cur = r.order[r.idx];
+      if (r.phase !== 'clues' || d.i !== r.idx || d.c !== r.clueRound || (from !== cur && !isHost)) return;
+      let txt = '';
+      if (gcfg('writtenClues') && from === cur){
+        txt = String(d.txt || '').replace(/\s+/g, ' ').trim().slice(0, 40);
+        if (!txt) return toastTo(from, '✍️ Écris ton indice avant de valider');
+        const w = norm(wordOf(cur)), c = ' ' + norm(txt) + ' ';
+        if (w && w.length > 2 && (c.includes(' ' + w + ' ') || c.includes(' ' + w + 's ') || c.includes(' ' + w + 'x ')))
+          return toastTo(from, '🙊 Ton indice ne doit pas contenir ton mot !');
+      }
+      (r.clues = r.clues || []).push({id:cur, tour:r.tour || 1, txt});
       r.idx++;
-      if (r.idx >= r.order.length){ if (r.clueRound < r.cluesNeeded){ r.clueRound++; r.idx = 0; } else goVote(); }
+      if (r.idx >= r.order.length){ if (r.clueRound < r.cluesNeeded){ r.clueRound++; r.idx = 0; r.tour = (r.tour || 1) + 1; } else goVote(); }
       break;
+    }
     case 'skipvote':
       if (!isHost || r.phase !== 'clues') return;
       goVote(); break;
@@ -906,8 +1016,16 @@ function hostAct(from, a, d, isHost){
     case 'guess':
       if (r.phase !== 'guess' || d.l !== r.last || (from && from === r.last)) return;
       return ACTIONS.guess({v:d.v === 'yes' ? 'yes' : 'no'});
+    case 'guessTxt':
+      if (r.phase !== 'guess' || d.l !== r.last || from !== r.last || r.guessTxt) return;
+      return submitGuess(String(d.txt || '').replace(/\s+/g, ' ').trim().slice(0, 40) || '?');
+    case 'ban':
+      if (r.phase !== 'end' || d.r !== g.round || !inGame && !isHost) return;
+      banPair(r.pair, !!d.on); r.banned = !!d.on;
+      netToast(d.on ? `👎 ${who ? who.name : 'L\'hôte'} a écarté la paire « ${r.pair.civil} / ${r.pair.under} »` : '↩️ Paire remise dans le jeu');
+      break;
     case 'next':
-      if (r.phase !== 'end' || d.r !== g.round || g.round >= g.total) return;
+      if (r.phase !== 'end' || d.r !== g.round || isLastRound(g)) return;
       return ACTIONS.nextRound();
     case 'podium':
       if (r.phase !== 'end' || d.r !== g.round) return;
@@ -923,13 +1041,40 @@ function netAct(a, d){
   if (Net.role !== 'guest' || !S.guest) return;
   if (!Net.send({t:'act', from:S.guest.me, a, d})) toast('📵 Connexion perdue… patiente un instant');
 }
+function toastTo(id, msg){ if (id && id === ME()) toast(msg); else Net.send({t:'toast', to:id, msg}); }
+/* vote terminé : dépouillement bulletin par bulletin sur tous les écrans, puis résultat */
+const TALLY_STEP = 1100, TALLY_END = 2300;
+const tallyDur = r => (r.tally ? r.tally.order.length : 0) * TALLY_STEP + TALLY_END;
 function resolveVote(){
   const g = S.game, r = g.r, tally = {};
-  for (const v in r.votes){ const t = r.votes[v]; if (r.alive.includes(t)) tally[t] = (tally[t] || 0) + 1; }
+  const voters = Object.keys(r.votes).filter(v => r.alive.includes(r.votes[v]));
+  voters.forEach(v => tally[r.votes[v]] = (tally[r.votes[v]] || 0) + 1);
   const max = Math.max(0, ...Object.values(tally)), tops = Object.keys(tally).filter(id => tally[id] === max);
   r.lastVotes = Object.assign({}, r.votes);
-  if (tops.length === 1) return eliminate(tops[0]);
-  r.tieIds = tops; r.tieRound = true; startClues(); saveGame(); render();
+  r.tally = {id:r.voteId, order:shuffle(voters), res:tops.length === 1 ? tops[0] : null, ties:tops};
+  r.phase = 'tally'; S.modal = null;
+  saveGame(); render();
+}
+let tallyKey = null;
+function hostTallyWatch(){
+  const g = S.game, r = g && g.r;
+  if (!g || !g.multi || g.guest || g.done || !r || r.phase !== 'tally' || !r.tally || tallyKey === r.tally.id) return;
+  const k = tallyKey = r.tally.id;
+  setTimeout(() => { if (S.game === g && g.r === r && r.phase === 'tally' && r.tally.id === k) finishTally(); }, tallyDur(r));
+}
+function finishTally(){
+  const g = S.game, r = g.r, t = r.tally, res = t.res;
+  if (res){
+    if (r.roles[res] !== 'civil' && gcfg('detective')){
+      const good = Object.keys(r.lastVotes).filter(v => r.lastVotes[v] === res && r.roles[v] === 'civil');
+      r.flair = r.flair || {};
+      good.forEach(v => r.flair[v] = (r.flair[v] || 0) + PTS.detective);
+      r.flairLast = good;
+    } else r.flairLast = [];
+    return eliminate(res, true);
+  }
+  r.flairLast = [];
+  r.tieIds = t.ties; r.tieRound = true; startClues(); saveGame(); render();
   netToast('⚖️ Égalité ! Nouveau tour d\'indices');
 }
 function setHostMe(id){
@@ -1010,7 +1155,7 @@ function guestMsg(m){
     case 'priv':
       if (m.to === G.me){ S.priv = {n:m.n, w:m.w, white:!!m.white}; render(); }
       break;
-    case 'toast': toast(m.msg); break;
+    case 'toast': if (!m.to || m.to === G.me) toast(m.msg); break;
     case 'closed': guestLeave(true); toast('🚪 L\'hôte a fermé la salle'); break;
   }
 }
@@ -1039,6 +1184,7 @@ function guestState(g){
       else if (r.phase === 'role') r.roles[r.last] === 'civil' ? Snd.bad() : Snd.good();
       else if (r.phase === 'end') (r.result && r.result.winner === 'civils') ? Snd.good() : Snd.fanfare();
     }
+    if (r && r.phase === 'guess' && (!pr || pr.phase !== 'guess')){ S.ui.guessTxt = ''; }
     if (r && (!pr || r.nonce !== pr.nonce)){ S.ui.revealed = false; if (S.modal && S.modal.type === 'myCard') S.modal = null; }
   }
   render();
@@ -1141,7 +1287,12 @@ const ACTIONS = {
   mSeen(){ netAct('seen', {n:S.game.r.nonce}); },
   mForce(){ netAct('forceStart'); },
   mRedoYes(){ S.modal = null; netAct('redo', {n:S.game.r.nonce}); render(); },
-  mClued(){ const r = S.game.r; netAct('clued', {i:r.idx, c:r.clueRound}); },
+  mClued(){
+    const r = S.game.r, mine = r.order[r.idx] === ME();
+    const txt = mine && gcfg('writtenClues') ? String(S.ui.clueKey === clueKey() ? S.ui.clueTxt || '' : '').trim() : '';
+    if (mine && gcfg('writtenClues') && !txt){ toast('✍️ Écris ton indice avant de valider'); const el = $('#clueIn'); if (el) el.focus(); return; }
+    netAct('clued', {i:r.idx, c:r.clueRound, txt});
+  },
   mSkipVote(){ netAct('skipvote'); },
   mVote(d){
     const r = S.game.r; S.ui.myVote = {v:r.voteId, id:d.id};
@@ -1282,8 +1433,9 @@ const ACTIONS = {
   tie(){ const r = S.game.r; r.tieRound = true; startClues(); saveGame(); render(); toast('⚖️ Égalité : nouveau tour d\'indices !'); },
   afterRole(){
     const r = S.game.r, role = r.roles[r.last];
-    if (role === 'white'){ r.phase = 'guess'; r.guessType = 'white'; saveGame(); return render(); }
-    if (role === 'under' && S.settings.lastChance){ r.phase = 'guess'; r.guessType = 'under'; saveGame(); return render(); }
+    S.ui.guessOral = false; S.ui.guessTxt = '';
+    if (role === 'white'){ r.phase = 'guess'; r.guessType = 'white'; r.guessTxt = null; saveGame(); return render(); }
+    if (role === 'under' && S.settings.lastChance){ r.phase = 'guess'; r.guessType = 'under'; r.guessTxt = null; saveGame(); return render(); }
     checkWin();
   },
   guess(d){
@@ -1292,6 +1444,21 @@ const ACTIONS = {
     if (yes){ r.bonus[r.last] = (r.bonus[r.last] || 0) + PTS.lastChance; (S.game.multi ? netToast : toast)(`🎯 +${PTS.lastChance} points pour ${P(r.last).name} !`); } else Snd.bad();
     checkWin();
   },
+  /* réponse tapée : bonne (même à une faute près) → validée ; sinon les autres décident */
+  guessType(){
+    const g = S.game, r = g.r, txt = String(S.ui.guessTxt || '').replace(/\s+/g, ' ').trim().slice(0, 40);
+    if (!txt){ toast('✍️ Écris ta réponse'); const el = $('#guessIn'); if (el) el.focus(); return; }
+    if (g.multi) return netAct('guessTxt', {l:r.last, txt});
+    submitGuess(txt);
+  },
+  guessOral(){ S.ui.guessOral = true; render(); },
+  ban(){
+    const g = S.game, r = g.r;
+    if (g.multi) return netAct('ban', {r:g.round, on:!r.banned});
+    const on = !isBanned(r.pair); banPair(r.pair, on); r.banned = on; saveGame(); render();
+    toast(on ? '👎 Cette paire ne sortira plus' : '↩️ Paire remise dans le jeu');
+  },
+  unban(d){ S.banned = S.banned.filter(k => k !== d.k); store.set('banned', S.banned); render(); toast('↩️ Paire remise dans le jeu'); },
   nextRound(){ startRound(); render(); },
   podium(){ finishGame(); },
   endNowYes(){ finishGame(); },
@@ -1321,15 +1488,15 @@ function seg(k, opts){
 function settingsSummary(n){
   const s = S.settings; if (n == null) n = S.selection.length;
   const rc = rolesCount(Math.max(n, MIN_P));
-  const roles = n >= MIN_P ? `${rc.civil} civils · ${rc.under} Undercover${rc.under > 1 ? 's' : ''}${rc.white ? ' · 1 Mr White' : ''}` : `Choisis au moins ${MIN_P} joueurs`;
-  return `<b>${roles}</b><br><span class="muted small">Mots ${LEVEL_LBL[s.level].toLowerCase()} · ${s.clueRounds} tour${s.clueRounds > 1 ? 's' : ''} d'indices · ${s.rounds} manches · ${s.timer ? 'minuteur ' + s.timer + ' s' : 'sans minuteur'}</span>`;
+  const roles = n >= MIN_P ? `${rc.civil} civils · ${rc.under} Undercover${rc.under > 1 ? 's' : ''}${rc.white ? ` · ${rc.white} Mr White` : ''}` : `Choisis au moins ${MIN_P} joueurs`;
+  return `<b>${roles}</b>${n >= MIN_P && rc.adjusted ? '<br><span class="small" style="color:#ffcc33">⚠️ Intrus réduits : pas assez de joueurs pour le réglage choisi</span>' : ''}<br><span class="muted small">Mots ${LEVEL_LBL[s.level].toLowerCase()} · ${s.clueRounds} tour${s.clueRounds > 1 ? 's' : ''} d'indices · ${s.endMode === 'points' ? 'premier à ' + s.goal + ' points' : s.rounds + ' manches'} · ${s.timer ? 'minuteur ' + s.timer + ' s' : 'sans minuteur'}</span>`;
 }
 function holdCard(id, w){
   const p = P(id); if (w === undefined) w = wordOf(id);
   const inner = w === null
     ? `<div class="lbl">🎩 Tu es</div><div class="w">Mr White</div><div class="sub">Tu n'as pas de mot.<br>Écoute bien les autres et bluffe !</div>`
     : `<div class="lbl">${nm(p)}, ton mot est</div><div class="w">${esc(w)}</div><div class="sub">🤫 Ne le dis à personne !</div>`;
-  return `<div class="hold" data-hold="1"><div class="hint"><span class="big">👆</span>Maintiens ton doigt ici<br>pour voir ton mot</div><div class="word">${inner}</div></div>`;
+  return `<div class="hold" data-hold="1"><div class="fc"><div class="face front"><div class="hint"><span class="big">👆</span>Maintiens ton doigt ici<br>pour voir ton mot</div></div><div class="face back"><div class="word">${inner}</div></div></div></div>`;
 }
 function rulesHtml(){
   return `<div class="rules">
@@ -1347,6 +1514,7 @@ function rulesHtml(){
   <ul>
     <li><b>Les civils</b> gagnent s'ils éliminent l'Undercover.</li>
     <li><b>L'Undercover</b> gagne s'il tient jusqu'au bout (quand il ne reste plus qu'un civil face à lui).</li>
+    <li>Dans les réglages, on peut choisir 1 à 3 Undercovers et jusqu'à 2 Mr White, et jouer en nombre de manches ou « premier à X points ».</li>
   </ul>
   <h3>⭐ Les points</h3>
   <ul>
@@ -1354,6 +1522,7 @@ function rulesHtml(){
     <li>Undercover gagnant : <b>+${PTS.under}</b></li>
     <li>Dernière chance : l'Undercover éliminé qui devine le mot des civils gagne <b>+${PTS.lastChance}</b></li>
     <li>Mr White (en option) n'a pas de mot. S'il tient jusqu'au bout, ou s'il devine le mot des civils une fois éliminé, il gagne <b>+${PTS.white}</b></li>
+    <li>Pour deviner, on <b>tape sa réponse</b> : les accents, le pluriel, « le / la / un… » et une petite faute de frappe sont acceptés. Sinon, les autres décident si ça compte.</li>
   </ul>
   <h3>💡 Astuces</h3>
   <ul>
@@ -1366,14 +1535,16 @@ function rulesHtml(){
   <ul>
     <li>Chacun voit son mot sur son propre écran.</li>
     <li>Les indices se donnent toujours à voix haute : le téléphone de celui dont c'est le tour affiche « À toi ! ».</li>
-    <li>Le vote est <b>secret</b> : chacun choisit son suspect sur son téléphone, puis tout est révélé en même temps. En cas d'égalité, nouveau tour d'indices.</li>
+    <li>Indices écrits (réglage par défaut) : chacun tape son indice sur son téléphone et tous les indices restent affichés. Un indice qui contient son propre mot est refusé 🙊</li>
+    <li>Le vote est <b>secret</b> : chacun choisit son suspect sur son téléphone, puis les bulletins sont dépouillés un par un. En cas d'égalité, nouveau tour d'indices.</li>
+    <li>🔍 Bonus détective : +${PTS.detective} point pour chaque civil qui a voté contre l'intrus éliminé.</li>
     <li>Le téléphone qui a ouvert la salle doit rester allumé jusqu'à la fin.</li>
   </ul></div>`;
 }
 function topbar(){
   const g = S.game;
   const net = g.multi ? `<button class="pill net" data-a="modal" data-v="room" aria-label="Salle">${Net.status === 'on' ? '🟢' : '🟠'} ${esc(g.code || Net.code)}</button>` : '';
-  return `<div class="top"><div class="pill">Manche ${g.round}/${g.total}</div>${net}<button class="icon" data-a="menu" aria-label="Menu">☰</button></div>${g.multi ? netWarn() : ''}`;
+  return `<div class="top"><div class="pill">${roundLbl(g)}</div>${net}<button class="icon" data-a="menu" aria-label="Menu">☰</button></div>${g.multi ? netWarn() : ''}`;
 }
 function netWarn(){
   if (Net.status === 'connecting') return `<div class="warn"><span class="spin">🔄</span> Connexion à la salle…</div>`;
@@ -1409,7 +1580,7 @@ function vHome(){
       <div class="subtitle">Famille</div>
       <p class="muted">Qui a un mot différent ?<br>Démasque l'intrus… ou bluffe !</p>
     </div>
-    ${resume ? `<button class="btn green big" data-a="resume">▶ Reprendre la partie<br><small>manche ${g.round}/${g.total}${g.multi ? ' · salle ' + esc(g.code) : ''}</small></button>` : ''}
+    ${resume ? `<button class="btn green big" data-a="resume">▶ Reprendre la partie<br><small>${roundLbl(g).toLowerCase()}${g.multi ? ' · salle ' + esc(g.code) : ''}</small></button>` : ''}
     ${!resume && S.net ? `<button class="btn green big" data-a="openRoom">▶ Retour à la salle ${esc(S.net.code)}<br><small>${plural(S.net.players.length, 'joueur')}</small></button>` : ''}
     ${savedGuest && savedGuest.joined && !S.net ? `<button class="btn green big" data-a="rejoin">↩️ Revenir dans la salle ${esc(savedGuest.code)}<br><small>${savedGuest.prof ? esc(savedGuest.prof.name) : ''}</small></button>` : ''}
     <button class="btn primary big" data-a="newGame">🎲 Nouvelle partie<br><small>${S.settings.mode === 'multi' ? '📱📱 un téléphone par joueur' : '📱 un téléphone pour tous'}</small></button>
@@ -1465,26 +1636,37 @@ function vSettings(){
       <div class="note">${s.mode === 'multi'
         ? 'Chaque joueur rejoint la salle avec son téléphone grâce à un code. Mots sur chaque écran, votes secrets. Il faut internet.'
         : 'Le téléphone passe de main en main. Fonctionne sans internet.'}</div></div>
-    ${s.mode === 'multi' ? `<div class="list">${li('go', 'online', '🌐', 'Connexion en ligne', sbConfig() ? (DEV_LOCAL ? 'Mode test local' : SUPABASE_URL ? 'Intégrée au jeu ✓' : 'Configurée sur cet appareil ✓') : '⚠️ À configurer (Supabase, gratuit)')}</div>` : ''}
+    ${s.mode === 'multi' ? `<div class="list">${li('go', 'online', '🌐', 'Connexion en ligne', sbConfig() ? (DEV_LOCAL ? 'Mode test local' : SUPABASE_URL ? 'Intégrée au jeu ✓' : 'Configurée sur cet appareil ✓') : '⚠️ À configurer (Supabase, gratuit)')}</div>
+    <div class="set"><label>Indices</label>${seg('writtenClues', [[true,'✍️ Écrits'],[false,'🎤 À voix haute']])}
+      <div class="note">${s.writtenClues ? 'Chacun tape son indice sur son téléphone : tous les indices restent affichés jusqu\'au vote.' : 'Les indices se disent à voix haute, comme en mode un téléphone.'}</div></div>
+    <div class="set"><label>Bonus détective</label>${seg('detective', [[true,'Oui'],[false,'Non']])}
+      <div class="note">+${PTS.detective} point pour chaque civil qui a voté contre l'intrus éliminé.</div></div>` : ''}
     <div class="set"><label>Niveau des mots</label>${seg('level', [['facile','Facile'],['moyen','Moyen'],['difficile','Difficile'],['mix','Mélange']])}
       <div class="note">Facile : chat / chien. Difficile : crocodile / alligator.</div></div>
     <div class="set"><label>Tours d'indices avant le 1er vote</label>${seg('clueRounds', [[1,'1'],[2,'2'],[3,'3']])}
       <div class="note">À 4 joueurs, 2 tours laissent le temps de se faire une idée.</div></div>
     <div class="set"><label>Minuteur pour chaque indice</label>${seg('timer', [[0,'Sans'],[20,'20 s'],[30,'30 s'],[45,'45 s']])}</div>
-    <div class="set"><label>Nombre de manches</label>${seg('rounds', [[3,'3'],[5,'5'],[7,'7'],[10,'10']])}</div>
+    <div class="set"><label>Fin de partie</label>${seg('endMode', [['rounds','🔢 Nombre de manches'],['points','🎯 Premier à X points']])}
+      <div style="margin-top:8px">${s.endMode === 'points'
+        ? seg('goal', [[10,'10 pts'],[15,'15 pts'],[20,'20 pts'],[30,'30 pts']]) + '<div class="note">La partie s\'arrête à la fin de la manche où quelqu\'un atteint ce score.</div>'
+        : seg('rounds', [[3,'3'],[5,'5'],[7,'7'],[10,'10']])}</div></div>
     <div class="set"><label>Dernière chance de l'Undercover</label>${seg('lastChance', [[true,'Oui'],[false,'Non']])}
       <div class="note">Éliminé, il peut deviner le mot des civils pour gagner +${PTS.lastChance}.</div></div>
-    <div class="set"><label>Mr White 🎩</label>${seg('mrWhite', [[false,'Non'],[true,'Oui']])}
-      <div class="note">Un joueur sans mot qui doit bluffer. À partir de 4 joueurs, conseillé à partir de 5.</div></div>
+    <div class="set"><label>Undercovers 🕵️</label>${seg('unders', [[0,'Auto'],[1,'1'],[2,'2'],[3,'3']])}
+      <div class="note">Auto : 1 jusqu'à 6 joueurs, 2 à partir de 7.</div></div>
+    <div class="set"><label>Mr White 🎩</label>${seg('whites', [[0,'Aucun'],[1,'1'],[2,'2']])}
+      <div class="note">Un joueur sans mot qui doit bluffer. Conseillé à partir de 5 joueurs. S'il n'y a pas assez de joueurs, le jeu réduit les intrus (il faut au moins autant de civils que d'intrus).</div></div>
     <div class="set"><label>Thèmes</label><div class="chips">
       ${Object.entries(THEMES).map(([k,t]) => `<button class="chip ${s.themes[k] ? 'on' : ''}" data-a="theme" data-k="${k}">${t.icon} ${t.label}</button>`).join('')}
     </div></div>
     <div class="set"><label>Sons</label>${seg('sound', [[true,'Oui'],[false,'Non']])}</div>
+    <div class="set"><label>Vibrations</label>${seg('vibrate', [[true,'Oui'],[false,'Non']])}
+      <div class="note">Le téléphone vibre quand c'est ton tour (Android ; l'iPhone ne permet pas aux sites de vibrer).</div></div>
 
     <div class="sec">👥 Joueurs & mots</div>
     <div class="list">
       ${li('go', 'roster', '👥', 'Joueurs enregistrés', plural(S.roster.length, 'joueur') + ' · à choisir au début de chaque partie')}
-      ${li('go', 'words', '✏️', 'Mes mots perso', plural(S.custom.length, 'paire') + (S.custom.length ? (s.family ? ' · utilisées en partie' : ' · non utilisées') : ' · ajoute vos propres mots'))}
+      ${li('go', 'words', '✏️', 'Mes mots perso', plural(S.custom.length, 'paire') + (S.custom.length ? (s.family ? ' · utilisées en partie' : ' · non utilisées') : ' · ajoute vos propres mots') + (S.banned.length ? ' · ' + S.banned.length + ' écartée' + (S.banned.length > 1 ? 's' : '') : ''))}
     </div>
 
     <div class="sec">🔄 Synchronisation entre appareils</div>
@@ -1506,8 +1688,17 @@ function vWords(){
     </div>
     <div class="set"><label>Utiliser mes mots dans les parties</label>${seg('family', [[true,'Oui'],[false,'Non']])}</div>
     <div class="sl">${S.custom.length ? S.custom.map((c,i) => `<div class="si"><span class="n">${esc(c.a)} <span class="muted">/</span> ${esc(c.b)}</span><button class="mini" data-a="delWord" data-i="${i}" aria-label="Supprimer">✕</button></div>`).join('') : '<p class="muted center">Aucune paire pour l\'instant.</p>'}</div>
+    ${S.banned.length ? `<div class="sec">👎 Paires écartées · ${S.banned.length}</div>
+    <p class="muted small">Elles ne sortent plus en partie. Touche ✕ pour en remettre une dans le jeu.</p>
+    <div class="sl">${S.banned.map(k => `<div class="si"><span class="n">${esc(bannedLabel(k))}</span><button class="mini" data-a="unban" data-k="${esc(k)}" aria-label="Remettre dans le jeu">✕</button></div>`).join('')}</div>` : ''}
     <p class="tip">Le jeu contient déjà ${WORDS.length} paires réparties en ${Object.keys(THEMES).length} thèmes.</p>
   </div>`;
+}
+/* libellé lisible d'une paire écartée (la clé est normalisée) */
+function bannedLabel(k){
+  const all = WORDS.map(w => [w.a, w.b]).concat(S.custom.map(c => [c.a, c.b]));
+  const f = all.find(([a, b]) => pairKey(a, b) === k);
+  return f ? f[0] + ' / ' + f[1] : k.replace('|', ' / ');
 }
 function vRules(){
   return `<div class="screen">
@@ -1561,7 +1752,7 @@ function vGameDetail(){
   const wl = {civils:'🎉 Les civils gagnent', inf:'🕵️ Les intrus gagnent', white:'🎩 Mr White a trouvé'};
   return `<div class="screen">
     ${header('Détail de la partie')}
-    <p class="muted center small">${esc(fmtDate(g.date))} · ${plural(g.played, 'manche')}${g.played < g.total ? ' sur ' + g.total + ' prévues' : ''}</p>
+    <p class="muted center small">${esc(fmtDate(g.date))} · ${plural(g.played, 'manche')}${g.total && g.played < g.total ? ' sur ' + g.total + ' prévues' : ''}${g.settings && g.settings.goal ? ' · premier à ' + g.settings.goal + ' points' : ''}</p>
     <div class="sl">${rk.map(p => `<div class="si"><span>${medal(p.rank)}</span>${av(p, 's')}<span class="n">${nm(p)}</span><span class="p">${p.score}</span></div>`).join('')}</div>
     <div class="sec">Les manches</div>
     <div class="sl">${g.log.map(r => {
@@ -1620,6 +1811,7 @@ function vGame(){
     case 'words': return vMWords();
     case 'clues': return vMClues();
     case 'vote': return vMVote();
+    case 'tally': return vMTally();
     case 'suspense': return vSuspense();
     case 'role': return vRole();
     case 'guess': return vMGuess();
@@ -1725,9 +1917,26 @@ function vRole(){
       <div class="badge ${R.cls}">${R.emo} ${R.lbl}</div>
       <p style="margin-top:10px;font-size:1.1rem">${msg}</p>
     </div>
+    ${S.game.multi && r.flairLast && r.flairLast.length ? `<div class="card center" style="gap:6px"><b>🔍 Bonus détective +${PTS.detective}</b><div class="queue q2">${r.flairLast.map(id => av(PP(id), 's')).join('')}</div><span class="small muted">${r.flairLast.map(id => nm(PP(id))).join(', ')} avai${r.flairLast.length > 1 ? 'en' : ''}t vu juste !</span></div>` : ''}
     ${S.game.multi ? votesHtml(r) : ''}
     ${btn}
   </div>`;
+}
+/* fil des indices : une ligne par joueur, ses indices dans l'ordre des tours */
+function clueFeed(r, reveal){
+  const list = r.clues || []; if (!list.length) return '';
+  const ids = (r.order && r.order.length ? r.order : []).concat(r.elim || []).filter((id, i, a) => a.indexOf(id) === i);
+  S.game.players.forEach(p => { if (!ids.includes(p.id)) ids.push(p.id); });
+  const lastIdx = list.length - 1;
+  const rows = ids.map(id => {
+    const mine = list.map((c, i) => Object.assign({i}, c)).filter(c => c.id === id);
+    if (!mine.length) return '';
+    const role = reveal ? r.roles[id] : null;
+    return `<div class="fr ${r.alive.includes(id) ? '' : 'out'} ${role && role !== 'civil' ? role : ''}"><span class="who">${av(PP(id), 's')}${nm(PP(id))}</span>
+      <span class="cl">${mine.map(c => `<span class="ct ${c.txt ? '' : 'voice'} ${c.i === lastIdx && !reveal ? 'new' : ''}">${c.txt ? esc(c.txt) : '🎤'}</span>`).join('')}</span>
+      ${role ? `<span class="rl" title="${ROLE[role].lbl}">${ROLE[role].emo}</span>` : ''}</div>`;
+  }).join('');
+  return `<div class="feed">${rows}</div>`;
 }
 /* dépouillement : qui a voté pour qui */
 function votesHtml(r){
@@ -1745,12 +1954,21 @@ function vGuess(){
       <div style="font-size:3.5rem">${white ? '🎩' : '🎯'}</div>
       <h1>${white ? 'Mr White, à toi !' : 'Dernière chance !'}</h1>
       ${av(p, 'l')}
-      <p style="font-size:1.15rem"><b>${nm(p)}</b>, quel est le mot des civils ?<br>Dis-le à voix haute !</p>
-      <p class="muted">Les civils, est-ce que c'est le bon mot ?</p>
       <p class="pill">${white ? 'S\'il trouve, Mr White gagne la manche !' : `+${PTS.lastChance} points s'il trouve`}</p>
+      ${r.guessTxt ? guessVerdict(p, r.guessTxt, 'guess')
+        : S.ui.guessOral ? `<p style="font-size:1.15rem"><b>${nm(p)}</b>, dis le mot des civils à voix haute !</p><p class="muted">Les civils, est-ce que c'est le bon mot ?</p>`
+        : `<p style="font-size:1.15rem"><b>${nm(p)}</b>, quel est le mot des civils ?</p>${guessBox()}`}
     </div>
-    <div class="row"><button class="btn green big" data-a="guess" data-v="yes">✅ Trouvé</button><button class="btn red big" data-a="guess" data-v="no">❌ Raté</button></div>
+    ${r.guessTxt || S.ui.guessOral ? `<div class="row"><button class="btn green big" data-a="guess" data-v="yes">✅ ${r.guessTxt ? 'Accepter' : 'Trouvé'}</button><button class="btn red big" data-a="guess" data-v="no">❌ ${r.guessTxt ? 'Refuser' : 'Raté'}</button></div>`
+      : '<button class="linkbtn" data-a="guessOral">Répondre plutôt à voix haute</button>'}
   </div>`;
+}
+function guessBox(){
+  return `<div class="cluebox"><input id="guessIn" data-field="guessTxt" value="${esc(S.ui.guessTxt || '')}" maxlength="40" placeholder="Le mot des civils" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="send"><button class="btn primary" data-a="guessType">Valider</button></div>`;
+}
+/* réponse pas exactement reconnue : les autres décident (sans révéler le mot, la manche peut continuer) */
+function guessVerdict(p, txt, a){
+  return `<div class="card center" style="gap:6px;width:100%"><span class="muted small">${nm(p)} a répondu</span><div style="font-size:1.7rem;font-weight:900">« ${esc(txt)} »</div><span class="small">🤔 Ce n'est pas exactement le mot des civils.<br>Les civils, est-ce que ça compte ?</span></div>`;
 }
 function vEnd(){
   const g = S.game, r = g.r, res = r.result;
@@ -1764,7 +1982,7 @@ function vEnd(){
     else title = '😈 Les intrus gagnent !';
     sub = winners.length > 1 ? 'Ils ont tenu jusqu\'au bout sans se faire prendre.' : 'Tenu jusqu\'au bout sans se faire prendre !';
   }
-  const last = g.round >= g.total;
+  const last = isLastRound(g);
   const th = THEMES[r.pair.t];
   return `<div class="screen">${topbar()}
     <div class="center" style="gap:4px;margin-top:6px"><h1>${title}</h1><p class="muted">${sub}</p></div>
@@ -1772,14 +1990,17 @@ function vEnd(){
       <div class="c"><span class="muted small">Mot des civils</span><b>${esc(r.pair.civil)}</b></div>
       <div class="u"><span class="muted small">Mot de l'Undercover</span><b>${esc(r.pair.under)}</b></div>
     </div>
-    <p class="tip">${th ? th.icon + ' ' + th.label : '✏️ Mes mots'}</p>
+    <div class="row" style="align-items:center;justify-content:center;gap:10px"><span class="tip" style="margin:0">${th ? th.icon + ' ' + th.label : '✏️ Mes mots'}</span>
+      <button class="chip ${r.banned ? 'on' : ''}" data-a="ban" title="Ne plus jamais proposer cette paire">${r.banned ? '↩️ Paire écartée · annuler' : '👎 Paire nulle'}</button></div>
+    ${g.goal ? `<p class="tip" style="margin:0">🎯 Premier à ${g.goal} points</p>` : ''}
     <div class="sl">${g.players.map(p => {
       const pts = res.pts[p.id];
-      return `<div class="si">${av(p, 's' + (r.alive.includes(p.id) ? '' : ' out'))}<span class="n">${nm(p)}</span><span class="role" title="${ROLE[r.roles[p.id]].lbl}">${ROLE[r.roles[p.id]].emo}</span>${pts ? `<span class="plus">+${pts}</span>` : '<span class="zero">+0</span>'}<span class="p">${g.scores[p.id]}</span></div>`;
+      return `<div class="si">${av(p, 's' + (r.alive.includes(p.id) ? '' : ' out'))}<span class="n">${nm(p)}${r.flair && r.flair[p.id] ? ` <span title="Bonus détective">🔍</span>` : ''}</span><span class="role" title="${ROLE[r.roles[p.id]].lbl}">${ROLE[r.roles[p.id]].emo}</span>${pts ? `<span class="plus">+${pts}</span>` : '<span class="zero">+0</span>'}<span class="p">${g.scores[p.id]}</span></div>`;
     }).join('')}</div>
+    ${g.multi && (r.clues || []).some(c => c.txt) ? `<div class="sec" style="margin:6px 0 0">📝 Les indices de la manche</div>${clueFeed(r, true)}` : ''}
     <div class="grow"></div>
     ${last ? `<button class="btn primary big" data-a="${g.multi ? 'mPodium' : 'podium'}">🏆 Voir le podium</button>`
-           : `<button class="btn primary big" data-a="${g.multi ? 'mNext' : 'nextRound'}">Manche suivante (${g.round + 1}/${g.total}) ▶</button>`}
+           : `<button class="btn primary big" data-a="${g.multi ? 'mNext' : 'nextRound'}">Manche suivante${g.goal ? '' : ` (${g.round + 1}/${g.total})`} ▶</button>`}
   </div>`;
 }
 function vPodium(){
@@ -1903,7 +2124,7 @@ function vMWords(){
   if (!plays) main = `<div class="center grow wait"><div style="font-size:4rem">🤫</div><h2>Chacun découvre son mot</h2><p class="muted">sur son propre téléphone…</p></div>`;
   else {
     const w = myWord();
-    if (w === undefined) main = `<div class="hold"><div class="hint"><span class="big spin">⏳</span>Réception de ton mot…</div></div><div class="grow"></div>`;
+    if (w === undefined) main = `<div class="hold"><div class="fc"><div class="face front"><div class="hint"><span class="big spin">⏳</span>Réception de ton mot…</div></div></div></div><div class="grow"></div>`;
     else if (ready[me]) main = `<div class="center grow wait"><div style="font-size:4rem">✅</div><h2>C'est noté !</h2><p class="muted">On attend que tout le monde ait vu son mot…</p></div>
       <button class="btn ghost" data-a="modal" data-v="myCard">🤫 Revoir mon mot</button>`;
     else main = `<div class="center" style="gap:8px">${av(P(me))}<h2>${nm(P(me))}, voici ton mot</h2></div>
@@ -1925,17 +2146,20 @@ function vMClues(){
   const plays = !!me && g.players.some(x => x.id === me);
   const tie = r.tieIds && r.tieIds.length ? ' entre ' + r.tieIds.map(id => nm(PP(id))).join(' et ') : '';
   const head = r.tieRound ? `⚖️ Égalité${tie} ! Encore un tour d'indices` : `Tour d'indices ${r.clueRound} / ${r.cluesNeeded}`;
+  const written = gcfg('writtenClues'), feed = clueFeed(r);
   return `<div class="screen">${topbar()}
     <p class="center muted" style="font-weight:800">${head}</p>
-    <div class="center grow" style="gap:6px">
-      ${av(p, 'xl')}
+    <div class="center ${feed ? '' : 'grow'}" style="gap:6px">
+      ${av(p, feed ? 'l' : 'xl')}
       <h1>${mine ? 'À toi !' : nm(p)}</h1>
-      <p class="muted">${mine ? 'Donne un indice sur ton mot, à voix haute 🎤' : 'donne un indice sur son mot'}</p>
+      <p class="muted">${mine ? (written ? 'Écris un indice sur ton mot ✍️' : 'Donne un indice sur ton mot, à voix haute 🎤') : (written ? 'écrit un indice sur son mot…' : 'donne un indice sur son mot')}</p>
       ${timerHtml()}
     </div>
+    ${mine && written ? `<div class="cluebox"><input id="clueIn" data-field="clueTxt" value="${esc(S.ui.clueKey === clueKey() ? S.ui.clueTxt || '' : '')}" maxlength="40" placeholder="Ton indice (un mot ou une petite phrase)" autocomplete="off" enterkeyhint="send"><button class="btn primary" data-a="mClued">Envoyer</button></div>` : ''}
+    ${feed ? `<div class="sec" style="margin:4px 0 0">📝 Les indices</div>${feed}<div class="grow"></div>` : ''}
     <div class="queue">${r.order.map((id, i) => av(PP(id), 's ' + (i === r.idx ? 'cur' : i < r.idx ? 'done' : ''))).join('')}</div>
-    ${mine ? '<button class="btn primary big" data-a="mClued">Indice donné ✓</button>'
-      : amHost() ? `<button class="btn ghost" data-a="mClued">⏭️ ${nm(p)} a donné son indice</button>` : ''}
+    ${mine && !written ? '<button class="btn primary big" data-a="mClued">Indice donné ✓</button>'
+      : !mine && amHost() ? `<button class="btn ghost" data-a="mClued">⏭️ ${nm(p)} ${written ? 'l\'a dit à voix haute' : 'a donné son indice'}</button>` : ''}
     ${plays || amHost() ? `<div class="row">${plays ? '<button class="btn ghost" data-a="modal" data-v="myCard">🤫 Mon mot</button>' : ''}${amHost() ? '<button class="btn ghost" data-a="mSkipVote">🗳️ Voter</button>' : ''}</div>` : ''}
     <p class="tip">💡 Pas trop précis… pas trop vague !</p>
   </div>`;
@@ -1948,13 +2172,30 @@ function vMVote(){
   return `<div class="screen">${topbar()}
     <h2 class="center">🗳️ ${r.tieRound ? 'On revote !' : 'Vote secret'}</h2>
     ${canVote ? `<p class="muted center small">${mine ? '✓ Vote enregistré. Tu peux changer d\'avis tant que tout le monde n\'a pas voté.' : pending ? 'Envoi du vote…' : 'Qui a un mot différent ? Personne ne voit ton choix.'}</p>
-      <div class="grid">${r.alive.filter(id => id !== me).map(id => { const p = PP(id); return `<button class="pcard ${mine === id ? 'sel' : ''}" data-a="mVote" data-id="${esc(id)}">${av(p, 'l')}${nm(p)}</button>`; }).join('')}</div>
-      <div class="grow"></div>`
-    : `<div class="center grow wait"><div style="font-size:4rem">🗳️</div><p class="muted">Les joueurs votent en secret…</p></div>`}
+      <div class="grid">${r.alive.filter(id => id !== me).map(id => { const p = PP(id); return `<button class="pcard ${mine === id ? 'sel' : ''}" data-a="mVote" data-id="${esc(id)}">${av(p, 'l')}${nm(p)}</button>`; }).join('')}</div>`
+    : `<div class="center wait ${clueFeed(r) ? '' : 'grow'}"><div style="font-size:${clueFeed(r) ? '2.5rem' : '4rem'}">🗳️</div><p class="muted">Les joueurs votent en secret…</p></div>`}
+    ${clueFeed(r) ? `<div class="sec" style="margin:4px 0 0">📝 Les indices</div>${clueFeed(r)}` : ''}
+    <div class="grow"></div>
     <div class="queue q2">${r.alive.map(id => avNet(PP(id), voted[id], 's')).join('')}</div>
     <p class="tip">${n} / ${r.alive.length} votes</p>
     ${canVote ? '<button class="btn ghost" data-a="modal" data-v="myCard">🤫 Mon mot</button>' : ''}
     ${amHost() && n > 0 && n < r.alive.length ? '<button class="linkbtn" data-a="modal" data-v="closeVote">Clôturer le vote sans attendre</button>' : ''}
+  </div>`;
+}
+function vMTally(){
+  const g = S.game, r = g.r, t = r.tally || {order:[], ties:[]}, lv = r.lastVotes || {};
+  const n = Math.min(S.ui.tally && S.ui.tally.k === t.id ? S.ui.tally.n : 0, t.order.length), done = n >= t.order.length;
+  const shown = t.order.slice(0, n), cnt = {};
+  shown.forEach(v => cnt[lv[v]] = (cnt[lv[v]] || 0) + 1);
+  const max = Math.max(1, t.order.length), lead = Math.max(0, ...Object.values(cnt));
+  const targets = r.alive.filter(id => Object.values(lv).includes(id));
+  return `<div class="screen">${topbar()}
+    <h2 class="center">🗳️ Dépouillement</h2>
+    <div class="bars card">${targets.map(id => `<div class="b ${cnt[id] && cnt[id] === lead ? 'top' : ''}">${av(PP(id), 's')}<span class="nm">${nm(PP(id))}</span><span class="tr"><span class="fl" style="width:${(cnt[id] || 0) / max * 100}%"></span></span><span class="ct">${cnt[id] || 0}</span></div>`).join('')}</div>
+    <div class="sl">${shown.slice().reverse().map(v => `<div class="tv">${av(PP(v), 's')}<span class="n">${nm(PP(v))}</span><span class="ar">➜</span>${av(PP(lv[v]), 's')}<span class="n">${nm(PP(lv[v]))}</span></div>`).join('')}</div>
+    <div class="grow"></div>
+    ${done ? `<div class="center wait"><h1>${t.res ? `😱 ${nm(PP(t.res))} est éliminé…` : '⚖️ Égalité !'}</h1><p class="muted">${t.res ? 'Mais qui était-il vraiment ?' : t.ties.map(id => nm(PP(id))).join(' et ') + ' à égalité : nouveau tour d\'indices'}</p></div>`
+      : `<p class="tip">Bulletin ${n} / ${t.order.length}…</p>`}
   </div>`;
 }
 function vMGuess(){
@@ -1965,12 +2206,13 @@ function vMGuess(){
       <div style="font-size:3.5rem">${white ? '🎩' : '🎯'}</div>
       <h1>${white ? 'Mr White, à toi !' : 'Dernière chance !'}</h1>
       ${av(p, 'l')}
-      ${isG ? `<p style="font-size:1.15rem">Quel est le mot des civils ?<br><b>Dis-le à voix haute !</b></p><p class="muted">Les autres valident sur leur téléphone.</p>`
-        : `<p style="font-size:1.15rem"><b>${nm(p)}</b> doit deviner le mot des civils, à voix haute.</p>${judge ? '<p class="muted">Est-ce que c\'est le bon mot ?</p>' : ''}`}
       <p class="pill">${white ? 'S\'il trouve, Mr White gagne la manche !' : `+${PTS.lastChance} points s'il trouve`}</p>
+      ${r.guessTxt ? (isG ? `<div class="card center" style="gap:6px;width:100%"><span class="muted small">Ta réponse</span><div style="font-size:1.7rem;font-weight:900">« ${esc(r.guessTxt)} »</div><span class="small">🤔 Pas exactement le mot… Les autres décident si ça compte.</span></div>` : guessVerdict(p, r.guessTxt))
+        : isG ? `<p style="font-size:1.15rem">Quel est le mot des civils ?</p>${guessBox()}<p class="muted small">Les accents, le pluriel et une petite faute sont acceptés.</p>`
+        : `<p style="font-size:1.15rem"><b>${nm(p)}</b> tape sa réponse…</p>${judge ? '<p class="muted small">S\'il la dit plutôt à voix haute, validez ci-dessous.</p>' : ''}`}
     </div>
-    ${judge ? '<div class="row"><button class="btn green big" data-a="mGuess" data-v="yes">✅ Trouvé</button><button class="btn red big" data-a="mGuess" data-v="no">❌ Raté</button></div>'
-      : '<p class="tip">En attente de la réponse des autres joueurs…</p>'}
+    ${judge ? `<div class="row"><button class="btn green big" data-a="mGuess" data-v="yes">✅ ${r.guessTxt ? 'Accepter' : 'Trouvé'}</button><button class="btn red big" data-a="mGuess" data-v="no">❌ ${r.guessTxt ? 'Refuser' : 'Raté'}</button></div>`
+      : isG ? '' : '<p class="tip">En attente de la réponse…</p>'}
   </div>`;
 }
 
@@ -2015,7 +2257,7 @@ function vModal(){
     }
     case 'scores': {
       const list = g.players.slice().sort((a,b) => g.scores[b.id] - g.scores[a.id]);
-      body = `<h2>📊 Scores — manche ${g.round}/${g.total}</h2>
+      body = `<h2>📊 Scores — ${roundLbl(g).toLowerCase()}</h2>
         <div class="sl">${list.map(p => `<div class="si">${av(p, 's')}<span class="n">${nm(p)}</span><span class="p">${g.scores[p.id]}</span></div>`).join('')}</div>
         <button class="btn primary" data-a="closeModal">Fermer</button>`;
       break;
@@ -2096,7 +2338,7 @@ function render(){
   if (S.modal && S.modal.type === 'newPlayer'){ const el = $('#np'); if (el) el.focus(); }
   const qr = document.getElementById('qr'), rc = roomCode();
   if (qr && rc && !(S.ui.qr && S.ui.qr.code === rc)) makeQR(rc);
-  syncTimer();
+  syncTimer(); syncTally(); hostTallyWatch(); turnAlerts();
   wake(['game','lobby','join'].includes(S.view));
 }
 let T = null;
@@ -2104,6 +2346,35 @@ function timerKey(){
   const g = S.game; if (!g || S.view !== 'game' || !gset('timer')) return null;
   const r = g.r; if (r.phase !== 'clues') return null;
   return [g.id, g.round, r.order.join(','), r.clueRound, r.idx, r.tieRound ? 't' : ''].join('|');
+}
+/* dépouillement : un bulletin de plus toutes les TALLY_STEP ms, sur chaque écran */
+const vibrate = pat => { if (S.settings.vibrate !== false && navigator.vibrate) try { navigator.vibrate(pat); } catch(e){} };
+/* alerte quand l'écran de ce téléphone attend quelque chose de son joueur */
+let alertKey = '';
+function turnAlerts(){
+  const g = S.game, r = g && g.r; if (!g || !g.multi || g.done || S.view !== 'game' || !r) return;
+  const me = ME(); if (!me) return;
+  let k = '';
+  if (r.phase === 'clues' && r.order[r.idx] === me) k = 'clue|' + clueKey();
+  else if (r.phase === 'vote' && r.alive.includes(me)) k = 'vote|' + r.voteId;
+  else if (r.phase === 'guess' && r.last === me && !r.guessTxt) k = 'guess|' + r.nonce + '|' + r.last;
+  if (!k || k === alertKey) return;
+  alertKey = k;
+  if (k.startsWith('clue') || k.startsWith('guess')){ vibrate([90, 60, 90]); Snd.go(); } else vibrate(60);
+}
+let TA = null;
+function syncTally(){
+  const g = S.game, r = g && g.r, t = r && r.phase === 'tally' && S.view === 'game' ? r.tally : null;
+  if (TA && (!t || TA.k !== t.id)){ clearInterval(TA.iv); TA = null; }
+  if (!t || TA) return;
+  if (!S.ui.tally || S.ui.tally.k !== t.id) S.ui.tally = {k:t.id, n:0};
+  if (S.ui.tally.n >= t.order.length) return;
+  TA = {k:t.id, iv:setInterval(() => {
+    const u = S.ui.tally; if (!u || u.k !== t.id){ clearInterval(TA.iv); TA = null; return; }
+    u.n++; Snd.tick();
+    if (u.n >= t.order.length){ clearInterval(TA.iv); TA = null; setTimeout(() => { t.res ? Snd.drum() : Snd.buzz(); vibrate(t.res ? [40, 40, 40, 40, 160] : 120); }, 350); }
+    render();
+  }, TALLY_STEP)};
 }
 function syncTimer(){
   const k = timerKey();
@@ -2143,6 +2414,8 @@ document.addEventListener('input', e => {
   else if (f === 'gistId'){ S.gist.id = t.value.trim(); saveGist(); }
   else if (f === 'joinCode'){ const c = cleanCode(t.value); if (t.value !== c) t.value = c; S.ui.joinCode = c; }
   else if (f === 'joinName') S.ui.joinName = t.value;
+  else if (f === 'guessTxt') S.ui.guessTxt = t.value;
+  else if (f === 'clueTxt'){ S.ui.clueTxt = t.value; S.ui.clueKey = clueKey(); }
   else if (f === 'sbUrl' || f === 'sbKey'){ S.sb[f === 'sbUrl' ? 'url' : 'key'] = t.value.trim(); store.set('sb', S.sb); }
 });
 document.addEventListener('change', e => {
@@ -2167,6 +2440,8 @@ document.addEventListener('keydown', e => {
   else if (id === 'rn'){ e.preventDefault(); ACTIONS.rAdd(); }
   else if (id === 'jcode'){ e.preventDefault(); ACTIONS.joinGo(); }
   else if (id === 'jname'){ e.preventDefault(); ACTIONS.joinName(); }
+  else if (id === 'clueIn'){ e.preventDefault(); ACTIONS.mClued(); }
+  else if (id === 'guessIn'){ e.preventDefault(); ACTIONS.guessType(); }
   else if (e.target.dataset && e.target.dataset.field === 'rname') e.target.blur();
 });
 /* carte « maintiens pour voir » */
@@ -2176,7 +2451,7 @@ document.addEventListener('pointerdown', e => {
   e.preventDefault(); Snd.init();
   holdEl = h; h.classList.add('on');
   try { h.setPointerCapture(e.pointerId); } catch(_){}
-  if (navigator.vibrate) try { navigator.vibrate(25); } catch(_){}
+  vibrate(25);
   S.ui.revealed = true;
   const b = document.getElementById('seenBtn'); if (b) b.disabled = false;
 });
