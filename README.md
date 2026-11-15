@@ -117,7 +117,9 @@ Dans **Réglages → Synchronisation entre appareils** :
 
 - **Exporter mes données** : un code texte (commence par `UCF2:`) ou un fichier `.json` contenant joueurs, réglages, mots perso et historique.
 - **Importer des données** : collez le code ou choisissez le fichier, puis **Fusionner** (ajoute ce qui manque, sans rien effacer) ou **Tout remplacer**.
-- **Sync GitHub Gist** : créez un [jeton GitHub](https://github.com/settings/tokens/new?scopes=gist&description=Undercover%20Famille) avec la seule permission `gist`, collez-le sur chaque appareil et touchez « Synchroniser ». Les données sont rangées dans un Gist secret `undercover-famille.json` et fusionnées à chaque synchro. Le jeton reste sur l'appareil et n'est jamais exporté.
+- **Sync GitHub Gist** : créez un [jeton GitHub](https://github.com/settings/tokens/new?scopes=gist&description=Undercover) avec la seule permission `gist`, collez-le sur chaque appareil et touchez « Synchroniser ». Les données sont rangées dans un Gist secret `undercover-famille.json` et fusionnées à chaque synchro. Le jeton reste sur l'appareil et n'est jamais exporté.
+
+**Comment la fusion décide** : chaque modification (joueur renommé, avatar, groupes cochés, groupe renommé…) est datée, et c'est la plus récente qui gagne. Chaque suppression (joueur, groupe, mot perso, partie, historique effacé, paire remise en jeu) laisse une trace datée qui part avec la synchro : les autres appareils suppriment l'élément à leur tour au lieu de le rajouter. Un joueur recréé plus tard avec le même prénom est bien conservé. Pour que tout soit à jour partout, synchronisez chaque appareil (l'ordre n'a pas d'importance).
 
 ## 🛠️ Personnaliser
 

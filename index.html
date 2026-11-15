@@ -325,7 +325,7 @@ const ROLE = {
 const LEVELS = {facile:[1],moyen:[1,2],difficile:[2,3],mix:[1,2,3]};
 const LEVEL_LBL = {facile:'Facile',moyen:'Moyen',difficile:'Difficile',mix:'Mélange'};
 const PTS = {civil:2, under:6, white:6, lastChance:3, detective:1};
-const APP_ID = 'undercover-famille', APP_VERSION = '2.5.1', GIST_FILE = 'undercover-famille.json';
+const APP_ID = 'undercover-famille', APP_VERSION = '2.6.0', GIST_FILE = 'undercover-famille.json';
 
 /* ---------- Mode « un téléphone par joueur » : connexion Supabase Realtime ----------
    Renseignez ici l'adresse du projet et sa clé publique (« Publishable key », sb_publishable_…)
@@ -402,12 +402,26 @@ const mergeSettings = s => {
 function cleanPlayer(p, i){
   const o = {id:String(p.id || uid()).slice(0, 40), name:String(p.name || '').trim().slice(0, 16), emoji:String(p.emoji || EMOJIS[i % EMOJIS.length]).slice(0, 8), color:safeColor(p.color || COLORS[i % COLORS.length])};
   if (Array.isArray(p.groups)) o.groups = p.groups.map(String).slice(0, 12);
+  if (+p.created > 0) o.created = +p.created;   // date de création (synchro)
+  if (+p.upd > 0) o.upd = +p.upd;               // date de dernière modification (synchro)
   return o;
 }
 /* groupes de joueurs (un joueur peut être dans plusieurs groupes) */
 const GROUP_ICONS = ['🏠','🎉','💼','⚽','🎒','🏖️','🎲','🎵','🌳','⭐','👥','🍕'];
 const DEFAULT_GROUPS = [{id:'famille', name:'Famille', icon:'🏠'}, {id:'amis', name:'Amis', icon:'🎉'}, {id:'travail', name:'Travail', icon:'💼'}];
-const cleanGroup = g => ({id:String(g.id || uid()).slice(0, 40), name:String(g.name || '').trim().slice(0, 20) || 'Groupe', icon:String(g.icon || '👥').slice(0, 8)});
+const cleanGroup = g => Object.assign({id:String(g.id || uid()).slice(0, 40), name:String(g.name || '').trim().slice(0, 20) || 'Groupe', icon:String(g.icon || '👥').slice(0, 8)}, +g.upd > 0 ? {upd:+g.upd} : {});
+/* synchro : chaque modification est datée, chaque suppression laisse une « trace » datée
+   pour que les autres appareils la suppriment aussi au lieu de la rajouter */
+const touch = o => { if (o) o.upd = Date.now(); return o; };
+const emptyTomb = () => ({players:[], groups:{}, words:{}, games:{}, banned:{}, reset:0});
+function cleanTomb(t){
+  t = t && typeof t === 'object' ? t : {};
+  const map = m => { const o = {}; if (m && typeof m === 'object') for (const k in m) if (+m[k] > 0) o[String(k).slice(0, 80)] = +m[k]; return o; };
+  return {
+    players:(Array.isArray(t.players) ? t.players : []).filter(x => x && +x.ts > 0).map(x => ({id:String(x.id || ''), name:String(x.name || '').toLowerCase().slice(0, 16), ts:+x.ts})).slice(-1000),
+    groups:map(t.groups), words:map(t.words), games:map(t.games), banned:map(t.banned), reset:+t.reset > 0 ? +t.reset : 0
+  };
+}
 let roster = store.get('roster', null), selection = store.get('selection', null);
 if (!roster){
   const old = store.get('players', null) || [1,2,3,4].map(i => ({id:uid(), name:'Joueur ' + i, emoji:EMOJIS[i-1], color:COLORS[i-1]}));
@@ -428,6 +442,8 @@ const S = {
   custom:store.get('custom', []),
   history:store.get('history', []),
   banned:store.get('banned', []),   // paires écartées (👎)
+  bannedAt:store.get('bannedAt', {}), // date à laquelle chaque paire a été écartée (synchro)
+  tomb:cleanTomb(store.get('tomb', null)),   // suppressions à transmettre aux autres appareils
   games:store.get('games', []),
   legacyStats,
   gist:Object.assign({token:'', id:'', last:0}, store.get('gist', {})),
@@ -459,7 +475,8 @@ const saveSettings = () => store.set('settings', S.settings);
 const saveGame = () => { if (S.game && S.game.guest) return; S.game ? store.set('game', S.game) : store.del('game'); };
 const saveGames = () => store.set('games', S.games);
 const saveGist = () => store.set('gist', S.gist);
-const saveAll = () => { saveRoster(); saveSettings(); store.set('custom', S.custom); saveGames(); store.set('legacyStats', S.legacyStats); };
+const saveTomb = () => store.set('tomb', S.tomb);
+const saveAll = () => { saveRoster(); saveSettings(); store.set('custom', S.custom); saveGames(); store.set('legacyStats', S.legacyStats); store.set('banned', S.banned); store.set('bannedAt', S.bannedAt); saveTomb(); };
 const P = id => S.game.players.find(p => p.id === id);
 const PP = id => P(id) || {id, name:'?', emoji:'❔', color:'#94a3ff'};
 /* réglage de la partie en cours : chez un invité, ce sont ceux de l'hôte */
@@ -536,7 +553,8 @@ function newRosterPlayer(name){
   if (!name){ toast('Écris un prénom ✏️'); return null; }
   if (S.roster.some(p => p.name.toLowerCase() === name.toLowerCase())){ toast(`${name} existe déjà`); return null; }
   const ue = S.roster.map(p => p.emoji), uc = S.roster.map(p => p.color);
-  const p = {id:uid(), name, emoji:EMOJIS.find(e => !ue.includes(e)) || pick(EMOJIS), color:COLORS.find(c => !uc.includes(c)) || COLORS[S.roster.length % COLORS.length], groups:curGroup() ? [S.settings.group] : []};
+  const now = Date.now();
+  const p = {id:uid(), name, emoji:EMOJIS.find(e => !ue.includes(e)) || pick(EMOJIS), color:COLORS.find(c => !uc.includes(c)) || COLORS[S.roster.length % COLORS.length], groups:curGroup() ? [S.settings.group] : [], created:now, upd:now};
   S.roster.push(p); saveRoster();
   return p;
 }
@@ -555,10 +573,11 @@ function rolesCount(n){
   return {under, white, civil:n - under - white, adjusted:under + white < wanted};
 }
 const pairKey = (a, b) => [norm(a), norm(b)].sort().join('|');
-function banPair(pair, on){
-  const k = pairKey(pair.civil, pair.under);
-  S.banned = S.banned.filter(x => x !== k); if (on) S.banned.push(k);
-  store.set('banned', S.banned);
+function banPair(pair, on){ setBan(pairKey(pair.civil, pair.under), on); }
+function setBan(k, on){
+  S.banned = S.banned.filter(x => x !== k);
+  if (on){ S.banned.push(k); S.bannedAt[k] = Date.now(); } else { S.tomb.banned[k] = Date.now(); saveTomb(); }
+  store.set('banned', S.banned); store.set('bannedAt', S.bannedAt);
 }
 const isBanned = pair => !!pair && S.banned.includes(pairKey(pair.civil, pair.under));
 function choosePair(){
@@ -736,7 +755,7 @@ function computeStats(){
    Export / import / GitHub Gist
    ========================================================= */
 function exportData(){
-  return {app:APP_ID, v:2, at:new Date().toISOString(), roster:S.roster, groups:S.groups, selection:S.selection, settings:S.settings, custom:S.custom, banned:S.banned, games:S.games, legacyStats:S.legacyStats};
+  return {app:APP_ID, v:2, at:new Date().toISOString(), roster:S.roster, groups:S.groups, selection:S.selection, settings:S.settings, custom:S.custom, banned:S.banned, bannedAt:S.bannedAt, tomb:S.tomb, games:S.games, legacyStats:S.legacyStats};
 }
 const exportCode = () => 'UCF2:' + b64enc(JSON.stringify(exportData()));
 function parseData(txt){
@@ -752,33 +771,71 @@ function parseData(txt){
     roster:arr(o.roster).filter(p => p && p.name && String(p.name).trim()).map(cleanPlayer),
     selection:arr(o.selection).map(String),
     settings:o.settings && typeof o.settings === 'object' ? o.settings : null,
-    custom:arr(o.custom).filter(c => c && c.a && c.b).map(c => ({a:String(c.a).slice(0, 30), b:String(c.b).slice(0, 30)})),
+    custom:arr(o.custom).filter(c => c && c.a && c.b).map(c => Object.assign({a:String(c.a).slice(0, 30), b:String(c.b).slice(0, 30)}, +c.at > 0 ? {at:+c.at} : {})),
     games:arr(o.games).filter(g => g && g.id && Array.isArray(g.players) && Array.isArray(g.log)).map(g => Object.assign({}, g, {id:String(g.id), players:g.players.map(cleanPlayer).map((p, i) => Object.assign(p, {score:+g.players[i].score || 0}))})),
     legacyStats:o.legacyStats && typeof o.legacyStats === 'object' ? o.legacyStats : {},
     banned:arr(o.banned).map(String).filter(k => k.includes('|')).slice(0, 2000),
-    groups:arr(o.groups).filter(g => g && g.name).map(cleanGroup).slice(0, 30)
+    groups:arr(o.groups).filter(g => g && g.name).map(cleanGroup).slice(0, 30),
+    bannedAt:o.bannedAt && typeof o.bannedAt === 'object' ? o.bannedAt : {},
+    tomb:cleanTomb(o.tomb)
   };
 }
 function mergeData(d){
-  const added = {games:0, players:0, words:0};
-  (d.groups || []).forEach(g => { if (!S.groups.some(x => x.id === g.id)) S.groups.push(g); });
-  const names = new Set(S.roster.map(p => p.name.toLowerCase()));
+  const added = {games:0, players:0, words:0}, T = S.tomb, R = d.tomb || emptyTomb();
+  // 1. réunir les traces de suppression
+  const seen = new Set(T.players.map(x => x.id + '|' + x.name + '|' + x.ts));
+  R.players.forEach(x => { if (!seen.has(x.id + '|' + x.name + '|' + x.ts)) T.players.push(x); });
+  ['groups', 'words', 'games', 'banned'].forEach(k => { for (const id in R[k]) T[k][id] = Math.max(T[k][id] || 0, R[k][id]); });
+  const resetNews = R.reset > T.reset;
+  T.reset = Math.max(T.reset, R.reset);
+  // un élément est supprimé si sa trace est plus récente que sa dernière modification
+  const playerDead = p => T.players.some(x => (x.id === p.id || x.name === p.name.toLowerCase()) && x.ts >= (p.upd || p.created || 0));
+  // 2. groupes : la version la plus récente gagne
+  (d.groups || []).forEach(g => {
+    const l = S.groups.find(x => x.id === g.id);
+    if (!l) S.groups.push(g); else if ((g.upd || 0) > (l.upd || 0)) Object.assign(l, g);
+  });
+  S.groups = S.groups.filter(g => !(T.groups[g.id] >= (g.upd || 0)));
+  if (!S.groups.length) S.groups = [cleanGroup(DEFAULT_GROUPS[0])];
+  const gids = new Set(S.groups.map(g => g.id));
+  // 3. joueurs : même identifiant (ou même prénom) → la version la plus récente gagne
   d.roster.forEach(p => {
-    const k = p.name.toLowerCase();
-    if (names.has(k)){   // même joueur : on réunit ses groupes
-      const me = S.roster.find(x => x.name.toLowerCase() === k);
-      if (me && p.groups) me.groups = Array.from(new Set((me.groups || []).concat(p.groups)));
+    const l = S.roster.find(x => x.id === p.id) || S.roster.find(x => x.name.toLowerCase() === p.name.toLowerCase());
+    if (!l){
+      if (playerDead(p)) return;
+      const clash = S.roster.some(x => x.name.toLowerCase() === p.name.toLowerCase());
+      if (!clash){ S.roster.push(p); added.players++; }
       return;
     }
-    names.add(k); S.roster.push(Object.assign({}, p, {id:S.roster.some(x => x.id === p.id) ? uid() : p.id})); added.players++;
+    if ((p.upd || 0) > (l.upd || 0)){
+      const id = l.id, nameTaken = S.roster.some(x => x !== l && x.name.toLowerCase() === p.name.toLowerCase());
+      Object.assign(l, p, {id}, nameTaken ? {name:l.name} : {});
+    } else if (!p.upd && !l.upd && p.groups){   // anciennes données sans date : on réunit les groupes
+      l.groups = Array.from(new Set((l.groups || []).concat(p.groups)));
+    }
   });
-  const wk = new Set(S.custom.map(c => (c.a + '|' + c.b).toLowerCase()));
-  d.custom.forEach(c => { const k = (c.a + '|' + c.b).toLowerCase(); if (!wk.has(k)){ wk.add(k); S.custom.push(c); added.words++; } });
-  S.banned = Array.from(new Set(S.banned.concat(d.banned || []))); store.set('banned', S.banned);
-  const gids = new Set(S.games.map(g => g.id));
-  d.games.forEach(g => { if (!gids.has(g.id)){ gids.add(g.id); S.games.push(g); added.games++; } });
+  S.roster = S.roster.filter(p => !playerDead(p));
+  S.roster.forEach(p => { if (p.groups) p.groups = p.groups.filter(id => gids.has(id)); });
+  S.selection = S.selection.filter(id => S.roster.some(p => p.id === id));
+  if (S.settings.group && !gids.has(S.settings.group)) S.settings.group = '';
+  // 4. mots perso
+  const wk = new Set(S.custom.map(c => pairKey(c.a, c.b)));
+  d.custom.forEach(c => { const k = pairKey(c.a, c.b); if (!wk.has(k) && !(T.words[k] >= (c.at || 0))){ wk.add(k); S.custom.push(c); added.words++; } });
+  S.custom = S.custom.filter(c => !(T.words[pairKey(c.a, c.b)] >= (c.at || 0)));
+  // 5. paires écartées : écartée si l'écart est plus récent que la dernière remise en jeu
+  const at = Object.assign({}, S.bannedAt);
+  for (const k in (d.bannedAt || {})) at[k] = Math.max(at[k] || 0, +d.bannedAt[k] || 0);
+  const all = Array.from(new Set(S.banned.concat(d.banned || [])));
+  all.forEach(k => { if (!(k in at)) at[k] = 0; });
+  S.bannedAt = at;
+  S.banned = all.filter(k => !(T.banned[k] >= at[k]));
+  // 6. parties
+  const have = new Set(S.games.map(g => g.id));
+  d.games.forEach(g => { if (!have.has(g.id) && !T.games[g.id] && !((g.date || 0) <= T.reset)){ have.add(g.id); S.games.push(g); added.games++; } });
+  S.games = S.games.filter(g => !T.games[g.id] && !((g.date || 0) <= T.reset));
   S.games.sort((a,b) => a.date - b.date);
-  if (!Object.keys(S.legacyStats).length && Object.keys(d.legacyStats).length) S.legacyStats = d.legacyStats;
+  if (resetNews) S.legacyStats = {};
+  else if (!Object.keys(S.legacyStats).length && Object.keys(d.legacyStats).length && !T.reset) S.legacyStats = d.legacyStats;
   saveAll();
   return added;
 }
@@ -788,7 +845,7 @@ function replaceData(d){
   S.selection = d.selection.filter(id => S.roster.some(p => p.id === id));
   if (d.settings) S.settings = mergeSettings(d.settings);
   S.custom = d.custom; S.games = d.games.sort((a,b) => a.date - b.date); S.legacyStats = d.legacyStats;
-  S.banned = d.banned || []; store.set('banned', S.banned);
+  S.banned = d.banned || []; S.bannedAt = d.bannedAt || {}; S.tomb = d.tomb || emptyTomb();
   saveAll();
 }
 async function copyText(t){
@@ -1687,14 +1744,14 @@ const ACTIONS = {
   rAdd(){ const el = $('#rn'); const p = newRosterPlayer(el && el.value); if (!p) return; render(); setTimeout(() => { const e2 = $('#rn'); if (e2) e2.focus(); }, 0); },
   rEmoji(d){
     const p = S.roster.find(x => x.id === d.id); if (!p) return;
-    let i = EMOJIS.indexOf(p.emoji); i = (i + 1) % EMOJIS.length; p.emoji = EMOJIS[i]; saveRoster(); render();
+    let i = EMOJIS.indexOf(p.emoji); i = (i + 1) % EMOJIS.length; p.emoji = EMOJIS[i]; touch(p); saveRoster(); render();
   },
   rColor(d){
     const p = S.roster.find(x => x.id === d.id); if (!p) return;
-    let i = COLORS.indexOf(p.color); p.color = COLORS[(i + 1) % COLORS.length]; saveRoster(); render();
+    let i = COLORS.indexOf(p.color); p.color = COLORS[(i + 1) % COLORS.length]; touch(p); saveRoster(); render();
   },
   rDel(d){ S.modal = {type:'rDel', id:d.id}; render(); },
-  rDelYes(){ const id = S.modal.id; S.roster = S.roster.filter(p => p.id !== id); S.selection = S.selection.filter(x => x !== id); saveRoster(); S.modal = null; render(); },
+  rDelYes(){ const id = S.modal.id, p = S.roster.find(x => x.id === id); if (p){ S.tomb.players.push({id, name:p.name.toLowerCase(), ts:Date.now()}); saveTomb(); } S.roster = S.roster.filter(p => p.id !== id); S.selection = S.selection.filter(x => x !== id); saveRoster(); S.modal = null; render(); },
 
   /* --- réglages & mots --- */
   set(d){
@@ -1709,7 +1766,7 @@ const ACTIONS = {
   rGroup(d){
     const p = S.roster.find(x => x.id === d.id); if (!p) return;
     const gs = new Set(p.groups || []); gs.has(d.g) ? gs.delete(d.g) : gs.add(d.g);
-    p.groups = S.groups.map(g => g.id).filter(id => gs.has(id));
+    p.groups = S.groups.map(g => g.id).filter(id => gs.has(id)); touch(p);
     saveRoster(); pushLobby(); render();
   },
   rFilter(d){ S.ui.rFilter = d.g || ''; render(); },
@@ -1717,12 +1774,12 @@ const ACTIONS = {
     const el = $('#grn'), name = String(el && el.value || '').trim().slice(0, 20);
     if (!name) return toast('Écris le nom du groupe ✏️');
     if (S.groups.some(g => g.name.toLowerCase() === name.toLowerCase())) return toast('Ce groupe existe déjà');
-    S.groups.push({id:uid(), name, icon:GROUP_ICONS[S.groups.length % GROUP_ICONS.length]}); saveRoster(); render();
+    S.groups.push({id:uid(), name, icon:GROUP_ICONS[S.groups.length % GROUP_ICONS.length], upd:Date.now()}); saveRoster(); render();
     setTimeout(() => { const e2 = $('#grn'); if (e2) e2.focus(); }, 0);
   },
   grIcon(d){
     const g = S.groups.find(x => x.id === d.g); if (!g) return;
-    g.icon = GROUP_ICONS[(GROUP_ICONS.indexOf(g.icon) + 1) % GROUP_ICONS.length]; saveRoster(); render();
+    g.icon = GROUP_ICONS[(GROUP_ICONS.indexOf(g.icon) + 1) % GROUP_ICONS.length]; touch(g); saveRoster(); render();
   },
   grDel(d){
     if (S.groups.length <= 1) return toast('Garde au moins un groupe');
@@ -1731,8 +1788,8 @@ const ACTIONS = {
   },
   grDelYes(){
     const id = S.modal.g;
-    S.groups = S.groups.filter(g => g.id !== id);
-    S.roster.forEach(p => { if (p.groups) p.groups = p.groups.filter(x => x !== id); });
+    S.groups = S.groups.filter(g => g.id !== id); S.tomb.groups[id] = Date.now(); saveTomb();
+    S.roster.forEach(p => { if (p.groups && p.groups.includes(id)){ p.groups = p.groups.filter(x => x !== id); touch(p); } });
     if (S.settings.group === id){ S.settings.group = ''; saveSettings(); }
     if (S.ui.rFilter === id) S.ui.rFilter = '';
     saveRoster(); S.modal = null; render();
@@ -1746,16 +1803,16 @@ const ACTIONS = {
     const a = ($('#wa').value || '').trim(), b = ($('#wb').value || '').trim();
     if (!a || !b) return toast('Remplis les deux mots');
     if (a.toLowerCase() === b.toLowerCase()) return toast('Les deux mots doivent être différents');
-    S.custom.push({a, b}); store.set('custom', S.custom); render();
+    S.custom.push({a, b, at:Date.now()}); store.set('custom', S.custom); render();
     setTimeout(() => { const el = $('#wa'); if (el) el.focus(); }, 0);
     toast('Paire ajoutée ✓');
   },
-  delWord(d){ S.custom.splice(+d.i, 1); store.set('custom', S.custom); render(); },
+  delWord(d){ const c = S.custom[+d.i]; if (c){ S.tomb.words[pairKey(c.a, c.b)] = Date.now(); saveTomb(); } S.custom.splice(+d.i, 1); store.set('custom', S.custom); render(); },
 
   /* --- historique --- */
   openGame(d){ S.ui.gameId = d.id; S.nav.push(S.view); S.view = 'gameDetail'; render(); },
-  delGameYes(){ S.games = S.games.filter(g => g.id !== S.ui.gameId); saveGames(); S.modal = null; S.view = S.nav.pop() || 'history'; render(); toast('Partie supprimée'); },
-  resetStatsYes(){ S.games = []; S.legacyStats = {}; saveGames(); store.set('legacyStats', {}); S.modal = null; render(); toast('Historique et statistiques effacés'); },
+  delGameYes(){ S.tomb.games[S.ui.gameId] = Date.now(); saveTomb(); S.games = S.games.filter(g => g.id !== S.ui.gameId); saveGames(); S.modal = null; S.view = S.nav.pop() || 'history'; render(); toast('Partie supprimée'); },
+  resetStatsYes(){ S.tomb.reset = Date.now(); S.tomb.games = {}; saveTomb(); S.games = []; S.legacyStats = {}; saveGames(); store.set('legacyStats', {}); S.modal = null; render(); toast('Historique et statistiques effacés'); },
 
   /* --- export / import / gist --- */
   async copyCode(){ toast(await copyText(exportCode()) ? 'Code copié ✓ Colle-le sur l\'autre appareil' : 'Copie impossible : sélectionne le code à la main'); },
@@ -1834,7 +1891,7 @@ const ACTIONS = {
     const on = !isBanned(r.pair); banPair(r.pair, on); r.banned = on; saveGame(); render();
     toast(on ? '👎 Cette paire ne sortira plus' : '↩️ Paire remise dans le jeu');
   },
-  unban(d){ S.banned = S.banned.filter(k => k !== d.k); store.set('banned', S.banned); render(); toast('↩️ Paire remise dans le jeu'); },
+  unban(d){ setBan(d.k, false); render(); toast('↩️ Paire remise dans le jeu'); },
   nextRound(){ startRound(); render(); },
   podium(){ finishGame(); },
   endNowYes(){ finishGame(); },
@@ -2849,14 +2906,14 @@ document.addEventListener('change', e => {
   }
   if (t.dataset && t.dataset.field === 'gname'){
     const g = S.groups.find(x => x.id === t.dataset.g), v = t.value.trim().slice(0, 20);
-    if (g && v){ g.name = v; saveRoster(); }
+    if (g && v && g.name !== v){ g.name = v; touch(g); saveRoster(); }
   }
   if (t.dataset && t.dataset.field === 'rname'){
     const p = S.roster.find(x => x.id === t.dataset.id); if (!p) return;
     const v = t.value.trim().slice(0, 16);
     if (!v){ toast('Le prénom ne peut pas être vide'); return render(); }
     if (S.roster.some(x => x.id !== p.id && x.name.toLowerCase() === v.toLowerCase())){ toast(`${v} existe déjà`); return render(); }
-    p.name = v; saveRoster();
+    p.name = v; touch(p); saveRoster();
   }
 });
 document.addEventListener('keydown', e => {
