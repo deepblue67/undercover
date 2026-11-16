@@ -121,6 +121,15 @@ Dans **Réglages → Synchronisation entre appareils** :
 
 **Comment la fusion décide** : chaque modification (joueur renommé, avatar, groupes cochés, groupe renommé…) est datée, et c'est la plus récente qui gagne. Chaque suppression (joueur, groupe, mot perso, partie, historique effacé, paire remise en jeu) laisse une trace datée qui part avec la synchro : les autres appareils suppriment l'élément à leur tour au lieu de le rajouter. Un joueur recréé plus tard avec le même prénom est bien conservé. Pour que tout soit à jour partout, synchronisez chaque appareil (l'ordre n'a pas d'importance).
 
+## 🙈 Pas de référencement
+
+Le jeu est fait pour la famille et les amis, pas pour être trouvé sur Google :
+
+- `robots.txt` (à la racine du site) demande à tous les robots d'exploration de ne rien parcourir ;
+- `index.html` contient la balise `<meta name="robots" content="noindex, nofollow…">`, qui demande de ne pas afficher la page dans les résultats.
+
+> Si le site apparaissait déjà dans Google, retirez temporairement la ligne `Disallow: /` de `robots.txt` : Google pourra relire la page, verra la balise `noindex` et la retirera de ses résultats. Remettez ensuite la ligne. Pour aller plus vite, Google Search Console propose aussi une demande de suppression.
+
 ## 🛠️ Personnaliser
 
 Tout est dans `index.html`, sans dépendance ni étape de compilation.
@@ -137,6 +146,7 @@ undercover-famille/
 ├── index.html            # le jeu complet (HTML + CSS + JS)
 ├── manifest.webmanifest  # installation sur l'écran d'accueil
 ├── sw.js                 # mode hors ligne
+├── robots.txt            # demande aux moteurs de recherche de ne pas référencer le site
 ├── icons/                # icônes de l'application
 ├── LICENSE
 └── README.md

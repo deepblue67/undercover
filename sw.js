@@ -1,6 +1,6 @@
 // Service worker : permet de jouer sans connexion une fois le jeu ouvert une première fois.
 // Pensez à changer VERSION à chaque mise à jour pour que les téléphones récupèrent la nouvelle version.
-const VERSION = 'ucf-v2.6.0';
+const VERSION = 'ucf-v2.6.1';
 const FILES = [
   './',
   './index.html',
